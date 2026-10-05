@@ -1,0 +1,19 @@
+{
+ "schema": "gemsi.report.v1",
+ "template_version": "GemSi-4PAGE-V1",
+ "business": {
+  "city": "Pompano Beach",
+  "name": "DriveOz",
+  "state": "FL",
+  "trade": "auto leasing",
+  "website": "driveoz.com"
+ },
+ "evidence_run_id": "00000000-0000-0000-0000-000000000000",
+ "library": {
+  "id": "legacy",
+  "version": "n/a"
+ },
+ "geo": {},
+ "prepared_on": "2026-10-05",
+ "pages": []
+}

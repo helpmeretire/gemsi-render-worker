@@ -1,0 +1,285 @@
+{
+ "client_name": "DriveOz",
+ "report_month": "October 2026",
+ "p1": {
+  "h1": "What AI already says and",
+  "h1_accent": "where DriveOz disappears.",
+  "art": "car",
+  "lead": "On Oct 4, 2026 we asked 4 AI tools 7 leasing questions. DriveOz came up in 6 of 83 answers.",
+  "example": {
+   "label": "ChatGPT answers, Oct 4, 2026",
+   "question": "Auto lease brokers in Miami are worth using",
+   "named_label": "Names that came up:",
+   "came_up": [
+    "Signature Auto Group\u2026",
+    "Evolution Leasing",
+    "Lease A Car Direct"
+   ]
+  },
+  "total_hit": 0,
+  "total_all": 7,
+  "total_label": "leasing questions where DriveOz was a strong answer",
+  "qrows": [
+   {
+    "q": "Who should I call?",
+    "s": "WEAK"
+   },
+   {
+    "q": "Best in my area",
+    "s": "WEAK"
+   },
+   {
+    "q": "Who can I trust?",
+    "s": "WEAK"
+   },
+   {
+    "q": "Fair price",
+    "s": "MIXED"
+   },
+   {
+    "q": "Special situation",
+    "s": "WEAK"
+   },
+   {
+    "q": "Comparing options",
+    "s": "WEAK"
+   },
+   {
+    "q": "Ready to book",
+    "s": "WEAK"
+   }
+  ],
+  "instead_title": "Who AI names instead of you",
+  "instead": [
+   "Signature Auto Group\u2026",
+   "Evolution Leasing",
+   "Lease A Car Direct",
+   "ZAK Auto Leasing",
+   "Express Auto Lease"
+  ],
+  "note": "Oct 4, 2026: 4 AI tools, 7 questions, 3 runs each. Bars show how many of 83 answers named each business. Counts are observations of AI answers, not verified facts.",
+  "h1_sub": "Don't let AI recommend your competitors instead.",
+  "scoreboard": {
+   "of": 83,
+   "rows": [
+    {
+     "name": "Signature Auto Group\u2026",
+     "n": 24
+    },
+    {
+     "name": "Evolution Leasing",
+     "n": 16
+    },
+    {
+     "name": "Lease A Car Direct",
+     "n": 13
+    },
+    {
+     "name": "ZAK Auto Leasing",
+     "n": 13
+    },
+    {
+     "name": "Express Auto Lease",
+     "n": 12
+    },
+    {
+     "name": "DriveOz",
+     "n": 6,
+     "me": true
+    }
+   ]
+  },
+  "sub_red": true,
+  "instead_red": true
+ },
+ "p2": {
+  "eyebrow": "ENGINE BY ENGINE",
+  "h1": "AI names DriveOz in 6 of 83 answers, unevenly across tools.",
+  "lead": "Each AI tool was asked the same 7 questions 3 times on Oct 4, 2026. The counts are how many of each tool's successful answers named DriveOz.",
+  "labels": [
+   {
+    "src": "ChatGPT",
+    "v": "Named DriveOz in 2 of 20 answers"
+   },
+   {
+    "src": "Google Gemini",
+    "v": "Never named DriveOz in 21 answers"
+   },
+   {
+    "src": "Perplexity",
+    "v": "Named DriveOz in 2 of 21 answers"
+   },
+   {
+    "src": "Claude",
+    "v": "Named DriveOz in 2 of 21 answers"
+   }
+  ],
+  "total_line": "Most-cited: signatureautofl.com (27), zakautoleasing.com (15). Your website: cited in 3 of 83 answers.",
+  "why_title": "What each tool shows",
+  "sources": [
+   {
+    "url": "ChatGPT",
+    "facts": [
+     {
+      "v": "DriveOz: 2 of 20 answers",
+      "x": false
+     },
+     {
+      "v": "Best: Who should I call? 1/3",
+      "x": false
+     }
+    ]
+   },
+   {
+    "url": "Google Gemini",
+    "facts": [
+     {
+      "v": "DriveOz: 0 of 21 answers",
+      "x": true
+     },
+     {
+      "v": "Named in 0 questions",
+      "x": true
+     }
+    ]
+   },
+   {
+    "url": "Perplexity",
+    "facts": [
+     {
+      "v": "DriveOz: 2 of 21 answers",
+      "x": false
+     },
+     {
+      "v": "Best: Fair price 2/3",
+      "x": false
+     }
+    ]
+   },
+   {
+    "url": "Claude",
+    "facts": [
+     {
+      "v": "DriveOz: 2 of 21 answers",
+      "x": false
+     },
+     {
+      "v": "Best: Fair price 2/3",
+      "x": false
+     }
+    ]
+   }
+  ],
+  "think": "When AI never sees a consistent, citable page about you, it recommends whoever it can find instead.",
+  "label_kinds": [
+   "web",
+   "web",
+   "web",
+   "web"
+  ],
+  "labels_red": true,
+  "shows_red": true
+ },
+ "pi": {
+  "h1": "Every one of these is a driver ready to lease.",
+  "lead": "The 7 leasing questions we asked on Oct 4, 2026, and how often DriveOz showed up across 4 AI tools.",
+  "questions": [
+   {
+    "q": "Lease a car in Fort Lauderdale. Which\u2026",
+    "s": "WEAK"
+   },
+   {
+    "q": "Best auto leasing companies in Broward\u2026",
+    "s": "WEAK"
+   },
+   {
+    "q": "I live in Palm Beach County and want to\u2026",
+    "s": "WEAK"
+   },
+   {
+    "q": "Auto lease brokers in Miami are worth\u2026",
+    "s": "MIXED"
+   },
+   {
+    "q": "Can I lease a car completely online in\u2026",
+    "s": "WEAK"
+   },
+   {
+    "q": "My car lease is ending soon in Florida.\u2026",
+    "s": "WEAK"
+   },
+   {
+    "q": "What's the best way to lease a luxury car\u2026",
+    "s": "WEAK"
+   }
+  ],
+  "strengths_title": "What you can build on",
+  "strengths": [
+   "Fair price: named in 4 of 12 answers",
+   "Who should I call?: named in 1 of 12 answers",
+   "Your website was cited in 3 answers"
+  ],
+  "watch_title": "What to watch",
+  "watch": [
+   "Signature Auto Group\u2026 came up in 24 of 83 answers",
+   "6 of 7 questions where AI rarely or never names you"
+  ]
+ },
+ "p3": {
+  "h1": "Why GemSi, and",
+  "h1_red": "why start now.",
+  "steps": [
+   {
+    "title": "We fix your story",
+    "line": "One clear, consistent version of your business everywhere AI looks."
+   },
+   {
+    "title": "We publish answers",
+    "line": "Pages that answer the leasing questions buyers actually ask."
+   },
+   {
+    "title": "We re-test monthly",
+    "line": "Same 7 questions, same 4 tools, so you see the change."
+   }
+  ],
+  "monitor_line": "Each month you get a short before-and-after.",
+  "gets": [
+   "Listings fixed and kept consistent",
+   "Pages AI can read and cite, written for you",
+   "Competitor watch across 4 AI tools",
+   "Monthly re-test with a dated before/after"
+  ],
+  "you_do": "All you do: give us access once, online, in about 10 minutes. We handle the rest.",
+  "snapshot_did": [
+   "4 AI tools tested",
+   "7 buyer questions",
+   "3 runs each",
+   "83 answers read"
+  ],
+  "fix_title": "What we would fix first",
+  "why": [
+   {
+    "title": "Real AI answers",
+    "line": "Built on what AI actually says about you, tested and dated."
+   },
+   {
+    "title": "Done for you",
+    "line": "No calls, no homework. One 10-minute access step."
+   },
+   {
+    "title": "Measured monthly",
+    "line": "Same questions, same tools, so progress is visible."
+   }
+  ],
+  "cta_red": true,
+  "cta_bar": "Scan the code or go to gemsi.app. Save $500 if you start by Oct 31.",
+  "why_red": true
+ },
+ "images": {},
+ "provenance": {
+  "scan": "e1308e17",
+  "rule": "L-2026-10-04",
+  "evidence_schema": "gemsi.evidence.v1",
+  "report_schema": "gemsi.report.v1"
+ }
+}

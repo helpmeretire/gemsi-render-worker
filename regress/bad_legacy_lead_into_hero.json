@@ -1,0 +1,238 @@
+{
+ "client_name": "DriveOz",
+ "report_month": "October 2026",
+ "p1": {
+  "h1": "What AI already understands and",
+  "h1_accent": "where DriveOz disappears.",
+  "art": "car",
+  "lead": "On Oct 1, 2026 we asked ChatGPT, with live web search, about seven things South Florida car buyers look for.",
+  "example": {
+   "label": "AI answer, Oct 1",
+   "question": "Car-buying concierge in Fort Lauderdale",
+   "named_label": "Names that came up:",
+   "came_up": [
+    "Deal Drvn",
+    "CARMANCHRIS",
+    "CarMe"
+   ]
+  },
+  "total_hit": 2,
+  "total_all": 7,
+  "total_label": "topics where DriveOz was a strong answer",
+  "qrows": [
+   {
+    "q": "AI car-buying service",
+    "s": "STRONG"
+   },
+   {
+    "q": "Buy online + home delivery",
+    "s": "STRONG"
+   },
+   {
+    "q": "Car-buying concierge, Fort Lauderdale",
+    "s": "WEAK"
+   },
+   {
+    "q": "Car-buying concierge, Palm Beach",
+    "s": "WEAK"
+   },
+   {
+    "q": "Car-buying concierge, Miami",
+    "s": "WEAK"
+   },
+   {
+    "q": "Luxury / hard-to-find cars",
+    "s": "WEAK"
+   },
+   {
+    "q": "Sell car / exit lease",
+    "s": "MIXED"
+   }
+  ],
+  "instead_title": "Named instead of DriveOz",
+  "instead": [
+   "Deal Drvn",
+   "CARMANCHRIS",
+   "CarMe",
+   "CarFetch Auto",
+   "CarWhere",
+   "DriveWize"
+  ],
+  "note": "One controlled test on Oct 1, 2026: ChatGPT with live web search, plus public sources. Other AI tools have not been tested for DriveOz yet.",
+  "h1_sub": "Don't let AI recommend your competitors instead."
+ },
+ "p2": {
+  "eyebrow": "WHY AI GETS CONFUSED",
+  "h1": "The web still tells different stories about DriveOz.",
+  "lead": "AI reads these sources. Some are current, one is from 2021, and they don't agree on what DriveOz is.",
+  "labels": [
+   {
+    "src": "driveoz.com",
+    "v": "An AI car-buying platform"
+   },
+   {
+    "src": "Florida Sunbiz",
+    "v": "Drive Oz Motors, Inc."
+   },
+   {
+    "src": "BBB",
+    "v": "Car dealer category; Pompano Beach + Tamarac locations"
+   },
+   {
+    "src": "Historical web presence (2021)",
+    "v": "Promoted Turo / peer-to-peer rental management"
+   }
+  ],
+  "total_line": "Mixed signals like these make AI hedge, or describe the wrong business.",
+  "why_title": "What each source shows",
+  "sources": [
+   {
+    "url": "driveoz.com",
+    "facts": [
+     {
+      "v": "Liam AI assistant",
+      "x": false
+     },
+     {
+      "v": "100% online + delivery",
+      "x": false
+     }
+    ]
+   },
+   {
+    "url": "sunbiz.org",
+    "facts": [
+     {
+      "v": "Drive Oz Motors, Inc.",
+      "x": true
+     },
+     {
+      "v": "Pompano Beach",
+      "x": false
+     }
+    ]
+   },
+   {
+    "url": "bbb.org",
+    "facts": [
+     {
+      "v": "Listed under Car Dealers",
+      "x": true
+     },
+     {
+      "v": "Pompano Beach + Tamarac",
+      "x": true
+     }
+    ]
+   },
+   {
+    "url": "2021 web pages",
+    "facts": [
+     {
+      "v": "Turo rental management (2021)",
+      "x": true
+     }
+    ]
+   }
+  ],
+  "think": "DriveOz has a story no local broker can match. AI just needs one clear version of it."
+ },
+ "pi": {
+  "h1": "Every one of these is a buyer ready to act.",
+  "lead": "The 7 buyer topics we tested on Oct 1, 2026, and how DriveOz showed up in ChatGPT with live web search.",
+  "questions": [
+   {
+    "q": "AI-powered car-buying service",
+    "s": "STRONG"
+   },
+   {
+    "q": "Buy a car online with home delivery",
+    "s": "STRONG"
+   },
+   {
+    "q": "Car-buying concierge in Fort Lauderdale",
+    "s": "WEAK"
+   },
+   {
+    "q": "Car-buying concierge in Palm Beach",
+    "s": "WEAK"
+   },
+   {
+    "q": "Car-buying concierge in Miami",
+    "s": "WEAK"
+   },
+   {
+    "q": "Luxury or hard-to-find car sourcing",
+    "s": "WEAK"
+   },
+   {
+    "q": "Sell my car or exit my lease",
+    "s": "MIXED"
+   }
+  ],
+  "strengths_title": "What you can build on",
+  "strengths": [
+   "Liam AI: a clear, unique car-buying story",
+   "100% online buying with nationwide delivery",
+   "EDGE by Oz: a $995 sourcing and negotiation service"
+  ],
+  "watch_title": "What to watch",
+  "watch": [
+   "Local brokers own concierge searches in Broward, Palm Beach and Miami-Dade",
+   "BBB lists a car dealer category, and 2021 pages describe Turo rental management"
+  ]
+ },
+ "p3": {
+  "h1": "Why GemSi, and why start now.",
+  "steps": [
+   {
+    "title": "We fix the facts",
+    "line": "We write one clear “What DriveOz is” page and correct your listings."
+   },
+   {
+    "title": "We write and post",
+    "line": "We build Fort Lauderdale, Palm Beach and Miami pages for EDGE by Oz and post them."
+   },
+   {
+    "title": "We recheck",
+    "line": "Every month we ask the AIs again and show you what changed."
+   }
+  ],
+  "monitor_line": "Each month you get a short before-and-after.",
+  "gets": [
+   "Listings fixed and kept up to date",
+   "New pages and FAQs written and posted for you",
+   "Added to the directories AI reads",
+   "A one-page monthly report: before and after"
+  ],
+  "you_do": "All you do: give us access once, online, in about 10 minutes. We handle the rest.",
+  "snapshot_did": [
+   "ChatGPT + live web tested",
+   "7 buyer topics checked",
+   "4 records compared",
+   "12 competitors found"
+  ],
+  "fix_title": "What we would fix",
+  "why": [
+   {
+    "title": "Real AI answers",
+    "line": "Built on what AI actually says about you, tested and dated."
+   },
+   {
+    "title": "Done for you",
+    "line": "We write, post and fix. You keep running your business."
+   },
+   {
+    "title": "Local, no contract",
+    "line": "South Florida based. Month-to-month."
+   }
+  ]
+ },
+ "images": {
+  "p1_hero": null,
+  "p2_sources": null,
+  "p2_shows": null,
+  "p4_hero": null,
+  "p4_band": null
+ }
+}

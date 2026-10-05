@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+tests/
+regress/
+samples/
+run_tests.sh
+README.md
+.dockerignore

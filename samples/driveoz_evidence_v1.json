@@ -1,0 +1,872 @@
+{
+ "schema": "gemsi.evidence.v1",
+ "rule_version": "L-2026-10-04",
+ "scan_run_id": "e1308e17",
+ "business": "DriveOz",
+ "aliases": [
+  "Drive Oz",
+  "Drive Oz Motors",
+  "driveoz.com",
+  "EDGE by Oz"
+ ],
+ "k": 3,
+ "engines": [
+  "anthropic",
+  "gemini",
+  "openai",
+  "perplexity"
+ ],
+ "denominator": {
+  "ok_answers": 83,
+  "planned": 84,
+  "exhausted": 1,
+  "by_engine": {
+   "anthropic": 21,
+   "gemini": 21,
+   "openai": 20,
+   "perplexity": 21
+  }
+ },
+ "intents": [
+  {
+   "n": 1,
+   "question_text": "I want to lease a car in Fort Lauderdale. Which companies or brokers should I contact for the best lease deal?",
+   "label": "WEAK",
+   "mentions": 1,
+   "of": 12,
+   "engines_represented": 1,
+   "engines_consistent_2of3": 0,
+   "missing_observations": 0,
+   "gap_robust": false,
+   "cells": {
+    "anthropic": {
+     "mentions": 0,
+     "of": 3,
+     "ranks": [],
+     "models": [
+      "claude-sonnet-5-5"
+     ],
+     "captured": [
+      "2026-10-04 06:43:20.75938+00",
+      "2026-10-04 16:55:51.82323+00",
+      "2026-10-04 17:08:13.128501+00"
+     ],
+     "citations": [
+      7,
+      6,
+      5
+     ],
+     "errors_timeouts": 0,
+     "missing": 0
+    },
+    "gemini": {
+     "mentions": 0,
+     "of": 3,
+     "ranks": [],
+     "models": [
+      "gemini-3.8-flash"
+     ],
+     "captured": [
+      "2026-10-04 06:43:31.962613+00",
+      "2026-10-04 16:55:51.577397+00",
+      "2026-10-04 17:08:10.473223+00"
+     ],
+     "citations": [
+      1,
+      1,
+      1
+     ],
+     "errors_timeouts": 0,
+     "missing": 0
+    },
+    "openai": {
+     "mentions": 1,
+     "of": 3,
+     "ranks": [
+      8
+     ],
+     "models": [
+      "gpt-5"
+     ],
+     "captured": [
+      "2026-10-04 06:43:57.753277+00",
+      "2026-10-04 17:25:32.80507+00",
+      "2026-10-04 17:10:45.305228+00"
+     ],
+     "citations": [
+      13,
+      16,
+      14
+     ],
+     "errors_timeouts": 0,
+     "missing": 0
+    },
+    "perplexity": {
+     "mentions": 0,
+     "of": 3,
+     "ranks": [],
+     "models": [
+      "sonar"
+     ],
+     "captured": [
+      "2026-10-04 06:43:12.210949+00",
+      "2026-10-04 16:55:42.386623+00",
+      "2026-10-04 16:55:46.995812+00"
+     ],
+     "citations": [
+      7,
+      7,
+      7
+     ],
+     "errors_timeouts": 0,
+     "missing": 0
+    }
+   },
+   "observation_ref": "intent.1",
+   "call_refs": []
+  },
+  {
+   "n": 2,
+   "question_text": "Who are the best auto leasing companies in Broward County, Florida?",
+   "label": "WEAK",
+   "mentions": 1,
+   "of": 12,
+   "engines_represented": 1,
+   "engines_consistent_2of3": 0,
+   "missing_observations": 0,
+   "gap_robust": false,
+   "cells": {
+    "anthropic": {
+     "mentions": 0,
+     "of": 3,
+     "ranks": [],
+     "models": [
+      "claude-sonnet-5-5"
+     ],
+     "captured": [
+      "2026-10-04 06:44:44.447348+00",
+      "2026-10-04 16:58:10.254067+00",
+      "2026-10-04 16:58:20.860563+00"
+     ],
+     "citations": [
+      3,
+      3,
+      4
+     ],
+     "errors_timeouts": 0,
+     "missing": 0
+    },
+    "gemini": {
+     "mentions": 0,
+     "of": 3,
+     "ranks": [],
+     "models": [
+      "gemini-3.8-flash"
+     ],
+     "captured": [
+      "2026-10-04 06:44:31.02388+00",
+      "2026-10-04 16:58:10.804314+00",
+      "2026-10-04 16:58:21.91483+00"
+     ],
+     "citations": [
+      1,
+      1,
+      1
+     ],
+     "errors_timeouts": 0,
+     "missing": 0
+    },
+    "openai": {
+     "mentions": 1,
+     "of": 3,
+     "ranks": [
+      1
+     ],
+     "models": [
+      "gpt-5"
+     ],
+     "captured": [
+      "2026-10-04 06:46:15.421701+00",
+      "2026-10-04 17:11:53.572776+00",
+      "2026-10-04 17:07:53.509693+00"
+     ],
+     "citations": [
+      8,
+      6,
+      7
+     ],
+     "errors_timeouts": 0,
+     "missing": 0
+    },
+    "perplexity": {
+     "mentions": 0,
+     "of": 3,
+     "ranks": [],
+     "models": [
+      "sonar"
+     ],
+     "captured": [
+      "2026-10-04 06:44:05.676676+00",
+      "2026-10-04 16:55:50.991988+00",
+      "2026-10-04 16:55:55.073632+00"
+     ],
+     "citations": [
+      10,
+      10,
+      10
+     ],
+     "errors_timeouts": 0,
+     "missing": 0
+    }
+   },
+   "observation_ref": "intent.2",
+   "call_refs": []
+  },
+  {
+   "n": 3,
+   "question_text": "I live in Palm Beach County and want to lease a new car without spending all day at a dealership. Who can help me?",
+   "label": "WEAK",
+   "mentions": 0,
+   "of": 12,
+   "engines_represented": 0,
+   "engines_consistent_2of3": 0,
+   "missing_observations": 0,
+   "gap_robust": false,
+   "cells": {
+    "anthropic": {
+     "mentions": 0,
+     "of": 3,
+     "ranks": [],
+     "models": [
+      "claude-sonnet-5-5"
+     ],
+     "captured": [
+      "2026-10-04 06:47:46.913987+00",
+      "2026-10-04 16:58:35.584581+00",
+      "2026-10-04 17:07:28.957238+00"
+     ],
+     "citations": [
+      9,
+      7,
+      7
+     ],
+     "errors_timeouts": 0,
+     "missing": 0
+    },
+    "gemini": {
+     "mentions": 0,
+     "of": 3,
+     "ranks": [],
+     "models": [
+      "gemini-3.8-flash"
+     ],
+     "captured": [
+      "2026-10-04 06:46:30.78249+00",
+      "2026-10-04 17:08:24.982895+00",
+      "2026-10-04 17:07:24.380423+00"
+     ],
+     "citations": [
+      1,
+      1,
+      1
+     ],
+     "errors_timeouts": 0,
+     "missing": 0
+    },
+    "openai": {
+     "mentions": 0,
+     "of": 3,
+     "ranks": [],
+     "models": [
+      "gpt-5"
+     ],
+     "captured": [
+      "2026-10-04 06:47:11.987356+00",
+      "2026-10-04 17:12:42.350689+00",
+      "2026-10-04 17:13:46.634549+00"
+     ],
+     "citations": [
+      8,
+      11,
+      10
+     ],
+     "errors_timeouts": 0,
+     "missing": 0
+    },
+    "perplexity": {
+     "mentions": 0,
+     "of": 3,
+     "ranks": [],
+     "models": [
+      "sonar"
+     ],
+     "captured": [
+      "2026-10-04 06:46:21.635358+00",
+      "2026-10-04 16:58:02.050676+00",
+      "2026-10-04 16:58:05.653616+00"
+     ],
+     "citations": [
+      8,
+      8,
+      8
+     ],
+     "errors_timeouts": 0,
+     "missing": 0
+    }
+   },
+   "observation_ref": "intent.3",
+   "call_refs": []
+  },
+  {
+   "n": 4,
+   "question_text": "Which auto lease brokers in Miami are worth using?",
+   "label": "MIXED",
+   "mentions": 4,
+   "of": 12,
+   "engines_represented": 2,
+   "engines_consistent_2of3": 2,
+   "missing_observations": 0,
+   "gap_robust": false,
+   "cells": {
+    "anthropic": {
+     "mentions": 2,
+     "of": 3,
+     "ranks": [
+      9,
+      null
+     ],
+     "models": [
+      "claude-sonnet-5-5"
+     ],
+     "captured": [
+      "2026-10-04 06:48:04.188314+00",
+      "2026-10-04 17:07:41.69045+00",
+      "2026-10-04 17:07:53.238792+00"
+     ],
+     "citations": [
+      1,
+      3,
+      1
+     ],
+     "errors_timeouts": 0,
+     "missing": 0
+    },
+    "gemini": {
+     "mentions": 0,
+     "of": 3,
+     "ranks": [],
+     "models": [
+      "gemini-3.8-flash"
+     ],
+     "captured": [
+      "2026-10-04 06:48:19.251654+00",
+      "2026-10-04 17:07:42.170008+00",
+      "2026-10-04 17:07:54.390887+00"
+     ],
+     "citations": [
+      1,
+      1,
+      1
+     ],
+     "errors_timeouts": 0,
+     "missing": 0
+    },
+    "openai": {
+     "mentions": 0,
+     "of": 3,
+     "ranks": [],
+     "models": [
+      "gpt-5"
+     ],
+     "captured": [
+      "2026-10-04 06:48:56.48639+00",
+      "2026-10-04 17:14:59.67157+00",
+      "2026-10-04 17:15:41.665086+00"
+     ],
+     "citations": [
+      6,
+      7,
+      8
+     ],
+     "errors_timeouts": 0,
+     "missing": 0
+    },
+    "perplexity": {
+     "mentions": 2,
+     "of": 3,
+     "ranks": [
+      5,
+      5
+     ],
+     "models": [
+      "sonar"
+     ],
+     "captured": [
+      "2026-10-04 06:47:56.390416+00",
+      "2026-10-04 16:58:09.921458+00",
+      "2026-10-04 16:58:14.615895+00"
+     ],
+     "citations": [
+      8,
+      8,
+      8
+     ],
+     "errors_timeouts": 0,
+     "missing": 0
+    }
+   },
+   "observation_ref": "intent.4",
+   "call_refs": []
+  },
+  {
+   "n": 5,
+   "question_text": "Can I lease a car completely online in South Florida and have it delivered to my home? Which companies do that?",
+   "label": "WEAK",
+   "mentions": 0,
+   "of": 12,
+   "engines_represented": 0,
+   "engines_consistent_2of3": 0,
+   "missing_observations": 0,
+   "gap_robust": false,
+   "cells": {
+    "anthropic": {
+     "mentions": 0,
+     "of": 3,
+     "ranks": [],
+     "models": [
+      "claude-sonnet-5-5"
+     ],
+     "captured": [
+      "2026-10-04 06:49:14.5416+00",
+      "2026-10-04 17:24:42.728036+00",
+      "2026-10-04 17:08:27.333789+00"
+     ],
+     "citations": [
+      7,
+      10,
+      6
+     ],
+     "errors_timeouts": 0,
+     "missing": 0
+    },
+    "gemini": {
+     "mentions": 0,
+     "of": 3,
+     "ranks": [],
+     "models": [
+      "gemini-3.8-flash"
+     ],
+     "captured": [
+      "2026-10-04 06:49:19.917904+00",
+      "2026-10-04 17:24:44.168799+00",
+      "2026-10-04 17:08:39.022345+00"
+     ],
+     "citations": [
+      1,
+      1,
+      1
+     ],
+     "errors_timeouts": 0,
+     "missing": 0
+    },
+    "openai": {
+     "mentions": 0,
+     "of": 3,
+     "ranks": [],
+     "models": [
+      "gpt-5"
+     ],
+     "captured": [
+      "2026-10-04 18:14:29.940254+00",
+      "2026-10-04 17:18:24.159248+00",
+      "2026-10-04 17:19:55.6821+00"
+     ],
+     "citations": [
+      14,
+      13,
+      14
+     ],
+     "errors_timeouts": 0,
+     "missing": 0
+    },
+    "perplexity": {
+     "mentions": 0,
+     "of": 3,
+     "ranks": [],
+     "models": [
+      "sonar"
+     ],
+     "captured": [
+      "2026-10-04 06:49:03.943523+00",
+      "2026-10-04 16:58:18.926585+00",
+      "2026-10-04 16:58:23.210862+00"
+     ],
+     "citations": [
+      9,
+      9,
+      9
+     ],
+     "errors_timeouts": 0,
+     "missing": 0
+    }
+   },
+   "observation_ref": "intent.5",
+   "call_refs": []
+  },
+  {
+   "n": 6,
+   "question_text": "My car lease is ending soon in Florida. Who can help me get out of my lease or into a new one?",
+   "label": "WEAK",
+   "mentions": 0,
+   "of": 12,
+   "engines_represented": 0,
+   "engines_consistent_2of3": 0,
+   "missing_observations": 0,
+   "gap_robust": false,
+   "cells": {
+    "anthropic": {
+     "mentions": 0,
+     "of": 3,
+     "ranks": [],
+     "models": [
+      "claude-sonnet-5-5"
+     ],
+     "captured": [
+      "2026-10-04 06:50:45.119087+00",
+      "2026-10-04 17:08:40.564289+00",
+      "2026-10-04 17:08:53.816483+00"
+     ],
+     "citations": [
+      5,
+      6,
+      4
+     ],
+     "errors_timeouts": 0,
+     "missing": 0
+    },
+    "gemini": {
+     "mentions": 0,
+     "of": 3,
+     "ranks": [],
+     "models": [
+      "gemini-3.8-flash"
+     ],
+     "captured": [
+      "2026-10-04 06:50:45.190527+00",
+      "2026-10-04 17:08:49.605681+00",
+      "2026-10-04 17:09:01.044829+00"
+     ],
+     "citations": [
+      0,
+      0,
+      0
+     ],
+     "errors_timeouts": 0,
+     "missing": 0
+    },
+    "openai": {
+     "mentions": 0,
+     "of": 3,
+     "ranks": [],
+     "models": [
+      "gpt-5"
+     ],
+     "captured": [
+      "2026-10-04 06:54:00.057561+00",
+      "2026-10-04 17:20:16.21603+00",
+      "2026-10-04 17:20:35.758076+00"
+     ],
+     "citations": [
+      0,
+      0,
+      0
+     ],
+     "errors_timeouts": 0,
+     "missing": 0
+    },
+    "perplexity": {
+     "mentions": 0,
+     "of": 3,
+     "ranks": [],
+     "models": [
+      "sonar"
+     ],
+     "captured": [
+      "2026-10-04 06:50:35.861269+00",
+      "2026-10-04 16:58:27.346577+00",
+      "2026-10-04 16:58:31.930529+00"
+     ],
+     "citations": [
+      9,
+      9,
+      9
+     ],
+     "errors_timeouts": 0,
+     "missing": 0
+    }
+   },
+   "observation_ref": "intent.6",
+   "call_refs": []
+  },
+  {
+   "n": 7,
+   "question_text": "What's the best way to lease a luxury car in South Florida, and which leasing companies should I talk to?",
+   "label": "WEAK",
+   "mentions": 0,
+   "of": 12,
+   "engines_represented": 0,
+   "engines_consistent_2of3": 0,
+   "missing_observations": 1,
+   "gap_robust": true,
+   "cells": {
+    "anthropic": {
+     "mentions": 0,
+     "of": 3,
+     "ranks": [],
+     "models": [
+      "claude-sonnet-5-5"
+     ],
+     "captured": [
+      "2026-10-04 06:52:27.523715+00",
+      "2026-10-04 17:09:12.267969+00",
+      "2026-10-04 17:09:27.440069+00"
+     ],
+     "citations": [
+      7,
+      11,
+      5
+     ],
+     "errors_timeouts": 0,
+     "missing": 0
+    },
+    "gemini": {
+     "mentions": 0,
+     "of": 3,
+     "ranks": [],
+     "models": [
+      "gemini-3.8-flash"
+     ],
+     "captured": [
+      "2026-10-04 06:52:29.593073+00",
+      "2026-10-04 17:09:19.564814+00",
+      "2026-10-04 17:09:33.784896+00"
+     ],
+     "citations": [
+      0,
+      1,
+      0
+     ],
+     "errors_timeouts": 0,
+     "missing": 0
+    },
+    "openai": {
+     "mentions": 0,
+     "of": 3,
+     "ranks": [],
+     "models": [
+      "gpt-5"
+     ],
+     "captured": [
+      "2026-10-04 17:21:44.667441+00",
+      "2026-10-04 17:24:35.204302+00"
+     ],
+     "citations": [
+      15,
+      12
+     ],
+     "errors_timeouts": 0,
+     "missing": 1
+    },
+    "perplexity": {
+     "mentions": 0,
+     "of": 3,
+     "ranks": [],
+     "models": [
+      "sonar"
+     ],
+     "captured": [
+      "2026-10-04 06:52:23.49457+00",
+      "2026-10-04 17:07:21.621204+00",
+      "2026-10-04 17:07:27.402276+00"
+     ],
+     "citations": [
+      8,
+      8,
+      8
+     ],
+     "errors_timeouts": 0,
+     "missing": 0
+    }
+   },
+   "observation_ref": "intent.7",
+   "call_refs": []
+  }
+ ],
+ "engines_summary": [
+  {
+   "engine": "anthropic",
+   "display": "Claude",
+   "ok_answers": 21,
+   "mentions": 2
+  },
+  {
+   "engine": "gemini",
+   "display": "Gemini (Google)",
+   "ok_answers": 21,
+   "mentions": 0
+  },
+  {
+   "engine": "openai",
+   "display": "ChatGPT",
+   "ok_answers": 20,
+   "mentions": 2
+  },
+  {
+   "engine": "perplexity",
+   "display": "Perplexity",
+   "ok_answers": 21,
+   "mentions": 2
+  }
+ ],
+ "scoreboard": {
+  "of": 83,
+  "rows": [
+   {
+    "name": "Signature Auto Group Florida",
+    "n": 24,
+    "engines": [
+     "anthropic",
+     "gemini",
+     "openai",
+     "perplexity"
+    ],
+    "observation_ref": "entity.signature auto group florida"
+   },
+   {
+    "name": "Evolution Leasing",
+    "n": 16,
+    "engines": [
+     "anthropic",
+     "openai",
+     "perplexity"
+    ],
+    "observation_ref": "entity.evolution leasing"
+   },
+   {
+    "name": "Lease A Car Direct",
+    "n": 13,
+    "engines": [
+     "anthropic",
+     "perplexity"
+    ],
+    "observation_ref": "entity.lease a car direct"
+   },
+   {
+    "name": "ZAK Auto Leasing",
+    "n": 13,
+    "engines": [
+     "anthropic",
+     "openai",
+     "perplexity"
+    ],
+    "observation_ref": "entity.zak auto leasing"
+   },
+   {
+    "name": "Express Auto Lease",
+    "n": 12,
+    "engines": [
+     "anthropic",
+     "gemini",
+     "openai"
+    ],
+    "observation_ref": "entity.express auto lease"
+   }
+  ],
+  "client": {
+   "name": "DriveOz",
+   "n": 6
+  }
+ },
+ "citations": {
+  "by_domain": [
+   {
+    "domain": "signatureautofl.com",
+    "answers": 27
+   },
+   {
+    "domain": "vertexaisearch.cloud.google.com",
+    "answers": 16
+   },
+   {
+    "domain": "zakautoleasing.com",
+    "answers": 15
+   },
+   {
+    "domain": "leaseacardirect.com",
+    "answers": 13
+   },
+   {
+    "domain": "yelp.com",
+    "answers": 11
+   },
+   {
+    "domain": "primemotorsleasing.com",
+    "answers": 10
+   },
+   {
+    "domain": "reddit.com",
+    "answers": 9
+   },
+   {
+    "domain": "tampaleasebroker.com",
+    "answers": 9
+   },
+   {
+    "domain": "bbb.org",
+    "answers": 8
+   },
+   {
+    "domain": "driveeasyfl.com",
+    "answers": 8
+   },
+   {
+    "domain": "swapalease.com",
+    "answers": 7
+   },
+   {
+    "domain": "ozleasing.com",
+    "answers": 7
+   },
+   {
+    "domain": "carleasediscounts.com",
+    "answers": 7
+   },
+   {
+    "domain": "yellowpages.com",
+    "answers": 7
+   },
+   {
+    "domain": "vipleaseftlauderdale.com",
+    "answers": 7
+   }
+  ],
+  "first_party_domains": [
+   {
+    "domain": "driveoz.com",
+    "answers": 3
+   }
+  ],
+  "first_party_answers": 3
+ },
+ "labels_summary": {
+  "WEAK": 6,
+  "MIXED": 1
+ },
+ "directories": [],
+ "platforms": [],
+ "regulators": [],
+ "unknown_count": 0,
+ "gaps": [],
+ "gaps_note": "1 of 84 planned observations missing; labels marked INDETERMINATE where a gap could change them",
+ "suggestions": []
+}

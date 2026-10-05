@@ -1,0 +1,311 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<title>GemSi Snapshot — {{ client_name }}</title>
+<style>
+/* GemSi Snapshot MASTER v1.0 — deterministic reproduction of the owner-approved 4-page concept (Oct 4, 2026).
+   Page = 8in x 11in portrait. Fixed geometry; only data and image-zone contents vary per customer. */
+@page { size: 8in 11in; margin: 0; }
+:root{
+  --navy:#082B57; --navy2:#0E3A70; --ink:#17324D; --slate:#60748A; --orange:#FF7A00; --gold:#C98A2B; --gold2:#B07320;
+  --blue:#1476E8; --green:#15965B; --red:#D93C3C; --hsub:#D6E6FB; --border:#D8E3EF; --mist:#F4F7FB;
+  --t-blue:#EAF4FF; --t-orange:#FFF4E8; --b-orange:#FFD5AD; --t-green:#EEF8F2; --b-green:#BFE6D2;
+  --mx:28pt; --shadow:0 3pt 10pt rgba(8,43,87,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#fff}
+body{font-family:"DejaVu Sans",sans-serif;color:var(--ink);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.page{width:576pt;height:792pt;position:relative;overflow:hidden;page-break-after:always;break-after:page;background:#fff}
+.page:last-child{page-break-after:auto;break-after:auto}
+.hdr{position:absolute;top:0;left:0;right:0;height:70pt;background:var(--navy);display:flex;justify-content:space-between;align-items:center;padding:0 var(--mx);z-index:3}
+.logo{font-weight:700;font-size:22pt;color:#fff;line-height:1}
+.tag{font-size:9pt;color:var(--hsub);letter-spacing:1.4pt;margin-top:3pt}
+.client{text-align:right}
+.client .nm{font-weight:700;font-size:13pt;color:#fff;letter-spacing:.4pt}
+.client .dt{font-size:9.5pt;color:var(--hsub);margin-top:2pt}
+.body{position:absolute;top:70pt;left:var(--mx);right:var(--mx);bottom:30pt;padding-top:6pt}
+.ftr{position:absolute;left:var(--mx);right:var(--mx);bottom:10pt;padding-top:5pt;display:flex;justify-content:space-between;font-size:9pt;color:var(--slate);border-top:1pt solid var(--border)}
+.eyebrow{font-size:10pt;font-weight:700;letter-spacing:1.2pt;color:var(--gold2)}
+h1{font-size:24pt;font-weight:700;color:var(--navy);line-height:1.12;margin-top:5pt}
+h1 .accent{color:var(--gold)}
+.sub{font-size:13pt;font-weight:700;color:var(--navy);margin-top:9pt;line-height:1.25}
+.lead{font-size:11pt;line-height:1.4;color:var(--ink);margin-top:7pt}
+h2{font-size:13pt;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:7pt}
+h2 .bar{width:3.5pt;height:14pt;background:var(--navy);flex:0 0 auto}
+.card{background:#fff;border:1pt solid var(--border);border-radius:9pt;box-shadow:var(--shadow)}
+.chip{font-size:9pt;font-weight:700;border-radius:8pt;padding:1.5pt 7pt;white-space:nowrap;color:#fff;letter-spacing:.3pt}
+.chip.unclear{background:#9AA8B8} .chip.strong{background:var(--green)} .chip.weak{background:var(--red)} .chip.mixed{background:var(--slate)}
+.num{width:15pt;height:15pt;border-radius:50%;background:var(--navy);color:#fff;font-size:9pt;font-weight:700;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.zone{position:relative;overflow:hidden;border-radius:6pt;background:var(--mist)}
+.zone svg{display:block;width:100%;height:100%}
+
+/* ---------- P1 HOOK ---------- */
+.p1hero{position:absolute;top:70pt;right:0;width:300pt;height:282pt;z-index:0}
+.p1hero:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#fff 0%,rgba(255,255,255,.75) 18%,rgba(255,255,255,0) 45%),linear-gradient(0deg,#fff 0%,rgba(255,255,255,0) 22%)}
+.p1text{position:relative;z-index:1;width:262pt}
+.p1text h1{font-size:25pt}
+.p1row{position:absolute;top:272pt;left:0;right:0;display:grid;grid-template-columns:166pt 1fr;gap:12pt;z-index:2}
+.stat{background:var(--mist);border:1pt solid var(--border);border-radius:10pt;padding:16pt 16pt;display:flex;flex-direction:column;justify-content:center}
+.stat .big{white-space:nowrap;font-size:44pt;font-weight:700;color:var(--navy);line-height:1}
+.stat .big span{color:var(--gold);font-size:34pt}
+.stat .cap{font-size:11pt;color:var(--ink);margin-top:8pt;line-height:1.35}
+.topics{padding:9pt 12pt}
+.trow{display:flex;align-items:center;gap:8pt;padding:5.2pt 0;border-bottom:1pt solid var(--mist);font-size:10.5pt;color:var(--ink)}
+.trow:last-child{border-bottom:none}
+.trow .tx{flex:1}
+.named{position:absolute;top:500pt;left:0;right:0}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:7pt;margin-top:8pt}
+.tile{display:flex;align-items:center;gap:8pt;padding:9pt 10pt;border:1pt solid var(--border);border-radius:7pt;background:#fff}
+.av{width:20pt;height:20pt;border-radius:5pt;color:#fff;font-weight:700;font-size:9.5pt;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.tile .n{font-size:10.5pt;font-weight:700;color:var(--navy)}
+.sb{margin-top:7pt;border:1pt solid var(--border);border-radius:8pt;background:#fff;padding:6pt 10pt}
+.sbr{display:flex;align-items:center;gap:8pt;padding:2pt 0}
+.sbr .nm{width:150pt;font-size:10pt;font-weight:700;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sbr .tr{flex:1;height:10pt;background:var(--mist);border-radius:5pt;overflow:hidden}
+.sbr .fl{height:100%;background:var(--blue);border-radius:5pt}
+.sbr .ct{width:104pt;white-space:nowrap;text-align:right;font-size:10pt;color:var(--ink)}
+.sbr.me .nm{color:var(--red)}.sbr.me .fl{background:var(--red)}.sbr.me .ct{color:var(--red);font-weight:700}
+.sbr.me{border-top:1pt dashed var(--border);margin-top:2pt;padding-top:4pt}
+.sbr.me + .sbr.me{border-top:none;margin-top:0;padding-top:2.6pt}
+.sbcap{font-size:9pt;color:var(--slate);margin-top:3pt}
+.note{position:absolute;left:0;right:0;bottom:4pt;display:flex;gap:7pt;align-items:flex-start;font-size:9pt;color:var(--slate);line-height:1.35}
+.note svg{width:12pt;height:12pt;flex:0 0 auto;margin-top:1pt}
+
+/* ---------- P2 PROOF ---------- */
+.four{display:grid;grid-template-columns:repeat(4,1fr);gap:8pt}
+.src{padding:8pt 8pt 9pt;display:flex;flex-direction:column}
+.src .st{font-size:10.5pt;font-weight:700;color:var(--navy);min-height:24pt;line-height:1.2}
+.src .zone{height:92pt;margin-top:4pt}
+.src .sv{font-size:10.5pt;color:var(--ink);margin-top:7pt;line-height:1.3}
+.show .st{min-height:0}
+.show .facts{font-size:9.5pt;color:var(--ink);line-height:1.35;margin-top:4pt;min-height:26pt}
+.show .facts .x{color:var(--orange);font-weight:700}
+.show .zone{height:84pt;margin-top:6pt}
+.callout{display:flex;gap:11pt;align-items:center;background:var(--t-orange);border:1pt solid var(--b-orange);border-radius:9pt;padding:11pt 14pt}
+.callout svg{width:24pt;height:24pt;flex:0 0 auto}
+.callout .a{font-size:11.5pt;font-weight:700;color:var(--navy);line-height:1.3}
+.callout .b{font-size:10pt;color:var(--ink);margin-top:3pt;line-height:1.35}
+
+/* ---------- P3 DECISION ---------- */
+.three{display:grid;grid-template-columns:1.55fr 1fr 1fr;gap:9pt;margin-top:12pt}
+.qlist{padding:7pt 9pt}
+.qrow{display:flex;align-items:center;gap:7pt;padding:8pt 0;border-bottom:1pt solid var(--mist);font-size:10.5pt;color:var(--ink);line-height:1.25}
+.qrow:last-child{border-bottom:none}
+.qrow .tx{flex:1}
+.panel{border-radius:9pt;padding:10pt 10pt}
+.panel.good{background:var(--t-green);border:1pt solid var(--b-green)}
+.panel.warn{background:var(--t-orange);border:1pt solid var(--b-orange)}
+.panel .ph{display:flex;gap:7pt;align-items:center;font-size:11.5pt;font-weight:700;color:var(--navy);line-height:1.2}
+.panel .ph svg{width:20pt;height:20pt;flex:0 0 auto}
+.panel ul{list-style:none;margin-top:8pt}
+.panel li{font-size:10.5pt;color:var(--ink);line-height:1.35;margin-top:6pt;padding-left:9pt;position:relative}
+.panel li:before{content:"";position:absolute;left:0;top:5pt;width:4pt;height:4pt;border-radius:50%;background:var(--navy)}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14pt;margin-top:12pt;position:relative}
+.steps .rail{position:absolute;left:19%;right:19%;top:26pt;border-top:1.5pt dashed #9FB3C8}
+.step{text-align:center;position:relative}
+.step .ic{width:52pt;height:52pt;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 5pt #fff}
+.step .ic svg{width:22pt;height:22pt}
+.step .k{font-size:9pt;font-weight:700;letter-spacing:1pt;color:var(--slate);margin-top:7pt}
+.step .t{font-size:13.5pt;font-weight:700;color:var(--navy);margin-top:3pt}
+.step .d{font-size:11pt;color:var(--ink);line-height:1.4;margin-top:4pt}
+
+/* ---------- P4 CLOSE ---------- */
+.p4hero{position:absolute;top:70pt;right:0;width:150pt;height:250pt;z-index:0}
+.p4hero:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#fff 0%,rgba(255,255,255,0) 40%)}
+.p4text{position:relative;z-index:1;width:400pt}
+.p4text h1{font-size:21pt;white-space:nowrap}
+.whys{display:grid;grid-template-columns:repeat(3,1fr);gap:8pt;margin-top:14pt}
+.why{text-align:center;padding:0 4pt;border-right:1pt solid var(--border)}
+.why:last-child{border-right:none}
+.why .wi{width:32pt;height:32pt;border-radius:50%;background:var(--navy);margin:0 auto;display:flex;align-items:center;justify-content:center}
+.why .wi svg{width:17pt;height:17pt}
+.why .wt{font-size:11.5pt;font-weight:700;color:var(--navy);margin-top:7pt}
+.why .wd{font-size:9.5pt;color:var(--ink);line-height:1.35;margin-top:3pt}
+.p4mid{position:absolute;top:236pt;left:0;right:0;display:grid;grid-template-columns:1fr 1fr;gap:10pt;height:186pt}
+.month{padding:11pt 13pt}
+.month .mh{font-size:12pt;font-weight:700;color:var(--navy)}
+.month .mi{display:flex;gap:8pt;align-items:center;font-size:10.5pt;color:var(--ink);margin-top:13pt;line-height:1.3}
+.month .mi svg{width:14pt;height:14pt;flex:0 0 auto}
+.youdo{position:relative;border-radius:9pt;overflow:hidden}
+.youdo .zone{position:absolute;inset:0;border-radius:0}
+.youdo .ov{position:absolute;left:0;right:0;bottom:0;padding:12pt 14pt;background:linear-gradient(0deg,rgba(8,43,87,.92) 0%,rgba(8,43,87,.75) 70%,rgba(8,43,87,0) 100%);color:#fff;font-size:11.5pt;font-weight:700;line-height:1.4}
+.ctabar{position:absolute;top:657pt;left:0;right:0;background:var(--red);color:#fff;border-radius:9pt;padding:7pt 14pt;font-size:12pt;white-space:nowrap;font-weight:700;line-height:1.3;text-align:center}
+.offers{position:absolute;top:438pt;left:0;right:0;display:grid;grid-template-columns:1.05fr 1fr 1.05fr;gap:9pt;height:212pt}
+.offer{border-radius:9pt;padding:14pt 13pt}
+.offer .on{font-size:10.5pt;font-weight:700;letter-spacing:.6pt}
+.offer .op{font-size:24pt;font-weight:700;margin-top:5pt;white-space:nowrap}
+.offer .op small{font-size:11pt;font-weight:400}
+.snap{border:1pt solid var(--border);background:#fff}
+.snap .on{color:var(--navy)} .snap .op{color:var(--navy)}
+.was{font-size:15pt;color:var(--slate);font-weight:400;text-decoration:line-through;text-decoration-color:var(--red);text-decoration-thickness:1.5pt;margin-right:5pt}
+.intro{font-size:9.5pt;font-weight:700;color:var(--gold2);margin-top:2pt}
+.did{margin-top:6pt}
+.did div{display:flex;gap:5pt;align-items:center;font-size:10pt;color:var(--ink);margin-top:5pt}
+.did svg{width:10pt;height:10pt;flex:0 0 auto}
+.mon{background:var(--navy);color:#fff}
+.mon .on{color:#9FC5F8} .mon .op{color:#fff} .mon .op small{color:var(--hsub)}
+.mon .setup{font-size:11pt;font-weight:700;color:#fff;margin-top:3pt}
+.mon .od{font-size:10.5pt;color:var(--hsub);line-height:1.4;margin-top:7pt}
+.oct{background:linear-gradient(135deg,#D69A3A 0%,#B07320 100%);color:#fff;display:flex;flex-direction:column;justify-content:space-between}
+.oct .on{color:#FFF1DC} .oct .op{color:#fff;font-size:22pt}
+.oct .od{font-size:9.5pt;color:#FFF1DC;line-height:1.4;margin-top:6pt}
+.oct .qr{background:#fff;border-radius:6pt;padding:5pt;text-align:center;align-self:flex-end;margin-top:6pt}
+.oct .qr img{width:70pt;height:70pt;display:block}
+.oct .qr div{font-size:9pt;font-weight:700;color:var(--navy);margin-top:2pt}
+</style></head><body>
+
+{# ---------- reusable image-zone art (deterministic SVG; replace with customer photos via image fields) ---------- #}
+{% macro scene(kind) -%}
+{% if kind == 'coast_car' %}
+<svg viewBox="0 0 300 282" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="sk1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9CC8F0"/><stop offset=".65" stop-color="#F7D7AE"/><stop offset="1" stop-color="#F3E3CF"/></linearGradient></defs>
+<rect width="300" height="282" fill="url(#sk1)"/><circle cx="210" cy="120" r="26" fill="#FFE7C2"/>
+<g fill="#7E95B3" opacity=".75"><rect x="120" y="92" width="16" height="96"/><rect x="140" y="70" width="18" height="118"/><rect x="162" y="104" width="14" height="84"/><rect x="180" y="84" width="20" height="104"/><rect x="204" y="110" width="14" height="78"/><rect x="222" y="96" width="18" height="92"/><rect x="244" y="118" width="16" height="70"/></g>
+<rect y="186" width="300" height="20" fill="#7FB2D9"/><rect y="204" width="300" height="78" fill="#E9EEF3"/>
+<path d="M78 210 Q84 120 100 60" stroke="#4A5B3E" stroke-width="5" fill="none"/><path d="M100 60 q-36 -8 -52 10 q30 -4 52 -10 q-20 -30 -48 -22 q30 8 48 22 q6 -36 36 -38 q-22 18 -36 38 q26 -20 52 -6 q-30 0 -52 6" fill="#2F6B3A"/>
+<path d="M260 214 Q262 150 274 110" stroke="#4A5B3E" stroke-width="4" fill="none"/><path d="M274 110 q-26 -6 -38 8 q22 -4 38 -8 q-14 -22 -34 -16 q22 6 34 16 q4 -26 26 -28 q-16 14 -26 28" fill="#2F6B3A"/>
+<g transform="translate(118 196)"><path d="M0 44 l10 -22 q6 -10 20 -12 l70 -2 q14 1 26 12 l18 12 q20 3 26 10 l2 16 z" fill="#F4F6F8" stroke="#8A98A8" stroke-width="2"/><path d="M28 24 l8 -10 q4 -4 10 -4 h28 v14 z M80 10 h28 q8 1 13 7 l8 7 h-49 z" fill="#2B3A4C"/><circle cx="36" cy="46" r="11" fill="#1F2933"/><circle cx="36" cy="46" r="4.5" fill="#C9D1DA"/><circle cx="140" cy="46" r="11" fill="#1F2933"/><circle cx="140" cy="46" r="4.5" fill="#C9D1DA"/></g>
+</svg>
+{% elif kind == 'dusk_city' %}
+<svg viewBox="0 0 150 250" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="sk2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2E4F7A"/><stop offset=".55" stop-color="#E7A35C"/><stop offset="1" stop-color="#F6D6A8"/></linearGradient></defs>
+<rect width="150" height="250" fill="url(#sk2)"/><circle cx="70" cy="150" r="18" fill="#FFE1B0"/>
+<g fill="#3B4F6B"><rect x="10" y="100" width="14" height="80"/><rect x="28" y="80" width="16" height="100"/><rect x="48" y="112" width="12" height="68"/><rect x="88" y="90" width="18" height="90"/><rect x="110" y="118" width="14" height="62"/><rect x="128" y="104" width="16" height="76"/></g>
+<rect y="178" width="150" height="72" fill="#5E7F9E"/><path d="M118 186 Q120 130 132 96" stroke="#2A3324" stroke-width="3.5" fill="none"/><path d="M132 96 q-22 -5 -32 6 q18 -3 32 -6 q-12 -18 -28 -14 q18 5 28 14 q4 -22 22 -24 q-14 11 -22 24" fill="#24402A"/>
+</svg>
+{% elif kind == 'harbor' %}
+<svg viewBox="0 0 280 160" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="sk3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4C6E96"/><stop offset=".6" stop-color="#E3A866"/><stop offset="1" stop-color="#F2CF9B"/></linearGradient></defs>
+<rect width="280" height="160" fill="url(#sk3)"/><g fill="#33475F"><rect x="20" y="60" width="14" height="60"/><rect x="38" y="44" width="16" height="76"/><rect x="58" y="70" width="12" height="50"/><rect x="150" y="50" width="18" height="70"/><rect x="172" y="66" width="14" height="54"/><rect x="190" y="40" width="18" height="80"/><rect x="212" y="72" width="14" height="48"/></g>
+<rect y="118" width="280" height="42" fill="#58799A"/><path d="M240 130 Q242 80 254 52" stroke="#2A3324" stroke-width="3.5" fill="none"/><path d="M254 52 q-22 -5 -32 6 q18 -3 32 -6 q-12 -18 -28 -14 q18 5 28 14 q4 -22 22 -24 q-14 11 -22 24" fill="#24402A"/>
+</svg>
+{% elif kind == 'web' %}
+<svg viewBox="0 0 120 68" preserveAspectRatio="xMidYMid slice"><rect width="120" height="68" fill="#0F2440"/><rect x="0" y="0" width="120" height="10" fill="#1E3A5F"/><circle cx="6" cy="5" r="2" fill="#FF6B5E"/><circle cx="12" cy="5" r="2" fill="#FFC23D"/><circle cx="18" cy="5" r="2" fill="#2BC653"/>
+<rect x="10" y="18" width="52" height="6" rx="2" fill="#E8EEF6"/><rect x="10" y="28" width="38" height="4" rx="2" fill="#7F9BBE"/><rect x="10" y="44" width="26" height="9" rx="3" fill="#FF7A00"/>
+<g transform="translate(64 36)"><path d="M0 18 l6 -10 q3 -5 10 -6 l26 -1 q7 1 12 6 l7 6 q8 1 10 4 l1 7 z" fill="#E8EEF6"/><circle cx="14" cy="20" r="5" fill="#0F2440" stroke="#E8EEF6"/><circle cx="54" cy="20" r="5" fill="#0F2440" stroke="#E8EEF6"/></g></svg>
+{% elif kind == 'registry' %}
+<svg viewBox="0 0 120 68" preserveAspectRatio="xMidYMid slice"><rect width="120" height="68" fill="#F4F7FB"/><rect x="26" y="6" width="68" height="58" rx="3" fill="#fff" stroke="#C9D6E4"/>
+<path d="M60 12 l14 7 h-28 z" fill="#082B57"/><rect x="48" y="20" width="24" height="3" fill="#082B57"/><g fill="#082B57"><rect x="50" y="24" width="3" height="9"/><rect x="58.5" y="24" width="3" height="9"/><rect x="67" y="24" width="3" height="9"/></g><rect x="46" y="33" width="28" height="3" fill="#082B57"/>
+<g fill="#C9D6E4"><rect x="34" y="42" width="52" height="3"/><rect x="34" y="48" width="44" height="3"/><rect x="34" y="54" width="48" height="3"/></g></svg>
+{% elif kind == 'rating' %}
+<svg viewBox="0 0 120 68" preserveAspectRatio="xMidYMid slice"><rect width="120" height="68" fill="#F4F7FB"/><rect x="22" y="8" width="76" height="52" rx="4" fill="#fff" stroke="#C9D6E4"/>
+<path d="M44 18 l10 -4 10 4 v10 q0 10 -10 14 q-10 -4 -10 -14 z" fill="#1476E8"/><path d="M49 28 l4 4 7 -8" stroke="#fff" stroke-width="2.4" fill="none"/>
+<g fill="#C9D6E4"><rect x="70" y="20" width="20" height="3"/><rect x="70" y="27" width="16" height="3"/></g><rect x="32" y="48" width="56" height="4" rx="2" fill="#E3EAF3"/></svg>
+{% elif kind == 'history' %}
+<svg viewBox="0 0 120 68" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="sk4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A9CBEA"/><stop offset="1" stop-color="#EAF1F8"/></linearGradient></defs><rect width="120" height="68" fill="url(#sk4)"/>
+<path d="M14 58 Q16 30 22 16" stroke="#4A5B3E" stroke-width="2.5" fill="none"/><path d="M22 16 q-14 -3 -20 4 q12 -2 20 -4 q-8 -12 -18 -9 q12 3 18 9 q2 -14 14 -15 q-9 7 -14 15" fill="#2F6B3A"/>
+<g transform="translate(34 38)"><path d="M0 16 l5 -9 q3 -4 9 -5 l22 -1 q6 1 10 5 l6 5 q7 1 9 4 l1 6 z" fill="#D9E1EA" stroke="#7E8FA3"/><circle cx="12" cy="17" r="4.5" fill="#26313D"/><circle cx="48" cy="17" r="4.5" fill="#26313D"/></g>
+<rect x="62" y="6" width="38" height="18" rx="3" fill="#082B57"/><text x="81" y="19.5" text-anchor="middle" font-family="DejaVu Sans" font-size="13" font-weight="700" fill="#fff">2021</text></svg>
+{% elif kind == 'doc' %}
+<svg viewBox="0 0 120 58" preserveAspectRatio="xMidYMid slice"><rect width="120" height="58" fill="#F4F7FB"/><rect x="34" y="5" width="52" height="50" rx="3" fill="#fff" stroke="#C9D6E4"/><rect x="40" y="12" width="30" height="4" fill="#082B57"/><g fill="#C9D6E4"><rect x="40" y="22" width="40" height="3"/><rect x="40" y="28" width="34" height="3"/><rect x="40" y="34" width="38" height="3"/><rect x="40" y="40" width="28" height="3"/></g></svg>
+{% elif kind == 'map2' %}
+<svg viewBox="0 0 120 58" preserveAspectRatio="xMidYMid slice"><rect width="120" height="58" fill="#EEF2E6"/><path d="M0 18 H120 M0 40 H120 M30 0 V58 M78 0 V58" stroke="#fff" stroke-width="4"/><path d="M0 8 L120 50" stroke="#F4D58A" stroke-width="3"/><rect x="96" y="0" width="24" height="58" fill="#BFD9F0"/>
+<g fill="#D93C3C"><path d="M70 12 q-6 0 -6 6 q0 5 6 11 q6 -6 6 -11 q0 -6 -6 -6z"/><path d="M34 30 q-6 0 -6 6 q0 5 6 11 q6 -6 6 -11 q0 -6 -6 -6z"/></g><circle cx="70" cy="18" r="2" fill="#fff"/><circle cx="34" cy="36" r="2" fill="#fff"/></svg>
+{% elif kind == 'car' %}
+<svg viewBox="0 0 120 58" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="sk5" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#BFD7EE"/><stop offset="1" stop-color="#EEF3F8"/></linearGradient></defs><rect width="120" height="58" fill="url(#sk5)"/><rect y="44" width="120" height="14" fill="#D4DCE5"/>
+<g transform="translate(24 22)"><path d="M0 20 l6 -11 q4 -5 11 -6 l30 -1 q8 1 13 6 l8 6 q9 1 11 5 l1 7 z" fill="#F7F9FB" stroke="#7E8FA3"/><path d="M14 10 l4 -5 q2 -2 5 -2 h14 v7 z M41 3 h12 q4 1 7 4 l3 3 h-22 z" fill="#2B3A4C"/><circle cx="16" cy="21" r="5" fill="#1F2933"/><circle cx="62" cy="21" r="5" fill="#1F2933"/></g></svg>
+{% endif %}
+{%- endmacro %}
+
+{% macro zone(img, kind) -%}{% if img %}<img src="{{ img }}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">{% else %}{{ scene(kind) }}{% endif %}{%- endmacro %}
+
+{% macro hdr() -%}
+<div class="hdr"{% if images.get('header_light') %} style="background:#fff;border-bottom:2.5pt solid #C98A2B"{% endif %}>{% if images.get('gemsi_logo') %}<img src="{{ images.gemsi_logo }}" alt="GemSi" style="height:{{ '64pt' if images.get('header_light') else '50pt' }};display:block;margin-left:-6pt">{% else %}<div><div class="logo">GemSi</div><div class="tag">SEARCH INTELLIGENCE</div></div>{% endif %}
+  <div class="client" style="display:flex;align-items:center;gap:9pt;{% if images.get('hide_client_name') %}flex-direction:row-reverse;{% endif %}">{% if images.get('client_logo') %}<span style="background:#fff;border-radius:5pt;padding:3pt 6pt;{% if images.get('header_light') %}border:1pt solid var(--border);{% endif %}display:flex;align-items:center;height:44pt"><img src="{{ images.client_logo }}" alt="" style="max-height:{{ 40 if images.get('hide_client_name') else 36 }}pt;max-width:{{ 150 if images.get('hide_client_name') else 112 }}pt;object-fit:contain;display:block"></span>{% endif %}<div>{% if images.get('header_light') %}<div style="color:var(--red);font-weight:700;font-size:10pt;letter-spacing:1.5pt">REPORT FOR</div>{% endif %}{% if not images.get('hide_client_name') %}<div class="nm"{% if images.get('header_light') %} style="color:var(--navy);font-size:{{ 15 if client_upper|length > 12 else 18 }}pt;white-space:nowrap"{% endif %}>{{ client_upper }}</div>{% endif %}<div class="dt"{% if images.get('header_light') %} style="color:var(--slate)"{% endif %}>{{ report_month }}</div></div></div></div>
+{%- endmacro %}
+{% set avc = ['#1476E8','#FF7A00','#15965B','#7A56D8','#D93C3C','#082B57'] %}
+
+<!-- ================= P1 HOOK ================= -->
+<div class="page" data-page="1">
+  {{ hdr() }}
+  <div class="p1hero zone">{{ zone(images.p1_hero, 'coast_car') }}</div>
+  <div class="body fitbox">
+    <div class="p1text">
+      <div class="eyebrow">AI SEARCH SNAPSHOT</div>
+      <h1{% if (p1.h1 ~ p1.h1_accent)|length > 60 %} style="font-size:22pt"{% endif %}>{{ p1.h1 }} <span class="accent">{{ p1.h1_accent }}</span></h1>
+      <div class="sub"{% if p1.get('sub_red') %} style="color:var(--red);font-size:16pt;max-width:258pt"{% endif %}>{{ p1.h1_sub }}</div>
+      <p class="lead"{% if p1.get('sub_red') %} style="max-width:234pt"{% endif %}>{{ p1.lead }}</p>
+    </div>
+    <div class="p1row">
+      <div class="stat"><div class="big">{{ p1.total_hit }} <span>of {{ p1.total_all }}</span></div><div class="cap">{{ p1.total_label }}</div></div>
+      <div class="card topics">{% if p1.get('qcols') %}<div class="trow" style="padding:0 0 2pt;border-bottom:none"><span class="tx"></span>{% for c in p1.qcols %}<span style="width:60pt;text-align:center;font-size:9pt;font-weight:700;color:var(--slate)">{{ c }}</span>{% endfor %}</div>{% endif %}{% for r in p1.qrows %}<div class="trow"><span class="num">{{ loop.index }}</span><span class="tx">{{ r.q }}</span>{% if p1.get('qcols') %}<span style="width:60pt;text-align:center"><span class="chip {{ r.s|lower }}">{{ r.s }}</span></span><span style="width:60pt;text-align:center"><span class="chip {{ r.s2|lower }}">{{ r.s2 }}</span></span>{% else %}<span class="chip {{ r.s|lower }}">{{ r.s }}</span>{% endif %}</div>{% endfor %}</div>
+    </div>
+    <div class="named">
+      <h2{% if p1.get('instead_red') %} style="color:var(--red);font-size:17pt"{% endif %}><span class="bar"{% if p1.get('instead_red') %} style="background:var(--red)"{% endif %}></span>{{ p1.instead_title }}</h2>
+      {% if p1.get('scoreboard') %}{% set sbmax = p1.scoreboard.of %}<div class="sb">{% for r in p1.scoreboard.rows %}<div class="sbr{{ ' me' if r.get('me') else '' }}"><span class="nm">{{ r.name }}</span><span class="tr"><span class="fl" style="display:block;width:{{ [ (r.n * 100 / sbmax)|round(1), 2 ]|max }}%"></span></span><span class="ct">{{ r.n }} of {{ sbmax }} answers</span></div>{% endfor %}</div>{% if p1.scoreboard.get('caption') %}<div class="sbcap">{{ p1.scoreboard.caption }}</div>{% endif %}{% else %}
+      <div class="tiles">{% for c in p1.instead %}<div class="tile"><span class="av" style="background:{{ avc[loop.index0 % 6] }}">{{ c.split()[0][0] }}{{ c.split()[1][0] if c.split()|length > 1 else '' }}</span><span class="n">{{ c }}</span></div>{% endfor %}</div>{% endif %}
+    </div>
+    <div class="note"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="none" stroke="#60748A" stroke-width="1.4"/><path d="M8 7v4.5M8 4.6v.1" stroke="#60748A" stroke-width="1.6" stroke-linecap="round"/></svg><span>{{ p1.note }}</span></div>
+  </div>
+  <div class="ftr"><span>GemSi · {{ client_name }}</span><span>1 / 4</span></div>
+</div>
+
+<!-- ================= P2 PROOF ================= -->
+<div class="page" data-page="2">
+  {{ hdr() }}
+  <div class="body fitbox">
+    <div class="eyebrow">{{ p2.eyebrow }}</div>
+    <h1>{{ p2.h1 }}</h1>
+    <p class="lead">{{ p2.lead }}</p>
+    {% set skinds = p2.get('label_kinds') if p2.get('label_kinds') else ['web','registry','rating','history'] %}
+    <div class="four" style="margin-top:12pt">{% for l in p2.labels %}<div class="card src"><div class="st">{{ l.src }}</div><div class="zone">{{ zone(images.p2_sources[loop.index0] if images.p2_sources else None, skinds[loop.index0]) }}</div><div class="sv"{% if p2.get('labels_red') %} style="color:var(--red);font-weight:700"{% endif %}>{{ l.v }}</div></div>{% endfor %}</div>
+    <h2 style="margin-top:16pt"><span class="bar"></span>{{ p2.why_title }}</h2>
+    {% set wkinds = p2.get('show_kinds') if p2.get('show_kinds') else ['car','doc','map2','car'] %}
+    <div class="four" style="margin-top:9pt">{% for s in p2.sources %}<div class="card src show"><div class="st">{{ s.url }}</div><div class="facts">{% for f in s.facts %}<div class="{{ 'x' if f.x else '' }}"{% if p2.get('shows_red') %} style="color:var(--red);font-weight:700"{% endif %}>{{ f.v }}</div>{% endfor %}</div><div class="zone">{{ zone(images.p2_shows[loop.index0] if images.p2_shows else None, wkinds[loop.index0]) }}</div></div>{% endfor %}</div>
+    <div class="callout" style="margin-top:16pt"><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2" fill="none" stroke="#C98A2B" stroke-width="1.8"/><path d="M8 8h8M8 12h8M8 16h5" stroke="#C98A2B" stroke-width="1.8" stroke-linecap="round"/></svg><div><div class="a">{{ p2.total_line }}</div><div class="b">{{ p2.think }}</div></div></div>
+  </div>
+  <div class="ftr"><span>GemSi · {{ client_name }}</span><span>2 / 4</span></div>
+</div>
+
+<!-- ================= P3 DECISION ================= -->
+<div class="page" data-page="3">
+  {{ hdr() }}
+  <div class="body fitbox">
+    <div class="eyebrow">WHAT IT MEANS</div>
+    <h1 style="font-size:22pt">{{ pi.h1 }}</h1>
+    <p class="lead">{{ pi.lead }}</p>
+    <div class="three">
+      <div class="card qlist">{% for q in pi.questions %}<div class="qrow"><span class="num">{{ loop.index }}</span><span class="tx">{{ q.q }}</span><span class="chip {{ q.s|lower }}">{{ q.s }}</span></div>{% endfor %}</div>
+      <div class="panel good"><div class="ph"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#15965B"/><path d="M6 10.5l3 3 5-6" stroke="#fff" stroke-width="2" fill="none"/></svg>{{ pi.strengths_title }}</div><ul>{% for b in pi.strengths %}<li>{{ b }}</li>{% endfor %}</ul></div>
+      <div class="panel warn"><div class="ph"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#FF7A00"/><path d="M10 5v6M10 14v.1" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>{{ pi.watch_title }}</div><ul>{% for b in pi.watch %}<li>{{ b }}</li>{% endfor %}</ul></div>
+    </div>
+    <h2 style="margin-top:18pt"><span class="bar"></span>{{ p3.fix_title }}</h2>
+    <div class="steps"><div class="rail"></div>
+      {% set sbg = ['#082B57','#FF7A00','#082B57'] %}
+      {% for st in p3.steps %}<div class="step"><div class="ic" style="background:{{ sbg[loop.index0] }}">
+        {% if loop.index0 == 0 %}<svg viewBox="0 0 22 22"><rect x="5" y="3" width="12" height="16" rx="2" fill="none" stroke="#fff" stroke-width="1.8"/><path d="M8 8h6M8 11.5h6M8 15h4" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+        {% elif loop.index0 == 1 %}<svg viewBox="0 0 22 22"><path d="M4 18l2-5 9-9 3 3-9 9z" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><path d="M13 6l3 3" stroke="#fff" stroke-width="1.8"/></svg>
+        {% else %}<svg viewBox="0 0 22 22"><path d="M4 18V12M9 18V8M14 18v-5M19 18V5" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>{% endif %}
+      </div><div class="k">STEP {{ loop.index }}</div><div class="t">{{ st.title }}</div><div class="d">{{ st.line }}</div></div>{% endfor %}
+    </div>
+  </div>
+  <div class="ftr"><span>GemSi · {{ client_name }}</span><span>3 / 4</span></div>
+</div>
+
+<!-- ================= P4 CLOSE ================= -->
+<div class="page" data-page="4">
+  {{ hdr() }}
+  <div class="p4hero zone">{{ zone(images.p4_hero, 'dusk_city') }}</div>
+  <div class="body fitbox">
+    <div class="p4text">
+      <div class="eyebrow">WHY GEMSI</div>
+      <h1>{% if p3.get('h1_red') %}{{ p3.h1 }} <span style="color:var(--red)">{{ p3.h1_red }}</span>{% else %}{{ p3.h1 }}{% endif %}</h1>
+      <div class="whys">{% for w in p3.why %}<div class="why"><div class="wi">
+        {% if loop.index0 == 0 %}<svg viewBox="0 0 18 18"><circle cx="8" cy="8" r="5" fill="none" stroke="#fff" stroke-width="1.8"/><path d="M12 12l4 4" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+        {% elif loop.index0 == 1 %}<svg viewBox="0 0 18 18"><circle cx="9" cy="9" r="3" fill="none" stroke="#fff" stroke-width="1.8"/><path d="M9 2v2.5M9 13.5V16M2 9h2.5M13.5 9H16M4 4l1.8 1.8M12.2 12.2L14 14M4 14l1.8-1.8M12.2 5.8L14 4" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>
+        {% else %}<svg viewBox="0 0 18 18"><circle cx="6" cy="6.5" r="2.5" fill="none" stroke="#fff" stroke-width="1.6"/><circle cx="12" cy="6.5" r="2.5" fill="none" stroke="#fff" stroke-width="1.6"/><path d="M2 15c0-3 2-4.5 4-4.5s4 1.5 4 4.5M8 15c0-3 2-4.5 4-4.5s4 1.5 4 4.5" stroke="#fff" stroke-width="1.6" fill="none"/></svg>{% endif %}
+      </div><div class="wt"{% if p3.get('why_red') %} style="color:var(--red)"{% endif %}>{{ w.title }}</div><div class="wd">{{ w.line }}</div></div>{% endfor %}</div>
+    </div>
+    <div class="p4mid">
+      <div class="card month"><div class="mh">Every month, done for you</div>
+        {% for g in p3.gets %}<div class="mi"><svg viewBox="0 0 14 14"><rect x="1" y="1" width="12" height="12" rx="3" fill="none" stroke="#082B57" stroke-width="1.4"/><path d="M4 7.2l2 2 4-4.4" stroke="#082B57" stroke-width="1.6" fill="none"/></svg><span>{{ g }}</span></div>{% endfor %}</div>
+      <div class="youdo"><div class="zone">{{ zone(images.p4_band, 'harbor') }}</div><div class="ov">{{ p3.you_do }}</div></div>
+    </div>
+    {% if p3.get('cta_bar') %}<div class="ctabar">{{ p3.cta_bar }}</div>{% endif %}
+    <div class="offers">
+      <div class="offer snap"><div class="on">SNAPSHOT</div><div class="op"><span class="was">$99</span><span{% if p3.get('cta_red') %} style="color:var(--red)"{% endif %}>FREE</span></div><div class="intro"{% if p3.get('cta_red') %} style="color:var(--red)"{% endif %}>October intro offer</div>
+        <div class="did">{% for b in p3.snapshot_did %}<div><svg viewBox="0 0 12 12"><path d="M2 6.5l2.5 2.5 5.5-6" stroke="#15965B" stroke-width="2" fill="none" stroke-linecap="round"/></svg>{{ b }}</div>{% endfor %}</div></div>
+      <div class="offer mon"><div class="on">GEMSI MONITOR</div><div class="op">$349 <small>/ month</small></div><div class="setup">+ $500 one-time setup</div><div class="od">We fix your listings, write and post your pages, and recheck every month. Month-to-month.</div></div>
+      <div class="offer oct"><div><div class="on">OCTOBER OFFER</div><div class="op">Save $500</div><div class="od">Setup waived if you start by Oct 31, 2026.</div></div>
+        <div class="qr"><img src="{{ qr_src }}" alt="QR code to gemsi.app"><div>gemsi.app</div></div></div>
+    </div>
+  </div>
+  <div class="ftr"><span>GemSi · {{ client_name }}</span><span>4 / 4</span></div>
+</div>
+</body></html>
