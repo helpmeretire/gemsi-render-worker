@@ -448,6 +448,10 @@ export default {
     if (request.method === "OPTIONS") {
       return new Response(null, { headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "PAYMENT-SIGNATURE, X-PAYMENT, Content-Type", "Access-Control-Allow-Methods": "GET, POST, OPTIONS" } });
     }
+    // On the public domain, the home page is the free checker; the API info JSON stays at /api.
+    const publicSite = /(^|\.)nojunkcrypto\.com$/i.test(url.hostname);
+    if (publicSite && url.pathname === "/") return scanPage(env, url);
+    if (url.pathname === "/api") url.pathname = "/";
     if (url.pathname === "/health/data") {
       // Reports only upstream status codes (no data, no keys) so the operator can confirm the data sources respond.
       const cgKey = String(env.CG_DEMO_KEY || "").trim();

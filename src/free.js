@@ -27,7 +27,10 @@ function partnersHtml(env) {
 
 function scanPage(env, url) {
   const home = String((env && env.HOME_URL) || "").trim();
-  const html = PAGE_HTML.replace("__HOME__", /^https:\/\/\S+$/.test(home) ? home.replace(/"/g, "") : url.origin + "/scan").replace("__PARTNERS__", partnersHtml(env));
+  const isPublic = /(^|\.)nojunkcrypto\.com$/i.test(url.hostname);
+  const homeHref = /^https:\/\/\S+$/.test(home) ? home.replace(/"/g, "") : isPublic ? "https://nojunkcrypto.com/" : url.origin + "/scan";
+  const canonical = isPublic ? "https://nojunkcrypto.com/" : url.origin + "/scan";
+  const html = PAGE_HTML.replace("__HOME__", homeHref).split("__CANONICAL__").join(canonical).replace("__PARTNERS__", partnersHtml(env));
   return new Response(html, {
     headers: {
       "Content-Type": "text/html; charset=utf-8",
