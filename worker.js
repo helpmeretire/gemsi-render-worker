@@ -69,33 +69,52 @@ async function checkService(svc) {
   };
 }
 
-async function wallet() {
-  const UA = { "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36" };
-  // Balance straight from the Base network (ERC-20 balanceOf).
-  const data = "0x70a08231" + WALLET.slice(2).padStart(64, "0");
-  const rpc = await timed("https://mainnet.base.org", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_call", params: [{ to: USDC, data }, "latest"] }) });
-  const rj = rpc.ok ? tryJson(rpc.text) : null;
-  const balance = rj && rj.result ? Number(BigInt(rj.result)) / 1e6 : null;
-  // Incoming USDC transfers: Blockscout first, Routescan as backup.
-  let items = null, source = null;
-  const b = await timed(`https://base.blockscout.com/api/v2/addresses/${WALLET}/token-transfers?type=ERC-20&filter=to`, { headers: UA });
-  const bj = b.ok && b.status === 200 ? tryJson(b.text) : null;
-  if (bj && Array.isArray(bj.items)) { source = "blockscout"; items = bj.items.map((t) => ({ when: t.timestamp, token: t.token && t.token.symbol, addr: t.token && String(t.token.address).toLowerCase(), value: Number(t.total && t.total.value), decimals: Number(t.token && t.token.decimals) || 18, from: t.from && t.from.hash })); }
-  if (!items) {
-    const r = await timed(`https://api.routescan.io/v2/network/mainnet/evm/8453/etherscan/api?module=account&action=tokentx&address=${WALLET}&sort=desc&page=1&offset=50`, { headers: UA });
-    const rj2 = r.ok && r.status === 200 ? tryJson(r.text) : null;
-    if (rj2 && Array.isArray(rj2.result)) { source = "routescan"; items = rj2.result.filter((t) => String(t.to).toLowerCase() === WALLET).map((t) => ({ when: new Date(Number(t.timeStamp) * 1000).toISOString(), token: t.tokenSymbol, addr: String(t.contractAddress).toLowerCase(), value: Number(t.value), decimals: Number(t.tokenDecimal) || 18, from: t.from })); }
-  }
-  const all = items || [];
-  const usdc = all.filter((t) => t.addr === USDC).map((t) => ({ when: t.when, usd: t.value / 1e6, from: t.from }));
-  return { ok: items !== null, source, balance_source: balance === null ? null : "base rpc", usdc_balance: balance === null ? 0 : balance, usdc_payments: usdc.slice(0, 10), payments_count: usdc.length, last_any_transfer: all[0] ? { when: all[0].when, token: all[0].token } : null, explorer_status: { blockscout: b.status, routescan: items && source === "routescan" ? 200 : undefined } };
+const RPC = "https://base-rpc.publicnode.com";
+const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+async function rpc(method, params) {
+  const r = await timed(RPC, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }) });
+  const j = r.ok ? tryJson(r.text) : null;
+  if (!j || j.error) throw new Error((j && j.error && j.error.message) || `rpc ${method} failed (${r.status})`);
+  return j.result;
+}
+const hex = (n) => "0x" + n.toString(16);
+// Scans the chain for USDC Transfer events to the wallet, keeping a cursor + found payments in KV.
+async function wallet(env) {
+  const out = { ok: false, usdc_balance: 0, usdc_payments: [], payments_count: 0, last_any_transfer: null, scanned_to_block: null, note: null };
+  try {
+    const data = "0x70a08231" + WALLET.slice(2).padStart(64, "0");
+    const bal = await rpc("eth_call", [{ to: USDC, data }, "latest"]);
+    out.usdc_balance = Number(BigInt(bal)) / 1e6;
+  } catch (e) { out.note = "balance: " + e.message; }
+  try {
+    const latest = Number(BigInt(await rpc("eth_blockNumber", [])));
+    const saved = env.STATUS ? tryJson((await env.STATUS.get("payments")) || "") : null;
+    // First run: start about 3 days before now (Base makes a block every 2 s).
+    let cursor = saved && saved.cursor ? saved.cursor : latest - 130000;
+    let items = saved && Array.isArray(saved.items) ? saved.items : [];
+    const CHUNK = 10000; let steps = 0;
+    while (cursor < latest && steps < 4) {
+      const to = Math.min(cursor + CHUNK, latest);
+      const logs = await rpc("eth_getLogs", [{ address: USDC, fromBlock: hex(cursor + 1), toBlock: hex(to), topics: [TRANSFER_TOPIC, null, "0x" + WALLET.slice(2).padStart(64, "0")] }]);
+      for (const l of logs) {
+        const blk = await rpc("eth_getBlockByNumber", [l.blockNumber, false]);
+        items.push({ when: new Date(Number(BigInt(blk.timestamp)) * 1000).toISOString(), usd: Number(BigInt(l.data)) / 1e6, from: "0x" + l.topics[1].slice(26), tx: l.transactionHash, block: Number(BigInt(l.blockNumber)) });
+      }
+      cursor = to; steps++;
+    }
+    items = items.filter((x, i, a) => a.findIndex((y) => y.tx === x.tx) === i).sort((a, b) => b.block - a.block).slice(0, 200);
+    if (env.STATUS && (!saved || saved.cursor !== cursor || saved.items.length !== items.length)) await env.STATUS.put("payments", JSON.stringify({ cursor, items }));
+    out.ok = true; out.scanned_to_block = cursor; out.usdc_payments = items.slice(0, 10); out.payments_count = items.length;
+    out.last_any_transfer = items[0] ? { when: items[0].when, token: "USDC" } : null;
+  } catch (e) { out.note = (out.note ? out.note + "; " : "") + "scan: " + e.message; }
+  return out;
 }
 
 async function status(env) {
   const [services, site, w, log] = await Promise.all([
     Promise.all(SERVICES.map(checkService)),
     timed(SITE.url),
-    wallet(),
+    wallet(env),
     env.STATUS ? env.STATUS.get("buildlog").then((v) => tryJson(v || "[]") || []) : Promise.resolve([]),
   ]);
   return { checked_at: new Date().toISOString(), services, site: { ...SITE, up: site.ok && site.status === 200, ms: site.ms }, wallet: w, buildlog: log.slice(-60).reverse() };
@@ -161,7 +180,7 @@ async function tick(){
   document.getElementById('n-up').textContent=up+'/'+j.services.length; document.getElementById('n-pay').textContent=pay+'/'+j.services.length;
   document.getElementById('n-usdc').textContent='$'+j.wallet.usdc_payments.reduce(function(a,p){return a+p.usd},0).toFixed(3); document.getElementById('n-bal').textContent='$'+j.wallet.usdc_balance.toFixed(2); document.getElementById('n-ms').textContent=ms;
   document.getElementById('usdc').textContent='$'+j.wallet.usdc_payments.reduce(function(a,p){return a+p.usd},0).toFixed(3);
-  document.getElementById('pays').innerHTML=j.wallet.usdc_payments.length?j.wallet.usdc_payments.map(function(p){return '<div>'+esc(fmtT(p.when))+' · $'+p.usd.toFixed(4)+' from '+esc(p.from.slice(0,10))+'…</div>'}).join(''):'No agent payments yet. Last thing received: '+(j.wallet.last_any_transfer?esc(j.wallet.last_any_transfer.token)+' on '+esc(fmtT(j.wallet.last_any_transfer.when)):'nothing')+'.';
+  document.getElementById('pays').innerHTML=j.wallet.usdc_payments.length?j.wallet.usdc_payments.map(function(p){return '<div>'+esc(fmtT(p.when))+' · $'+p.usd.toFixed(4)+' from '+esc(p.from.slice(0,10))+'…</div>'}).join(''):'No agent payments yet. Watching the Base blockchain for USDC sent to your wallet (scanned to block '+(j.wallet.scanned_to_block||'?')+').'+(j.wallet.note?' Note: '+esc(j.wallet.note):'');
   document.getElementById('log').innerHTML=j.buildlog.map(function(e){return '<div><span class="t">'+esc(fmtT(e.t))+'</span><span class="k-'+esc(e.kind||'build')+'">'+esc(e.text)+'</span></div>'}).join('')||'<div>No entries yet.</div>';
   document.getElementById('svcs').innerHTML=j.services.map(function(s){return '<div class="svc"><span class="st '+(s.up?'up':'down')+'"></span><span class="nm"><a href="'+esc(s.url)+'" style="color:inherit;text-decoration:none">'+esc(s.name)+'</a></span><span class="pr">'+esc(s.price)+'</span><span class="what">'+esc(s.what)+'</span><span class="meta"><span class="'+(s.up?'ok':'bad')+'">'+(s.up?'UP':'DOWN')+' · '+s.ms+' ms</span><span class="'+(s.paywall_ok?'ok':'bad')+'">paywall '+esc(s.paywall)+'</span></span>'+(s.demo?'<span class="demo '+(s.demo.ok?'':'bad')+'">'+esc(s.demo.label)+': '+esc(s.demo.text||(s.demo.ok?'ok':'unavailable'))+'</span>':'')+'</div>'}).join('');
   document.getElementById('site').textContent='Free site '+j.site.name+': '+(j.site.up?'up':'down')+' ('+j.site.ms+' ms). Last check '+new Date(j.checked_at).toLocaleTimeString()+'.';
@@ -177,19 +196,6 @@ export default {
     if (url.pathname === "/api/status") {
       const s = await status(env);
       return new Response(JSON.stringify(s), { headers: { "content-type": "application/json", "cache-control": "no-store", "access-control-allow-origin": "*" } });
-    }
-    if (url.pathname === "/api/walletdebug") {
-      const UA = { "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36" };
-      const data = "0x70a08231" + WALLET.slice(2).padStart(64, "0");
-      const tests = await Promise.all([
-        timed("https://mainnet.base.org", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_call", params: [{ to: USDC, data }, "latest"] }) }),
-        timed("https://base-rpc.publicnode.com", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_call", params: [{ to: USDC, data }, "latest"] }) }),
-        timed("https://base.llamarpc.com", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_call", params: [{ to: USDC, data }, "latest"] }) }),
-        timed(`https://base.blockscout.com/api/v2/addresses/${WALLET}/token-transfers?type=ERC-20&filter=to`, { headers: UA }),
-        timed(`https://api.routescan.io/v2/network/mainnet/evm/8453/etherscan/api?module=account&action=tokentx&address=${WALLET}&sort=desc&page=1&offset=5`, { headers: UA }),
-        timed(`https://api.basescan.org/api?module=account&action=tokentx&address=${WALLET}&sort=desc&page=1&offset=5`, { headers: UA }),
-      ]);
-      return new Response(JSON.stringify(tests.map((t) => ({ status: t.status, ms: t.ms, err: t.error, head: (t.text || "").slice(0, 160) })), null, 1), { headers: { "content-type": "application/json" } });
     }
     if (url.pathname === "/" || url.pathname === "/status") return new Response(PAGE, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     return new Response("Not found", { status: 404 });
