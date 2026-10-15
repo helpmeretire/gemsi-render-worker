@@ -146,7 +146,7 @@ function validate({ address, chain }) {
   return null;
 }
 
-async function getJSON(url, ttl = 120) {
+async function getJSON(url, ttl = 120, extraHeaders = {}) {
   const cache = typeof caches !== "undefined" && caches.default ? caches.default : null;
   const key = new Request(url);
   if (cache) {
@@ -156,7 +156,7 @@ async function getJSON(url, ttl = 120) {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 8000);
   try {
-    const res = await fetch(url, { headers: { accept: "application/json" }, signal: ctrl.signal });
+    const res = await fetch(url, { headers: { accept: "application/json", ...extraHeaders }, signal: ctrl.signal });
     const text = await res.text();
     let data = null;
     try { data = JSON.parse(text); } catch {}
@@ -171,11 +171,15 @@ async function getJSON(url, ttl = 120) {
   }
 }
 
-async function fetchTokenData({ address, chain }) {
+async function fetchTokenData({ address, chain }, env = {}) {
   const c = CHAINS[chain];
   const gpUrl = c.goplus + encodeURIComponent(address);
-  const gtBase = `https://api.geckoterminal.com/api/v2/networks/${c.gt}/tokens/${encodeURIComponent(address)}`;
-  const [gp, gtPools] = await Promise.all([getJSON(gpUrl), getJSON(gtBase + "/pools?page=1")]);
+  // With a CoinGecko Demo key, use CoinGecko's on-chain API (same data as GeckoTerminal, own rate limit);
+  // without one, fall back to the public GeckoTerminal API, which throttles Cloudflare's shared IPs.
+  const cgKey = String(env.CG_DEMO_KEY || "").trim();
+  const path = `/networks/${c.gt}/tokens/${encodeURIComponent(address)}/pools?page=1`;
+  const gtReq = cgKey ? getJSON("https://api.coingecko.com/api/v3/onchain" + path, 120, { "x-cg-demo-api-key": cgKey }) : getJSON("https://api.geckoterminal.com/api/v2" + path);
+  const [gp, gtPools] = await Promise.all([getJSON(gpUrl), gtReq]);
   return interpretTokenData({ address, chain }, gp, gtPools);
 }
 
@@ -546,7 +550,7 @@ export default {
     try { v = await fac.call("verify", body); } catch (e) { return json({ error: "Facilitator unreachable", detail: String(e) }, 500); }
     if (!v.ok || !v.data.isValid) return send402(env, url, v.data.invalidReason || v.data.error || `verify failed (${v.status})`);
 
-    const data = await fetchTokenData(params);
+    const data = await fetchTokenData(params, env);
     if (data.upstreamDown) return json({ error: "Data sources temporarily unavailable. No payment was taken; please retry." }, 502);
     if (!data.security && !data.token && !data.pools.length) return json({ error: `No data found for ${params.address} on ${params.chain}. No payment was taken.` }, 404);
     const result = analyze(params.chain, params.address, data);

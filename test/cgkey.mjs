@@ -1,0 +1,24 @@
+const W = (await import(process.argv[2])).default;
+let fails = 0; const ok = (c, m) => { console.log((c ? "PASS " : "FAIL ") + m); if (!c) fails++; };
+const A = "0x532f27101965dd16442e59d40670faf5ebb142e4";
+let seen = [];
+globalThis.fetch = async (u, init) => {
+  u = String(u); seen.push({ u, h: (init && init.headers) || {} });
+  if (u.includes("gopluslabs")) return new Response(JSON.stringify({ code: 1, result: { [A]: { is_open_source: "1", token_symbol: "BRETT", holders: [] } } }));
+  if (u.includes("/pools")) return new Response(JSON.stringify({ data: [{ attributes: { reserve_in_usd: "5000000", pool_created_at: "2024-01-01T00:00:00Z", volume_usd: { h24: "5" }, name: "BRETT / WETH", base_token_price_usd: "0.01" }, relationships: { base_token: { data: { id: "base_" + A } }, quote_token: { data: { id: "base_0xw" } } } }] }));
+  if (u.endsWith("/verify")) return new Response(JSON.stringify({ isValid: true, payer: "0xabc" }));
+  return new Response(JSON.stringify({ success: true, payer: "0xabc", transaction: "0x1", network: "eip155:8453" }));
+};
+const base = "https://tok.example.workers.dev";
+let r = await W.fetch(new Request(base + "/check", { method: "POST" }), {});
+const pr = JSON.parse(Buffer.from(r.headers.get("PAYMENT-REQUIRED"), "base64"));
+const hdr = Buffer.from(JSON.stringify({ x402Version: 2, resource: pr.resource, accepted: pr.accepts[0], payload: {} })).toString("base64");
+const paid = (env) => W.fetch(new Request(base + "/check", { method: "POST", headers: { "PAYMENT-SIGNATURE": hdr }, body: JSON.stringify({ tokenAddress: A, chain: "base" }) }), env);
+seen = []; r = await paid({ CG_DEMO_KEY: " CG-test123 " }); let j = await r.json();
+const cg = seen.find((x) => x.u.includes("/pools"));
+ok(r.status === 200 && j.market.liquidity_usd === 5000000, "paid check works with key");
+ok(cg.u.startsWith("https://api.coingecko.com/api/v3/onchain/networks/base/tokens/") && cg.h["x-cg-demo-api-key"] === "CG-test123", "uses CoinGecko onchain API with demo key header");
+ok(!cg.u.includes("CG-test123"), "key not in URL");
+seen = []; r = await paid({});
+ok(seen.find((x) => x.u.includes("/pools")).u.startsWith("https://api.geckoterminal.com/api/v2/"), "falls back to GeckoTerminal without key");
+console.log(fails ? fails + " FAILED" : "ALL PASS");
