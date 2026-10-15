@@ -238,7 +238,7 @@ function rid(d,k){try{return String(d.relationships[k].data.id||'')}catch(e){ret
 function detect(addr){
  var want=addr.toLowerCase();
  return raw(GT+'/search/pools?query='+encodeURIComponent(addr)).then(function(x){
-  var n={};(x.data&&x.data.data||[]).forEach(function(d){var net=rid(d,'network');if(FROMGT[net]&&[rid(d,'base_token'),rid(d,'quote_token')].map(function(s){return s.toLowerCase()}).indexOf(net+'_'+want)>-1)n[net]=(n[net]||0)+1});
+  var n={};(x.data&&x.data.data||[]).forEach(function(d){[rid(d,'base_token'),rid(d,'quote_token')].forEach(function(id){id=id.toLowerCase();var k=id.lastIndexOf('_'),net=id.slice(0,k);if(k>0&&id.slice(k+1)===want&&FROMGT[net])n[net]=(n[net]||0)+1})});
   var best=Object.keys(n).sort(function(a,b){return n[b]-n[a]})[0];return best?FROMGT[best]:'ethereum';
  });
 }
