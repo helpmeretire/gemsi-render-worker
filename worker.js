@@ -177,7 +177,9 @@ async function fetchTokenData({ address, chain }) {
   const token = gtTok.ok && gtTok.data && gtTok.data.data ? gtTok.data.data.attributes || null : null;
   const pools = gtPools.ok && gtPools.data && Array.isArray(gtPools.data.data) ? gtPools.data.data.map((d) => d.attributes || {}) : [];
   const upstreamDown = !gp.ok && gp.status !== 404 && !gtTok.ok && gtTok.status !== 404;
-  return { security, token, pools, gpOk: gp.ok, gtOk: gtTok.ok || gtPools.ok, upstreamDown };
+  const marketMissing = gtTok.status === 404 && (gtPools.status === 404 || (gtPools.ok && pools.length === 0));
+  const marketUnavailable = !gtTok.ok && !gtPools.ok && !marketMissing;
+  return { security, token, pools, gpOk: gp.ok, gtOk: gtTok.ok || gtPools.ok, upstreamDown, marketMissing, marketUnavailable };
 }
 
 const num = (v) => {
@@ -228,7 +230,10 @@ function analyze(chain, address, d, now = Date.now()) {
     if (on(s.anti_whale_modifiable)) add("low", "anti_whale_modifiable", "Anti-whale limits can be changed.");
     if (!ownerLive && s.owner_address !== undefined) green.push("Ownership renounced or no owner.");
     if (s.is_open_source === "1") green.push("Contract source is verified.");
-    if (on(s.trust_list)) green.push("On GoPlus trusted list.");
+    if (on(s.trust_list)) {
+      green.push("On GoPlus trusted list (e.g. major stablecoin or blue-chip); its admin controls are expected and not counted as risk.");
+      for (let i = red.length - 1; i >= 0; i--) if (["upgradeable_proxy", "mintable", "blacklist", "transfer_pausable", "insider_holdings", "external_call"].includes(red[i].flag)) red.splice(i, 1);
+    }
   }
   if (chain === "solana" && d.security) {
     const st = (o) => (o && typeof o === "object" ? o.status : o);
@@ -248,6 +253,7 @@ function analyze(chain, address, d, now = Date.now()) {
   }
 
   // ----- holder concentration -----
+  const holderCountRaw = num(s.holder_count);
   let top10 = null;
   if (Array.isArray(s.holders) && s.holders.length) {
     const list = s.holders.filter((h) => {
@@ -258,8 +264,9 @@ function analyze(chain, address, d, now = Date.now()) {
       return true;
     });
     top10 = list.slice(0, 10).reduce((t, h) => t + (num(h.percent) || 0), 0);
-    if (top10 > 0.5) add("high", "holder_concentration", `Top 10 wallets hold about ${pct(top10)} of supply.`);
-    else if (top10 > 0.3) add("medium", "holder_concentration", `Top 10 wallets hold about ${pct(top10)} of supply.`);
+    const note = holderCountRaw !== null && holderCountRaw > 50000 ? " (may include exchange wallets)" : "";
+    if (top10 > 0.5) add("high", "holder_concentration", `Top 10 wallets hold about ${pct(top10)} of supply${note}.`);
+    else if (top10 > 0.3) add("medium", "holder_concentration", `Top 10 wallets hold about ${pct(top10)} of supply${note}.`);
     else green.push(`Top 10 wallets hold about ${pct(top10)} of supply.`);
   }
   const holderCount = num(s.holder_count);
@@ -272,7 +279,8 @@ function analyze(chain, address, d, now = Date.now()) {
   const volume24h = pools.length ? pools.reduce((t, p) => t + (num(p.volume_usd && p.volume_usd.h24) || 0), 0) : num(d.token && d.token.volume_usd && d.token.volume_usd.h24);
   const created = pools.map((p) => Date.parse(p.pool_created_at)).filter(Number.isFinite);
   const ageDays = created.length ? (now - Math.min(...created)) / 86400000 : null;
-  if (!pools.length && !d.token) add("high", "no_market", "No DEX pools or market data found for this token.");
+  if (d.marketMissing) add("high", "no_market", "No DEX pools found for this token.");
+  else if (d.marketUnavailable) add("low", "market_data_unavailable", "Market data was temporarily unavailable; liquidity and age were not checked.");
   if (liquidity !== null) {
     if (liquidity < 10000) add("high", "low_liquidity", `Total DEX liquidity is only ${fmtUsd(liquidity)}.`);
     else if (liquidity < 50000) add("medium", "low_liquidity", `Total DEX liquidity is ${fmtUsd(liquidity)}.`);
