@@ -153,10 +153,10 @@ const EXAMPLE_OUT = {
   ticker: "AAPL",
   company: "Apple Inc.",
   cik: "0000320193",
-  latest_fiscal_year: { period_end: "YYYY-MM-DD", fiscal_year: 0, revenue: 0, net_income: 0, eps_diluted: 0 },
-  balance_sheet: { as_of: "YYYY-MM-DD", cash_and_equivalents: 0, total_assets: 0 },
-  recent_filings: [{ form: "10-K", filed: "YYYY-MM-DD", url: "https://www.sec.gov/Archives/edgar/data/320193/..." }],
-  note: "Shape only; see GET /sample for a live AAPL snapshot.",
+  latest_fiscal_year: { period_end: "2025-09-27", fiscal_year: 2025, revenue: 416161000000, net_income: 112010000000, eps_diluted: 7.46 },
+  latest_quarter: { period_end: "2026-06-27", revenue: 109417000000, net_income: 29789000000, eps_diluted: 2.02 },
+  balance_sheet: { as_of: "2026-06-27", cash_and_equivalents: 39544000000, total_assets: 383266000000, total_liabilities: 275746000000, stockholders_equity: 107520000000, long_term_debt: 71340000000 },
+  recent_filings: [{ form: "10-Q", filed: "2026-07-31", url: "https://www.sec.gov/Archives/edgar/data/320193/000032019326000020/0000320193-26-000020-index.htm" }],
   disclaimer: DISCLAIMER,
 };
 function paymentRequired(env, url, error) {
