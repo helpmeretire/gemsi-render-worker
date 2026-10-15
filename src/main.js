@@ -485,6 +485,7 @@ export default {
     if (url.pathname === "/scan" || url.pathname === "/scan/") return scanPage(env, url);
     if (url.pathname === "/free") return handleFree(request, url);
     if (url.pathname === "/og.png") return ogImage();
+    { const r = siteRoute(request, url, env); if (r) return r; }
     if (url.pathname === "/openapi.json" || url.pathname === "/.well-known/openapi.json") return json(openapi(url.origin));
     if (url.pathname !== "/check") return json({ error: "Not found. Use POST /check" }, 404);
     if (!/^0x[0-9a-fA-F]{40}$/.test(env.PAY_TO)) return json({ error: "Service not configured: PAY_TO wallet address invalid" }, 500);

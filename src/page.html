@@ -112,13 +112,14 @@ footer p{margin:0 0 10px}
 @keyframes s{to{transform:rotate(360deg)}}
 @media (max-width:560px){form{grid-template-columns:1fr}.row{grid-template-columns:1fr}.go{width:100%}.stamp{font-size:44px}.verdict,.sect,.actions,.meter{padding-left:16px;padding-right:16px}.checked{padding-left:16px;padding-right:16px}}
 @media (prefers-reduced-motion:reduce){.spin{animation:none}}
+__EXTRA_CSS__
 </style>
 </head>
 <body>
 <div class="safety">We will never DM you or ask for your recovery phrase. <b>Anyone who does is a scammer.</b></div>
 <header><div class="wrap"><a class="brand" href="__HOME__">
 <svg width="34" height="34" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#13213C"/><path d="M9 16.5l4.5 4.5L23 11" stroke="#FFD23F" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-<span>NoJunkCrypto</span></a></div></header>
+<span>NoJunkCrypto</span></a>__NAV__</div></header>
 
 <section class="hero"><div class="wrap">
 <p class="kick">Free token checker</p>
@@ -191,7 +192,7 @@ function busy(b){go.disabled=b;go.innerHTML=b?'<span class="spin" aria-hidden="t
 function err(t){out.innerHTML='<div class="msg err" role="alert">'+esc(t)+'</div>'}
 function render(r){
  var t=r.token||{},m=r.market||{},g=r.grade,name=t.symbol?(t.name&&t.name!==t.symbol?esc(t.name)+' ('+esc(t.symbol)+')':esc(t.symbol)):'Unnamed token';
- var flags=(r.red_flags||[]).map(function(x){return'<li><span class="sev s-'+esc(x.severity)+'">'+SEV[x.severity]+'</span><span>'+esc(x.detail)+'</span></li>'}).join('');
+ var FM=__FLAGMAP__;var flags=(r.red_flags||[]).map(function(x){var s=FM[x.flag];return'<li><span class="sev s-'+esc(x.severity)+'">'+SEV[x.severity]+'</span><span>'+esc(x.detail)+(s?' <a class="flaglink" href="/learn/'+s+'">What this means</a>':'')+'</span></li>'}).join('');
  var good=(r.green_flags||[]).map(function(x){return'<li><span class="sev s-good">Good</span><span>'+esc(x)+'</span></li>'}).join('');
  var tag=t.symbol?'$'+String(t.symbol).replace(/[^A-Za-z0-9]/g,''):'this token';
  var share='I ran '+tag+' through the NoJunk token checker: '+g+'.\n\nCheck any token free before you buy:';
