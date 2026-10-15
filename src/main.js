@@ -439,7 +439,7 @@ export default {
     if (!v.ok || !v.data.isValid) return send402(env, url, v.data.invalidReason || v.data.error || `verify failed (${v.status})`);
 
     const data = await fetchTokenData(params, env);
-    if (data.upstreamDown) return json({ error: "Data sources temporarily unavailable. No payment was taken; please retry." }, 502);
+    if (data.upstreamDown || !data.gpOk) return json({ error: "Security data source temporarily unavailable. No payment was taken; please retry shortly." }, 502);
     if (!data.security && !data.token && !data.pools.length) return json({ error: `No data found for ${params.address} on ${params.chain}. No payment was taken.` }, 404);
     const result = analyze(params.chain, params.address, data);
 
