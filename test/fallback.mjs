@@ -1,0 +1,31 @@
+const W = (await import(process.argv[2])).default;
+let fails = 0; const ok = (c, m) => { console.log((c ? "PASS " : "FAIL ") + m); if (!c) fails++; };
+const EVM = "0x1111111111111111111111111111111111111111", SAFE = "0x2222222222222222222222222222222222222222", SOL = "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263";
+const J = (o, s = 200) => new Response(JSON.stringify(o), { status: s });
+let settled = 0;
+globalThis.fetch = async (u) => {
+  u = String(u);
+  if (u.includes("gopluslabs")) return J({ code: 4029, message: "too many requests" });
+  if (u.includes("honeypot.is")) return u.includes(EVM) ? J({ token: { name: "Trap", symbol: "TRAP", totalHolders: 50 }, simulationSuccess: true, honeypotResult: { isHoneypot: true }, simulationResult: { buyTax: 0, sellTax: 100 }, contractCode: { openSource: false, isProxy: false } })
+    : J({ token: { name: "Fine", symbol: "FINE", totalHolders: 200000 }, simulationSuccess: true, honeypotResult: { isHoneypot: false }, simulationResult: { buyTax: 0, sellTax: 0 }, contractCode: { openSource: true, isProxy: false } });
+  if (u.includes("rugcheck")) return J({ mint: SOL, mintAuthority: "AuthX", freezeAuthority: null, tokenMeta: { name: "Bonk", symbol: "Bonk", mutable: false }, totalHolders: 900000, topHolders: [{ owner: "a", pct: 30 }, { owner: "b", pct: 25 }], transferFee: { pct: 0 }, rugged: false, risks: [{ name: "Copycat token", level: "danger" }, { name: "Mint Authority still enabled", level: "danger" }] });
+  if (u.includes("/pools")) return J({ data: [{ attributes: { reserve_in_usd: "2000000", pool_created_at: "2024-01-01T00:00:00Z", volume_usd: { h24: "5" }, name: "X / WETH" }, relationships: { base_token: { data: { id: "x" } }, quote_token: { data: { id: "y" } } } }] });
+  if (u.endsWith("/verify")) return J({ isValid: true, payer: "0xabc" });
+  settled++; return J({ success: true, payer: "0xabc", transaction: "0x1", network: "eip155:8453" });
+};
+const base = "https://tok.example.workers.dev";
+let r = await W.fetch(new Request(base + "/check", { method: "POST" }), {});
+const pr = JSON.parse(Buffer.from(r.headers.get("PAYMENT-REQUIRED"), "base64"));
+const hdr = Buffer.from(JSON.stringify({ x402Version: 2, resource: pr.resource, accepted: pr.accepts[0], payload: {} })).toString("base64");
+const paid = (b) => W.fetch(new Request(base + "/check", { method: "POST", headers: { "PAYMENT-SIGNATURE": hdr }, body: JSON.stringify(b) }), { CG_DEMO_KEY: "k" });
+r = await paid({ tokenAddress: EVM, chain: "base" }); let j = await r.json();
+ok(r.status === 200 && j.grade === "JUNK" && j.red_flags.some((f) => f.flag === "honeypot") && j.red_flags.some((f) => f.flag === "sell_tax" && f.severity === "critical"), "GoPlus down -> Honeypot.is catches honeypot + 100% sell tax: " + j.grade);
+ok(j.red_flags.some((f) => f.flag === "limited_checks") && j.sources.includes("Honeypot.is") && !j.sources.includes("GoPlus"), "limited-checks note + correct source credit");
+r = await paid({ tokenAddress: SAFE, chain: "ethereum" }); j = await r.json();
+ok(r.status === 200 && j.grade === "CLEAN" && j.token.symbol === "FINE", "clean token via fallback stays CLEAN: " + j.grade + " " + j.risk_score);
+r = await paid({ tokenAddress: SAFE, chain: "arbitrum" });
+ok(r.status === 502, "chain without fallback -> 502, not charged");
+r = await paid({ tokenAddress: SOL, chain: "solana" }); j = await r.json();
+ok(r.status === 200 && j.red_flags.some((f) => f.flag === "mint_authority") && j.red_flags.some((f) => f.flag === "rugcheck_danger" && /Copycat/.test(f.detail)) && !j.red_flags.some((f) => /Mint Authority/.test(f.detail) && f.flag === "rugcheck_danger") && j.red_flags.some((f) => f.flag === "holder_concentration"), "Solana via RugCheck: mint authority, copycat, concentration (no duplicate): " + j.red_flags.map((f) => f.flag));
+ok(j.token.symbol === "Bonk" && j.green_flags.some((g) => /Freeze authority revoked/.test(g)), "Solana metadata + freeze revoked green");
+console.log(fails ? fails + " FAILED" : "ALL PASS");

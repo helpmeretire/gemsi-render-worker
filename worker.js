@@ -179,8 +179,67 @@ async function fetchTokenData({ address, chain }, env = {}) {
   const cgKey = String(env.CG_DEMO_KEY || "").trim();
   const path = `/networks/${c.gt}/tokens/${encodeURIComponent(address)}/pools?page=1`;
   const gtReq = cgKey ? getJSON("https://api.coingecko.com/api/v3/onchain" + path, 120, { "x-cg-demo-api-key": cgKey }) : getJSON("https://api.geckoterminal.com/api/v2" + path);
-  const [gp, gtPools] = await Promise.all([getJSON(gpUrl), gtReq]);
-  return interpretTokenData({ address, chain }, gp, gtPools);
+  let [gp, gtPools] = await Promise.all([getJSON(gpUrl), gtReq]);
+  const gpFailed = !gp.ok || !gp.data || (gp.data.code !== undefined && gp.data.code !== 1);
+  let fb = null;
+  if (gpFailed) {
+    fb = await fallbackSecurity({ address, chain });
+    if (fb) gp = { ok: true, status: 200, data: { code: 1, result: { [address]: fb.security } } };
+  }
+  const d = interpretTokenData({ address, chain }, gp, gtPools);
+  if (fb) { d.extraRed = fb.extraRed; d.securitySource = fb.source; }
+  return d;
+}
+
+// Backup security sources, used only when GoPlus is unavailable (it throttles Cloudflare's shared IPs).
+// Their results are mapped onto GoPlus field names so the same grading rules apply.
+const HONEYPOT_CHAIN_IDS = { ethereum: 1, bsc: 56, base: 8453 };
+async function fallbackSecurity({ address, chain }) {
+  if (chain === "solana") {
+    const r = await getJSON(`https://api.rugcheck.xyz/v1/tokens/${encodeURIComponent(address)}/report`, 300);
+    const j = r.ok && r.data;
+    if (!j || !j.mint) return null;
+    const meta = j.tokenMeta || {};
+    const extraRed = [{ severity: "low", flag: "limited_checks", detail: "Primary security source was unavailable; Solana authority, fee and holder checks came from RugCheck." }];
+    if (j.rugged) extraRed.push({ severity: "critical", flag: "rugged", detail: "RugCheck marks this token as rugged." });
+    for (const k of j.risks || []) if (k && k.level === "danger" && !/mint authority|freeze authority|top 10|single holder|low liquidity|low amount of lp/i.test(String(k.name))) extraRed.push({ severity: "high", flag: "rugcheck_danger", detail: `RugCheck: ${String(k.name).slice(0, 120)}.` });
+    return {
+      source: "RugCheck",
+      extraRed,
+      security: {
+        mintable: { status: j.mintAuthority ? "1" : "0" },
+        freezable: { status: j.freezeAuthority ? "1" : "0" },
+        metadata_mutable: { status: meta.mutable ? "1" : "0" },
+        metadata: { name: meta.name || null, symbol: meta.symbol || null },
+        transfer_fee: { current_fee_rate: j.transferFee && Number.isFinite(+j.transferFee.pct) ? +j.transferFee.pct / 100 : 0 },
+        holder_count: j.totalHolders != null ? String(j.totalHolders) : undefined,
+        holders: (j.topHolders || []).map((h) => ({ account: h.owner || h.address, percent: String((+h.pct || 0) / 100), is_locked: 0 })),
+      },
+    };
+  }
+  const id = HONEYPOT_CHAIN_IDS[chain];
+  if (!id) return null;
+  const r = await getJSON(`https://api.honeypot.is/v2/IsHoneypot?address=${encodeURIComponent(address)}&chainID=${id}`, 300);
+  const j = r.ok && r.data;
+  if (!j || !j.token) return null;
+  const sim = j.simulationResult || {}, code = j.contractCode || {}, hp = j.honeypotResult || {};
+  const extraRed = [{ severity: "low", flag: "limited_checks", detail: "Primary security source was unavailable; honeypot and taxes were verified by trade simulation (Honeypot.is), but owner-permission and holder checks were not run." }];
+  if (j.simulationSuccess === false) extraRed.push({ severity: "medium", flag: "simulation_failed", detail: "A test buy and sell could not be simulated, so honeypot status is unknown." });
+  const tax = (v) => (v !== undefined && v !== null && Number.isFinite(+v) ? String(+v / 100) : undefined);
+  return {
+    source: "Honeypot.is",
+    extraRed,
+    security: {
+      is_honeypot: hp.isHoneypot ? "1" : "0",
+      buy_tax: tax(sim.buyTax),
+      sell_tax: tax(sim.sellTax),
+      is_open_source: code.openSource === true ? "1" : code.openSource === false ? "0" : undefined,
+      is_proxy: code.isProxy ? "1" : "0",
+      token_symbol: j.token.symbol || undefined,
+      token_name: j.token.name || undefined,
+      holder_count: j.token.totalHolders != null ? String(j.token.totalHolders) : undefined,
+    },
+  };
 }
 
 function interpretTokenData({ address, chain }, gp, gtPools) {
@@ -223,7 +282,7 @@ const fmtUsd = (n) => (n === null ? "unknown" : n >= 1e9 ? `$${(n / 1e9).toFixed
 const pct = (x) => `${(x * 100).toFixed(x < 0.1 ? 1 : 0)}%`;
 
 function analyze(chain, address, d, now = Date.now()) {
-  const red = [];
+  const red = [...(d.extraRed || [])];
   const green = [];
   const add = (severity, flag, detail) => red.push({ severity, flag, detail });
   const s = d.security || {};
@@ -367,7 +426,7 @@ function analyze(chain, address, d, now = Date.now()) {
     },
     checked_at: new Date(now).toISOString(),
     disclaimer: DISCLAIMER,
-    sources: SOURCES,
+    sources: d.securitySource ? SOURCES.replace("GoPlus Security", d.securitySource) : SOURCES,
   };
 }
 
