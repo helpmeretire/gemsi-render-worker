@@ -178,6 +178,19 @@ export default {
       const s = await status(env);
       return new Response(JSON.stringify(s), { headers: { "content-type": "application/json", "cache-control": "no-store", "access-control-allow-origin": "*" } });
     }
+    if (url.pathname === "/api/walletdebug") {
+      const UA = { "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36" };
+      const data = "0x70a08231" + WALLET.slice(2).padStart(64, "0");
+      const tests = await Promise.all([
+        timed("https://mainnet.base.org", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_call", params: [{ to: USDC, data }, "latest"] }) }),
+        timed("https://base-rpc.publicnode.com", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_call", params: [{ to: USDC, data }, "latest"] }) }),
+        timed("https://base.llamarpc.com", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_call", params: [{ to: USDC, data }, "latest"] }) }),
+        timed(`https://base.blockscout.com/api/v2/addresses/${WALLET}/token-transfers?type=ERC-20&filter=to`, { headers: UA }),
+        timed(`https://api.routescan.io/v2/network/mainnet/evm/8453/etherscan/api?module=account&action=tokentx&address=${WALLET}&sort=desc&page=1&offset=5`, { headers: UA }),
+        timed(`https://api.basescan.org/api?module=account&action=tokentx&address=${WALLET}&sort=desc&page=1&offset=5`, { headers: UA }),
+      ]);
+      return new Response(JSON.stringify(tests.map((t) => ({ status: t.status, ms: t.ms, err: t.error, head: (t.text || "").slice(0, 160) })), null, 1), { headers: { "content-type": "application/json" } });
+    }
     if (url.pathname === "/" || url.pathname === "/status") return new Response(PAGE, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
     return new Response("Not found", { status: 404 });
   },
