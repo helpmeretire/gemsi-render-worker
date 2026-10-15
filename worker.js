@@ -70,14 +70,25 @@ async function checkService(svc) {
 }
 
 async function wallet() {
-  const r = await timed(`https://base.blockscout.com/api/v2/addresses/${WALLET}/token-transfers?type=ERC-20&filter=to`);
-  const j = r.ok ? tryJson(r.text) : null;
-  const items = (j && j.items) || [];
-  const usdc = items.filter((t) => t.token && String(t.token.address).toLowerCase() === USDC).map((t) => ({ when: t.timestamp, usd: Number(t.total && t.total.value) / 1e6, from: t.from && t.from.hash }));
-  const b = await timed(`https://base.blockscout.com/api/v2/addresses/${WALLET}/tokens?type=ERC-20`);
-  const bj = b.ok ? tryJson(b.text) : null;
-  const bal = ((bj && bj.items) || []).find((x) => x.token && String(x.token.address).toLowerCase() === USDC);
-  return { ok: r.ok, usdc_balance: bal ? Number(bal.value) / 1e6 : 0, usdc_payments: usdc.slice(0, 10), payments_count: usdc.length, last_any_transfer: items[0] ? { when: items[0].timestamp, token: items[0].token && items[0].token.symbol } : null };
+  const UA = { "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36" };
+  // Balance straight from the Base network (ERC-20 balanceOf).
+  const data = "0x70a08231" + WALLET.slice(2).padStart(64, "0");
+  const rpc = await timed("https://mainnet.base.org", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_call", params: [{ to: USDC, data }, "latest"] }) });
+  const rj = rpc.ok ? tryJson(rpc.text) : null;
+  const balance = rj && rj.result ? Number(BigInt(rj.result)) / 1e6 : null;
+  // Incoming USDC transfers: Blockscout first, Routescan as backup.
+  let items = null, source = null;
+  const b = await timed(`https://base.blockscout.com/api/v2/addresses/${WALLET}/token-transfers?type=ERC-20&filter=to`, { headers: UA });
+  const bj = b.ok && b.status === 200 ? tryJson(b.text) : null;
+  if (bj && Array.isArray(bj.items)) { source = "blockscout"; items = bj.items.map((t) => ({ when: t.timestamp, token: t.token && t.token.symbol, addr: t.token && String(t.token.address).toLowerCase(), value: Number(t.total && t.total.value), decimals: Number(t.token && t.token.decimals) || 18, from: t.from && t.from.hash })); }
+  if (!items) {
+    const r = await timed(`https://api.routescan.io/v2/network/mainnet/evm/8453/etherscan/api?module=account&action=tokentx&address=${WALLET}&sort=desc&page=1&offset=50`, { headers: UA });
+    const rj2 = r.ok && r.status === 200 ? tryJson(r.text) : null;
+    if (rj2 && Array.isArray(rj2.result)) { source = "routescan"; items = rj2.result.filter((t) => String(t.to).toLowerCase() === WALLET).map((t) => ({ when: new Date(Number(t.timeStamp) * 1000).toISOString(), token: t.tokenSymbol, addr: String(t.contractAddress).toLowerCase(), value: Number(t.value), decimals: Number(t.tokenDecimal) || 18, from: t.from })); }
+  }
+  const all = items || [];
+  const usdc = all.filter((t) => t.addr === USDC).map((t) => ({ when: t.when, usd: t.value / 1e6, from: t.from }));
+  return { ok: items !== null, source, balance_source: balance === null ? null : "base rpc", usdc_balance: balance === null ? 0 : balance, usdc_payments: usdc.slice(0, 10), payments_count: usdc.length, last_any_transfer: all[0] ? { when: all[0].when, token: all[0].token } : null, explorer_status: { blockscout: b.status, routescan: items && source === "routescan" ? 200 : undefined } };
 }
 
 async function status(env) {
