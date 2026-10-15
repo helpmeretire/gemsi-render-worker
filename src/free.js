@@ -4,6 +4,7 @@ const PARTNERS = [
   { env: "REF_GEMINI", name: "Gemini", blurb: "US-regulated exchange. Simple app, good for a first account." },
   { env: "REF_ROBINHOOD", name: "Robinhood", blurb: "Buy major coins in the same app as stocks." },
   { env: "REF_UPHOLD", name: "Uphold", blurb: "Exchange with clear, upfront pricing on each trade." },
+  { env: "REF_CRYPTOCOM", name: "Crypto.com", blurb: "Large exchange app for buying and selling major coins." },
   { env: "REF_COINBASE_WALLET", name: "Coinbase Wallet", blurb: "Free self-custody wallet from Coinbase: you hold your own keys, not an exchange." },
   { env: "REF_LEDGER", name: "Ledger", blurb: "Hardware wallet: keep coins off exchanges, under your own key." },
   { env: "REF_TREZOR", name: "Trezor", blurb: "Hardware wallet with open-source software." },
