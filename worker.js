@@ -511,6 +511,16 @@ export default {
     if (request.method === "OPTIONS") {
       return new Response(null, { headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "PAYMENT-SIGNATURE, X-PAYMENT, Content-Type", "Access-Control-Allow-Methods": "GET, POST, OPTIONS" } });
     }
+    if (url.pathname === "/health/data") {
+      // Reports only upstream status codes (no data, no keys) so the operator can confirm the data sources respond.
+      const cgKey = String(env.CG_DEMO_KEY || "").trim();
+      const probe = "/networks/base/tokens/0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913/pools?page=1";
+      const [m, g] = await Promise.all([
+        cgKey ? fetch("https://api.coingecko.com/api/v3/onchain" + probe, { headers: { accept: "application/json", "x-cg-demo-api-key": cgKey } }).then((r) => r.status, () => 0) : Promise.resolve(null),
+        fetch("https://api.gopluslabs.io/api/v1/token_security/8453?contract_addresses=0x833589fcd6edb6e08f4c7c32d4f71b54bda02913").then((r) => r.json().then((j) => (j && j.code) || r.status, () => r.status), () => 0),
+      ]);
+      return json({ coingecko_key_set: !!cgKey, coingecko_status: m, goplus_code: g }, 200, { "Cache-Control": "no-store" });
+    }
     if (url.pathname === "/" || url.pathname === "/health") {
       return json({
         service: SERVICE,
