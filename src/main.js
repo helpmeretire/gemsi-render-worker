@@ -286,6 +286,12 @@ export default {
         facilitator: env.CDP_API_KEY_ID && env.CDP_API_KEY_SECRET ? "cdp" : "payai",
       });
     }
+    if (url.pathname === "/health/data") {
+      // Reports only upstream status codes (no data, no key) so the operator can confirm CoinGecko answers from Cloudflare.
+      const key = String(env.CG_DEMO_KEY || "").trim();
+      const st = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd", { headers: key ? { "x-cg-demo-api-key": key, accept: "application/json" } : { accept: "application/json" } }).then((r) => r.status, () => 0);
+      return json({ coingecko_key_set: !!key, coingecko_status: st }, 200, { "Cache-Control": "no-store" });
+    }
     if (url.pathname === "/openapi.json" || url.pathname === "/.well-known/openapi.json") return json(openapi(url.origin));
     if (url.pathname !== "/price") return json({ error: "Not found. Use /price?symbol=BTC,ETH or /price?address=0x...&chain=base" }, 404);
     if (!env.PAY_TO || !/^0x[0-9a-fA-F]{40}$/.test(env.PAY_TO)) return json({ error: "Service not configured: PAY_TO wallet address missing" }, 500);
