@@ -386,12 +386,15 @@ export default {
         openapi: `${url.origin}/openapi.json`,
         usage: 'POST /check {"tokenAddress":"0x...","chain":"base"} or GET /check?tokenAddress=...',
         price: "$0.01 USDC on Base per check (x402)",
+        humans: `Free web checker: ${url.origin}/scan`,
         chains: Object.keys(CHAINS),
         facilitator: env.CDP_API_KEY_ID && env.CDP_API_KEY_SECRET ? "cdp" : "payai",
         sources: SOURCES,
         disclaimer: DISCLAIMER,
       });
     }
+    if (url.pathname === "/scan" || url.pathname === "/scan/") return scanPage(env, url);
+    if (url.pathname === "/free") return handleFree(request, url);
     if (url.pathname === "/openapi.json" || url.pathname === "/.well-known/openapi.json") return json(openapi(url.origin));
     if (url.pathname !== "/check") return json({ error: "Not found. Use POST /check" }, 404);
     if (!/^0x[0-9a-fA-F]{40}$/.test(env.PAY_TO)) return json({ error: "Service not configured: PAY_TO wallet address invalid" }, 500);

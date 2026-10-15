@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Is This Token Junk? Free Token Checker | NoJunkCrypto</title>
+<meta name="description" content="Paste any token address and get a plain-English verdict in seconds: honeypot, sell tax, mint authority, owner powers, holder concentration, liquidity and pool age. Free. Base, Ethereum, Solana, BNB Chain and more.">
+<meta property="og:title" content="Is this token junk? Check it free.">
+<meta property="og:description" content="Paste a token address. Get JUNK, RISKY, CAUTION or CLEAN in seconds, with the reasons. Free, no sign-up.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#13213C">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2313213C'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11' stroke='%23FFD23F' stroke-width='3.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#13213C;--ink2:#3A4558;--muted:#4A5568;--line:#D5DAE1;--paper:#FFFFFF;--soft:#F1F3F6;--gold:#FFD23F;--goldtext:#8A6A00;--red:#B01E33;--redbg:#FBE9EC;--orange:#A44A00;--orangebg:#FDEEDF;--green:#16663A;--greenbg:#E6F3EB}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:'Archivo',system-ui,-apple-system,sans-serif;font-variant-numeric:tabular-nums;-webkit-text-size-adjust:100%}
+a{color:var(--ink)}a:hover{color:var(--goldtext)}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px}
+.safety{background:var(--ink);color:#fff;font-size:13px;text-align:center;padding:7px 16px}
+.safety b{color:var(--gold)}
+header{border-bottom:3px solid var(--ink)}
+.brand{display:flex;align-items:center;gap:10px;padding:16px 0;text-decoration:none;color:var(--ink)}
+.brand span{font-stretch:72%;font-weight:850;font-size:28px;letter-spacing:-.01em}
+.hero{background:var(--gold);padding:36px 0 32px}
+.kick{margin:0 0 10px;font-weight:700;font-size:15px;color:var(--ink)}
+h1{font-stretch:70%;font-weight:850;font-size:clamp(44px,9vw,76px);line-height:.93;letter-spacing:-.01em;margin:0 0 14px}
+.dek{font-family:'Source Serif 4',Georgia,serif;font-size:19px;line-height:1.45;margin:0 0 22px;max-width:620px}
+form{display:grid;grid-template-columns:1fr auto;gap:10px}
+.field{display:flex;flex-direction:column;gap:6px;grid-column:1 / -1}
+label{font-weight:700;font-size:14px}
+input,select{font:inherit;font-size:17px;color:var(--ink);background:#fff;border:2px solid var(--ink);border-radius:6px;padding:13px 14px;min-height:52px;width:100%}
+input::placeholder{color:#6B7486}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px;grid-column:1 / -1}
+button{font:inherit;font-weight:800;font-size:18px;cursor:pointer;border-radius:6px;min-height:52px}
+.go{background:var(--ink);color:#fff;border:2px solid var(--ink);padding:0 22px}
+.go:hover{background:#0B1428}
+.go[disabled]{opacity:.6;cursor:wait}
+.tries{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px;font-size:14px}
+.tries button{font-size:14px;font-weight:700;min-height:44px;padding:0 14px;background:transparent;color:var(--ink);border:2px solid var(--ink)}
+.tries button:hover{background:rgba(19,33,60,.08)}
+main{padding:28px 0 8px}
+.msg{border:2px solid var(--ink);border-radius:8px;padding:16px;font-size:16px;line-height:1.5}
+.msg.err{border-color:var(--red);background:var(--redbg)}
+.card{border:3px solid var(--ink);border-radius:10px;overflow:hidden}
+.verdict{display:flex;flex-wrap:wrap;gap:16px 22px;align-items:center;padding:22px}
+.stamp{font-stretch:68%;font-weight:900;font-size:56px;line-height:1;padding:10px 16px 8px;border-radius:6px;letter-spacing:.01em}
+.g-JUNK{background:var(--red);color:#fff}
+.g-RISKY{background:var(--orange);color:#fff}
+.g-CAUTION{background:var(--gold);color:var(--ink)}
+.g-CLEAN{background:var(--green);color:#fff}
+.vtext{flex:1 1 260px;min-width:0}
+.tname{font-stretch:80%;font-weight:800;font-size:26px;margin:0 0 4px;overflow-wrap:anywhere}
+.addr{font-size:13px;color:var(--muted);overflow-wrap:anywhere;margin:0 0 8px}
+.one{font-family:'Source Serif 4',Georgia,serif;font-size:18px;line-height:1.45;margin:0}
+.meter{padding:0 22px 18px}
+.meter .bar{height:12px;border-radius:6px;background:var(--soft);overflow:hidden;border:1px solid var(--line)}
+.meter .fill{height:100%;border-radius:6px}
+.meter p{margin:6px 0 0;font-size:14px;color:var(--muted)}
+.sect{border-top:1px solid var(--line);padding:18px 22px}
+.sect h2{font-stretch:78%;font-weight:850;font-size:22px;margin:0 0 12px}
+ul.flags{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+ul.flags li{display:flex;gap:10px;align-items:flex-start;font-size:16px;line-height:1.45}
+.sev{flex:none;font-size:12px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;border-radius:3px;padding:3px 7px;margin-top:2px;min-width:72px;text-align:center}
+.s-critical{background:var(--red);color:#fff}
+.s-high{background:var(--redbg);color:var(--red)}
+.s-medium{background:var(--orangebg);color:var(--orange)}
+.s-low{background:var(--soft);color:var(--ink2)}
+.s-good{background:var(--greenbg);color:var(--green)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.stat{background:var(--soft);border-radius:6px;padding:12px}
+.stat b{display:block;font-stretch:80%;font-weight:800;font-size:22px}
+.stat span{font-size:13px;color:var(--muted)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;padding:18px 22px;border-top:1px solid var(--line);background:var(--soft)}
+.actions a,.actions button{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:800;font-size:16px;min-height:48px;padding:0 18px;border-radius:6px;text-decoration:none}
+.x{background:var(--ink);color:#fff;border:2px solid var(--ink)}
+.x:hover{color:#fff;background:#0B1428}
+.ghost{background:#fff;color:var(--ink);border:2px solid var(--ink)}
+.checked{font-size:13px;color:var(--muted);padding:0 22px 16px;margin:0;background:var(--soft)}
+.explain{padding:28px 0}
+.explain h2{font-stretch:74%;font-weight:850;font-size:34px;line-height:1;margin:0 0 14px}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+.grade{border-top:3px solid var(--ink);padding-top:10px}
+.grade .stamp{font-size:24px;padding:5px 9px 4px;display:inline-block}
+.grade p{font-family:'Source Serif 4',Georgia,serif;font-size:16px;line-height:1.45;margin:10px 0 0;color:var(--ink2)}
+.checks{columns:2 260px;column-gap:28px;font-family:'Source Serif 4',Georgia,serif;font-size:17px;line-height:1.5;padding-left:20px;margin:0}
+.checks li{margin-bottom:8px;break-inside:avoid}
+.partners{border-top:3px solid var(--ink);padding:24px 0 8px}
+.partners h2{font-stretch:74%;font-weight:850;font-size:30px;margin:0 0 6px}
+.partners .dek{font-size:17px;margin:0 0 16px}
+.plist{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.p{border:2px solid var(--ink);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.p b{font-size:19px}
+.p span{font-family:'Source Serif 4',Georgia,serif;font-size:15px;line-height:1.45;color:var(--ink2)}
+.p a{align-self:flex-start;font-weight:800;font-size:15px;min-height:44px;display:inline-flex;align-items:center}
+.paid{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.02em;background:var(--soft);color:var(--ink2);border-radius:3px;padding:2px 6px;vertical-align:middle;margin-left:6px}
+footer{border-top:3px solid var(--ink);margin-top:28px;padding:20px 0 36px;font-size:14px;line-height:1.55;color:var(--ink2)}
+footer p{margin:0 0 10px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.spin{display:inline-block;width:18px;height:18px;border:3px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:s .8s linear infinite;vertical-align:-3px;margin-right:8px}
+@keyframes s{to{transform:rotate(360deg)}}
+@media (max-width:560px){form{grid-template-columns:1fr}.row{grid-template-columns:1fr}.go{width:100%}.stamp{font-size:44px}.verdict,.sect,.actions,.meter{padding-left:16px;padding-right:16px}.checked{padding-left:16px;padding-right:16px}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+</style>
+</head>
+<body>
+<div class="safety">We will never DM you or ask for your recovery phrase. <b>Anyone who does is a scammer.</b></div>
+<header><div class="wrap"><a class="brand" href="__HOME__">
+<svg width="34" height="34" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#13213C"/><path d="M9 16.5l4.5 4.5L23 11" stroke="#FFD23F" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<span>NoJunkCrypto</span></a></div></header>
+
+<section class="hero"><div class="wrap">
+<p class="kick">Free token checker</p>
+<h1>Is this token junk?</h1>
+<p class="dek">Paste a token's contract address before you buy. In a few seconds you get a grade and the plain-English reasons: honeypot traps, sell taxes, who can print more coins, and whether a few wallets own it all.</p>
+<form id="f" novalidate>
+<div class="field"><label for="addr">Token contract address</label>
+<input id="addr" name="address" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="0x… or a Solana mint address" required></div>
+<div class="row">
+<div class="field" style="grid-column:auto"><label for="chain">Blockchain</label>
+<select id="chain" name="chain">
+<option value="">Detect it for me</option>
+<option value="ethereum">Ethereum</option><option value="base">Base</option><option value="solana">Solana</option><option value="bsc">BNB Chain</option><option value="arbitrum">Arbitrum</option><option value="polygon">Polygon</option><option value="optimism">Optimism</option><option value="avalanche">Avalanche</option>
+</select></div>
+<div class="field" style="grid-column:auto;justify-content:flex-end"><button class="go" id="go" type="submit">Check this token</button></div>
+</div>
+</form>
+<div class="tries"><span>Try one:</span>
+<button type="button" data-a="0x6982508145454Ce325dDbE47a25d4ec3d2311933" data-c="ethereum">PEPE</button>
+<button type="button" data-a="EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm" data-c="solana">WIF</button>
+<button type="button" data-a="0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" data-c="base">USDC on Base</button>
+</div>
+</div></section>
+
+<main class="wrap" id="out" aria-live="polite"></main>
+
+<section class="wrap explain">
+<h2>What the grades mean</h2>
+<div class="grid4">
+<div class="grade"><span class="stamp g-JUNK">JUNK</span><p>A serious trap was found, or so many problems that buying is a gamble you will probably lose.</p></div>
+<div class="grade"><span class="stamp g-RISKY">RISKY</span><p>Several real warning signs. Insiders may control the supply, the price or your ability to sell.</p></div>
+<div class="grade"><span class="stamp g-CAUTION">CAUTION</span><p>Nothing fatal, but something to understand first, such as thin trading or a very new pool.</p></div>
+<div class="grade"><span class="stamp g-CLEAN">CLEAN</span><p>No major red flags in the contract or market data. That is not the same as a good investment.</p></div>
+</div>
+</section>
+
+<section class="wrap explain" style="padding-top:0">
+<h2>What we check</h2>
+<ul class="checks">
+<li><b>Honeypots.</b> Can you actually sell after you buy?</li>
+<li><b>Taxes.</b> Hidden buy and sell fees, and whether the owner can raise them.</li>
+<li><b>Printing.</b> Whether someone can mint more coins and water yours down.</li>
+<li><b>Owner powers.</b> Pausing trades, blacklisting wallets, changing balances.</li>
+<li><b>Solana authorities.</b> Live mint and freeze authority on the token.</li>
+<li><b>Who holds it.</b> How much of the supply sits in the top 10 wallets.</li>
+<li><b>Liquidity.</b> How much real money is in the trading pools.</li>
+<li><b>Age.</b> How long it has traded. Most rugs happen in the first days.</li>
+</ul>
+</section>
+
+__PARTNERS__
+
+<footer><div class="wrap">
+<p><b>This is an automated screen, not advice.</b> It reads public contract and market data and can be wrong, late, or fooled by a clever contract. A CLEAN grade does not mean a token will go up. Never put in money you can't afford to lose.</p>
+<p>Security data: <a href="https://gopluslabs.io" rel="noopener">GoPlus Security</a>. Market data: GeckoTerminal, <a href="https://www.coingecko.com" rel="noopener">Powered by CoinGecko</a>.</p>
+<p>For AI agents and apps: the same check is available as a paid API at <a href="/">this address</a> (x402, $0.01 per check).</p>
+</div></footer>
+
+<script>
+(function(){
+var f=document.getElementById('f'),a=document.getElementById('addr'),c=document.getElementById('chain'),go=document.getElementById('go'),out=document.getElementById('out');
+var LABEL={ethereum:'Ethereum',base:'Base',solana:'Solana',bsc:'BNB Chain',arbitrum:'Arbitrum',polygon:'Polygon',optimism:'Optimism',avalanche:'Avalanche'};
+var SEV={critical:'Critical',high:'High',medium:'Medium',low:'Low'};
+var COLOR={JUNK:'#B01E33',RISKY:'#A44A00',CAUTION:'#C9A000',CLEAN:'#16663A'};
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})}
+function usd(n){if(n==null)return'Unknown';if(n>=1e9)return'$'+(n/1e9).toFixed(2)+'B';if(n>=1e6)return'$'+(n/1e6).toFixed(2)+'M';if(n>=1e3)return'$'+(n/1e3).toFixed(1)+'K';if(n>=1)return'$'+n.toFixed(2);if(n>0)return'$'+n.toPrecision(3);return'$0'}
+function age(d){if(d==null)return'Unknown';if(d<1)return'Under a day';if(d<60)return Math.floor(d)+' days';if(d<730)return Math.floor(d/30.4)+' months';return(d/365).toFixed(1)+' years'}
+function pick(s){s=String(s||'').trim();var m=s.match(/0x[0-9a-fA-F]{40}/);if(m)return m[0];m=s.match(/[1-9A-HJ-NP-Za-km-z]{32,44}/);return m?m[0]:s}
+function busy(b){go.disabled=b;go.innerHTML=b?'<span class="spin" aria-hidden="true"></span>Checking…':'Check this token'}
+function err(t){out.innerHTML='<div class="msg err" role="alert">'+esc(t)+'</div>'}
+function render(r){
+ var t=r.token||{},m=r.market||{},g=r.grade,name=t.symbol?(t.name&&t.name!==t.symbol?esc(t.name)+' ('+esc(t.symbol)+')':esc(t.symbol)):'Unnamed token';
+ var flags=(r.red_flags||[]).map(function(x){return'<li><span class="sev s-'+esc(x.severity)+'">'+SEV[x.severity]+'</span><span>'+esc(x.detail)+'</span></li>'}).join('');
+ var good=(r.green_flags||[]).map(function(x){return'<li><span class="sev s-good">Good</span><span>'+esc(x)+'</span></li>'}).join('');
+ var tag=t.symbol?'$'+String(t.symbol).replace(/[^A-Za-z0-9]/g,''):'this token';
+ var share='I ran '+tag+' through the NoJunk token checker: '+g+'.\n\nCheck any token free before you buy:';
+ var link=location.origin+location.pathname+'?a='+encodeURIComponent(t.address)+'&c='+encodeURIComponent(t.chain);
+ var xurl='https://x.com/intent/post?text='+encodeURIComponent(share)+'&url='+encodeURIComponent(link);
+ out.innerHTML='<article class="card">'+
+ '<div class="verdict"><span class="stamp g-'+g+'">'+g+'</span><div class="vtext"><p class="tname">'+name+'</p><p class="addr">'+esc(LABEL[t.chain]||t.chain)+' · '+esc(t.address)+'</p><p class="one">'+esc(r.one_liner)+'</p></div></div>'+
+ '<div class="meter"><div class="bar" role="img" aria-label="Risk score '+r.risk_score+' out of 100"><div class="fill" style="width:'+Math.max(3,r.risk_score)+'%;background:'+COLOR[g]+'"></div></div><p>Risk score '+r.risk_score+' out of 100. Higher is worse.</p></div>'+
+ (flags?'<div class="sect"><h2>Red flags</h2><ul class="flags">'+flags+'</ul></div>':'<div class="sect"><h2>Red flags</h2><p style="margin:0">None found.</p></div>')+
+ (good?'<div class="sect"><h2>In its favor</h2><ul class="flags">'+good+'</ul></div>':'')+
+ '<div class="sect"><h2>Market</h2><div class="stats">'+
+ '<div class="stat"><b>'+usd(m.price_usd)+'</b><span>Price</span></div>'+
+ '<div class="stat"><b>'+usd(m.liquidity_usd)+'</b><span>Liquidity in pools</span></div>'+
+ '<div class="stat"><b>'+usd(m.volume_24h_usd)+'</b><span>24-hour volume</span></div>'+
+ '<div class="stat"><b>'+age(m.oldest_pool_age_days)+'</b><span>Trading for</span></div>'+
+ '<div class="stat"><b>'+(m.top10_holder_share==null?'Unknown':Math.round(m.top10_holder_share*100)+'%')+'</b><span>Held by top 10 wallets</span></div>'+
+ '<div class="stat"><b>'+(t.holders==null?'Unknown':Number(t.holders).toLocaleString('en-US'))+'</b><span>Holders</span></div>'+
+ '</div></div>'+
+ '<div class="actions"><a class="x" href="'+esc(xurl)+'" target="_blank" rel="noopener">Share on X</a><button type="button" class="ghost" id="cp">Copy link</button><button type="button" class="ghost" id="again">Check another</button></div>'+
+ '<p class="checked">Checked '+new Date(r.checked_at).toLocaleString()+'. Automated screen, not financial advice.</p>'+
+ '</article>';
+ document.getElementById('cp').onclick=function(){var b=this;try{navigator.clipboard.writeText(link).then(function(){b.textContent='Copied'},function(){b.textContent='Copy failed'})}catch(e){b.textContent='Copy failed'}};
+ document.getElementById('again').onclick=function(){a.value='';a.focus();window.scrollTo({top:0,behavior:'smooth'})};
+ try{history.replaceState(null,'',link)}catch(e){}
+ out.querySelector('.card').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function run(addr,chain){
+ addr=pick(addr);a.value=addr;
+ if(!addr){err('Paste a token contract address first.');a.focus();return}
+ busy(true);out.innerHTML='';
+ var q='free?address='+encodeURIComponent(addr)+(chain?'&chain='+encodeURIComponent(chain):'');
+ fetch(q,{headers:{accept:'application/json'}}).then(function(res){return res.json().then(function(j){return{ok:res.ok,j:j}})}).then(function(x){
+  busy(false);
+  if(!x.ok){err(x.j&&x.j.error?x.j.error:'Something went wrong. Please try again.');return}
+  if(x.j.token&&x.j.token.chain)c.value=x.j.token.chain;
+  render(x.j);
+ }).catch(function(){busy(false);err('Could not reach the checker. Check your connection and try again.')});
+}
+f.addEventListener('submit',function(e){e.preventDefault();run(a.value,c.value)});
+document.querySelectorAll('.tries button').forEach(function(b){b.addEventListener('click',function(){c.value=b.getAttribute('data-c');run(b.getAttribute('data-a'),b.getAttribute('data-c'))})});
+var p=new URLSearchParams(location.search);if(p.get('a')){if(p.get('c'))c.value=p.get('c');run(p.get('a'),p.get('c')||'')}
+})();
+</script>
+</body>
+</html>

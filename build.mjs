@@ -2,6 +2,8 @@
 import { readFileSync, writeFileSync } from "node:fs";
 const dir = new URL(".", import.meta.url);
 const part = (f) => readFileSync(new URL("src/" + f, dir), "utf8");
-const out = [part("head.js"), part("shared.js"), part("main.js")].join("\n");
+const page = "const PAGE_HTML = " + JSON.stringify(part("page.html")) + ";\n";
+const out = [part("head.js"), part("shared.js"), part("main.js"), page, part("free.js")].join("\n");
 writeFileSync(new URL("worker.js", dir), out);
+writeFileSync(new URL("worker.mjs", dir), out);
 console.log("built worker.js", out.length, "bytes");
