@@ -645,6 +645,7 @@ const PAGE_HTML = "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"
 // ---------- free human checker (/scan page + /free JSON for that page only) ----------
 // Referral links are read from Worker variables; any left unset are simply not shown.
 const PARTNERS = [
+  { env: "REF_COINBASE", name: "Coinbase", blurb: "Largest US-listed crypto exchange. Easy first account for buying major coins." },
   { env: "REF_GEMINI", name: "Gemini", blurb: "US-regulated exchange. Simple app, good for a first account." },
   { env: "REF_ROBINHOOD", name: "Robinhood", blurb: "Buy major coins in the same app as stocks." },
   { env: "REF_UPHOLD", name: "Uphold", blurb: "Exchange with clear, upfront pricing on each trade." },
