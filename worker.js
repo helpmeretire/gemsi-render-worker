@@ -211,13 +211,17 @@ function analyze(chain, address, d, now = Date.now()) {
     const ageDays = Number.isFinite(deployed) && deployed > 0 ? (now / 1000 - deployed) / 86400 : null;
     const mal = Array.isArray(c.malicious_behavior) ? c.malicious_behavior : [];
     if (mal.length) add("critical", "malicious_behavior", `Contract has reported malicious behavior: ${mal.join(", ")}.`);
-    if (on(c.doubt_list)) add("high", "doubt_list", "Contract is on a suspicious-contract list.");
+    if (on(c.doubt_list)) add("medium", "doubt_list", "Contract is on a suspicious-contract list.");
     if (on(scan.approval_abuse)) add("critical", "approval_abuse", "Contract can abuse token approvals (can move tokens you approve).");
-    if (on(scan.privilege_withdraw)) add("high", "privileged_withdraw", "Owner can withdraw funds held by the contract.");
+    if (on(scan.privilege_withdraw)) add("medium", "privileged_withdraw", "Owner can withdraw funds held by the contract.");
     if (on(scan.withdraw_missing)) add("medium", "withdraw_missing", "Contract has no withdraw function; funds sent may be stuck.");
-    if (on(scan.selfdestruct)) add("high", "selfdestruct", "Contract can self-destruct.");
+    if (on(scan.selfdestruct)) add("medium", "selfdestruct", "Contract can self-destruct.");
     if (on(scan.blacklist)) add("medium", "blacklist", "Contract can blacklist addresses.");
-    if (c.is_open_source !== undefined && !on(c.is_open_source)) add("high", "unverified_source", "Contract source code is not verified.");
+    const looksLikeWallet = !c.contract_name && !(Number(c.deployed_time) > 0);
+    if (c.is_open_source !== undefined && !on(c.is_open_source)) {
+      if (looksLikeWallet) add("low", "unverified_code", "Address has unpublished code (typical of smart wallets and delegated accounts).");
+      else add("medium", "unverified_source", "Contract source code is not verified.");
+    }
     if (on(c.is_proxy)) add("medium", "upgradeable_proxy", "Contract is an upgradeable proxy; its code can change.");
     if (ageDays !== null && ageDays < 7) add("medium", "new_contract", `Contract was deployed ${ageDays < 1 ? "less than a day" : Math.floor(ageDays) + " days"} ago.`);
     if (on(c.trust_list)) green.push("Contract is on a trusted list.");
@@ -239,7 +243,7 @@ function analyze(chain, address, d, now = Date.now()) {
   red.sort((a, b) => order[a.severity] - order[b.severity]);
   const worst = red.length ? red[0].severity : null;
   const verdict = worst === "critical" || worst === "high" ? "DANGER" : worst === "medium" ? "SUSPICIOUS" : "NO KNOWN ISSUES";
-  const label = isContract ? (contract && contract.name ? `Contract ${contract.name}` : "This contract") : "This address";
+  const label = isContract ? (contract && contract.name ? `Contract ${contract.name}` : "This smart account/contract") : "This address";
   const summary =
     verdict === "DANGER" ? `${label}: danger. ${red[0].detail}`
     : verdict === "SUSPICIOUS" ? `${label}: suspicious. ${red[0].detail}`

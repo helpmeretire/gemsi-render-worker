@@ -9,14 +9,20 @@ const ROUTER = "0x3fc91a3afd70395cd496c647d5a6cc9d4b2b7fad";
 const WALLET = "0x1111111111111111111111111111111111111111";
 const PHISH = "0x2222222222222222222222222222222222222222";
 const BADC = "0x3333333333333333333333333333333333333333";
+const SMART = "0x4444444444444444444444444444444444444444";
+const RUG = "0x5555555555555555555555555555555555555555";
 const ADDR = {
   [ROUTER]: { ...ZEROS, contract_address: "1" },
   [WALLET]: { ...ZEROS },
   [PHISH]: { ...ZEROS, phishing_activities: "1", stealing_attack: "1", data_source: "SlowMist" },
   [BADC]: { ...ZEROS, contract_address: "1", number_of_malicious_contracts_created: "0" },
+  [SMART]: { ...ZEROS, contract_address: "1" },
+  [RUG]: { ...ZEROS, contract_address: "1" },
 };
 const CON = {
   [ROUTER]: { contract_name: "UniversalRouter", is_contract: 1, creator_address: "0x946e", deployed_time: 1682675111, is_open_source: 1, is_proxy: 0, trust_list: 0, doubt_list: 0, malicious_behavior: [], contract_scan: { owner: { owner_name: "isNotLocked" }, privilege_withdraw: 0, withdraw_missing: 0, blacklist: 0, selfdestruct: 0, approval_abuse: 0 } },
+  [SMART]: { contract_name: null, is_contract: 1, deployed_time: null, is_open_source: 0, is_proxy: 0, trust_list: 0, doubt_list: 0, malicious_behavior: [], contract_scan: {} },
+  [RUG]: { contract_name: "Vault", is_contract: 1, deployed_time: NOW_S - 86400 * 400, is_open_source: 0, is_proxy: 0, trust_list: 0, doubt_list: 0, malicious_behavior: [], contract_scan: { privilege_withdraw: 1 } },
   [BADC]: { contract_name: "Claim", is_contract: 1, deployed_time: NOW_S - 3600, is_open_source: 0, is_proxy: 1, trust_list: 0, doubt_list: 1, malicious_behavior: ["phishing"], contract_scan: { approval_abuse: 1, privilege_withdraw: 1 } },
 };
 let calls = [], mode = "good", upstream = "up";
@@ -61,6 +67,10 @@ r = await paid({ address: PHISH }); j = await r.json();
 ok(j.verdict === "DANGER" && j.red_flags[0].severity === "critical" && j.report_source === "SlowMist" && j.summary.startsWith("This address: danger."), "phishing wallet -> DANGER: " + j.summary);
 r = await paid({ address: BADC, chain: "bsc" }); j = await r.json();
 ok(j.verdict === "DANGER" && ["malicious_behavior", "approval_abuse", "doubt_list", "unverified_source", "upgradeable_proxy", "new_contract", "privileged_withdraw"].every((f) => j.red_flags.some((x) => x.flag === f)), "malicious contract flags: " + j.red_flags.map((f) => f.flag));
+r = await paid({ address: SMART }); j = await r.json();
+ok(j.verdict === "NO KNOWN ISSUES" && j.red_flags.length === 1 && j.red_flags[0].flag === "unverified_code", "smart wallet with unpublished code -> not flagged dangerous: " + j.summary);
+r = await paid({ address: RUG }); j = await r.json();
+ok(j.verdict === "SUSPICIOUS" && j.red_flags.some((f) => f.flag === "unverified_source") && j.red_flags.some((f) => f.flag === "privileged_withdraw"), "unverified contract w/ owner withdraw -> SUSPICIOUS: " + j.summary);
 upstream = "down"; calls = []; r = await paid({ address: WALLET });
 ok(r.status === 502 && !calls.some((c) => c.kind === "fac" && c.u.endsWith("settle")), "data down -> 502, not settled"); upstream = "up";
 mode = "badverify"; calls = []; r = await paid({ address: WALLET }); ok(r.status === 402 && !calls.some((c) => c.kind === "data"), "verify fail -> 402, no data fetched");
