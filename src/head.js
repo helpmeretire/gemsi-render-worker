@@ -14,10 +14,18 @@ const CDP_URL = "https://api.cdp.coinbase.com/platform/v2/x402";
 const PAYAI_URL = "https://facilitator.payai.network";
 const SERVICE = "NoJunk Token Check";
 const DESCRIPTION =
-  "Crypto token junk/rug-risk check for Base and Solana tokens. Send a token contract address (Base 0x... or Solana mint); get a grade (JUNK, RISKY, CAUTION, CLEAN), a 0-100 risk score, specific red and green flags (honeypot, sell tax, mint/freeze authority, owner powers, holder concentration, liquidity, pool age) and market stats. Not financial advice.";
+  "Crypto token junk/rug-risk check for Base, Ethereum, BNB Chain, Arbitrum, Polygon, Optimism, Avalanche and Solana tokens. Send a token contract address (0x... with chain, defaults to Base; or a Solana mint); get a grade (JUNK, RISKY, CAUTION, CLEAN), a 0-100 risk score, specific red and green flags (honeypot, sell tax, mint/freeze authority, owner powers, holder concentration, liquidity, pool age) and market stats. Not financial advice.";
+const GP_EVM = "https://api.gopluslabs.io/api/v1/token_security/";
 const CHAINS = {
-  base: { goplus: "https://api.gopluslabs.io/api/v1/token_security/8453?contract_addresses=", gt: "base" },
-  solana: { goplus: "https://api.gopluslabs.io/api/v1/solana/token_security?contract_addresses=", gt: "solana" },
+  base: { evm: true, goplus: GP_EVM + "8453?contract_addresses=", gt: "base", label: "Base" },
+  ethereum: { evm: true, goplus: GP_EVM + "1?contract_addresses=", gt: "eth", label: "Ethereum" },
+  bsc: { evm: true, goplus: GP_EVM + "56?contract_addresses=", gt: "bsc", label: "BNB Chain" },
+  arbitrum: { evm: true, goplus: GP_EVM + "42161?contract_addresses=", gt: "arbitrum", label: "Arbitrum" },
+  polygon: { evm: true, goplus: GP_EVM + "137?contract_addresses=", gt: "polygon_pos", label: "Polygon" },
+  optimism: { evm: true, goplus: GP_EVM + "10?contract_addresses=", gt: "optimism", label: "Optimism" },
+  avalanche: { evm: true, goplus: GP_EVM + "43114?contract_addresses=", gt: "avax", label: "Avalanche" },
+  solana: { evm: false, goplus: "https://api.gopluslabs.io/api/v1/solana/token_security?contract_addresses=", gt: "solana", label: "Solana" },
 };
+const CHAIN_ALIASES = { sol: "solana", eth: "ethereum", mainnet: "ethereum", bnb: "bsc", binance: "bsc", "bnb chain": "bsc", arb: "arbitrum", matic: "polygon", polygon_pos: "polygon", op: "optimism", avax: "avalanche" };
 const DISCLAIMER = "Automated risk screen for information and entertainment only. Not financial, investment or trading advice. Data can be wrong or stale; always do your own research.";
 const SOURCES = "Security data: GoPlus Security. Market data: GeckoTerminal - Powered by CoinGecko (https://www.coingecko.com).";

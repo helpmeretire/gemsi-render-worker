@@ -12,14 +12,14 @@ const SOL_SKIP_OWNERS = new Set([
 function parseParams(p) {
   const address = String(p.tokenAddress || p.address || p.token || "").trim();
   let chain = String(p.chain || "").trim().toLowerCase();
-  if (chain === "sol") chain = "solana";
+  chain = CHAIN_ALIASES[chain] || chain;
   if (!chain) chain = EVM_RE.test(address) ? "base" : SOL_RE.test(address) ? "solana" : "";
   return { address, chain };
 }
 function validate({ address, chain }) {
   if (!address) return "Missing required parameter: tokenAddress";
-  if (!CHAINS[chain]) return "Unsupported or undetectable chain. Use chain=base (0x... address) or chain=solana (mint address).";
-  if (chain === "base" && !EVM_RE.test(address)) return "Invalid Base token address (expected 0x followed by 40 hex characters).";
+  if (!CHAINS[chain]) return "Unsupported or undetectable chain. Use one of: " + Object.keys(CHAINS).join(", ") + " (0x addresses default to base).";
+  if (CHAINS[chain].evm && !EVM_RE.test(address)) return `Invalid ${CHAINS[chain].label} token address (expected 0x followed by 40 hex characters).`;
   if (chain === "solana" && !SOL_RE.test(address)) return "Invalid Solana mint address.";
   return null;
 }
@@ -53,19 +53,32 @@ async function fetchTokenData({ address, chain }) {
   const c = CHAINS[chain];
   const gpUrl = c.goplus + encodeURIComponent(address);
   const gtBase = `https://api.geckoterminal.com/api/v2/networks/${c.gt}/tokens/${encodeURIComponent(address)}`;
-  const [gp, gtTok, gtPools] = await Promise.all([getJSON(gpUrl), getJSON(gtBase), getJSON(gtBase + "/pools?page=1")]);
+  const [gp, gtPools] = await Promise.all([getJSON(gpUrl), getJSON(gtBase + "/pools?page=1")]);
   let security = null;
   if (gp.ok && gp.data && gp.data.result && typeof gp.data.result === "object") {
     const r = gp.data.result;
     security = r[address] || r[address.toLowerCase()] || Object.values(r)[0] || null;
     if (security && typeof security === "object" && Object.keys(security).length === 0) security = null;
   }
-  const token = gtTok.ok && gtTok.data && gtTok.data.data ? gtTok.data.data.attributes || null : null;
-  const pools = gtPools.ok && gtPools.data && Array.isArray(gtPools.data.data) ? gtPools.data.data.map((d) => d.attributes || {}) : [];
-  const upstreamDown = !gp.ok && gp.status !== 404 && !gtTok.ok && gtTok.status !== 404;
-  const marketMissing = gtTok.status === 404 && (gtPools.status === 404 || (gtPools.ok && pools.length === 0));
-  const marketUnavailable = !gtTok.ok && !gtPools.ok && !marketMissing;
-  return { security, token, pools, gpOk: gp.ok, gtOk: gtTok.ok || gtPools.ok, upstreamDown, marketMissing, marketUnavailable };
+  const raw = gtPools.ok && gtPools.data && Array.isArray(gtPools.data.data) ? gtPools.data.data : [];
+  const pools = raw.map((d) => d.attributes || {});
+  const want = `${c.gt}_${c.evm ? address.toLowerCase() : address}`;
+  const idOf = (d, k) => String((d.relationships && d.relationships[k] && d.relationships[k].data && d.relationships[k].data.id) || "");
+  let token = null;
+  for (const d of raw) {
+    const a = d.attributes || {};
+    const isBase = (c.evm ? idOf(d, "base_token").toLowerCase() : idOf(d, "base_token")) === want;
+    const isQuote = (c.evm ? idOf(d, "quote_token").toLowerCase() : idOf(d, "quote_token")) === want;
+    if (isBase || isQuote) {
+      const sym = String(a.name || "").split(" / ")[isBase ? 0 : 1] || null;
+      token = { symbol: sym ? sym.trim() : null, price_usd: isBase ? a.base_token_price_usd : a.quote_token_price_usd, fdv_usd: isBase ? a.fdv_usd : null };
+      break;
+    }
+  }
+  const upstreamDown = !gp.ok && gp.status !== 404 && !gtPools.ok && gtPools.status !== 404;
+  const marketMissing = gtPools.status === 404 || (gtPools.ok && pools.length === 0);
+  const marketUnavailable = !gtPools.ok && !marketMissing;
+  return { security, token, pools, gpOk: gp.ok, gtOk: gtPools.ok, upstreamDown, marketMissing, marketUnavailable };
 }
 
 const num = (v) => {
@@ -84,7 +97,7 @@ function analyze(chain, address, d, now = Date.now()) {
 
   // ----- contract / mint security (GoPlus) -----
   if (!d.security) add("medium", "no_security_data", "No contract security data was available for this token, so honeypot and owner checks could not be run.");
-  if (chain === "base" && d.security) {
+  if (CHAINS[chain].evm && d.security) {
     const buy = num(s.buy_tax), sell = num(s.sell_tax);
     if (on(s.is_honeypot)) add("critical", "honeypot", "Flagged as a honeypot: buyers may be unable to sell.");
     if (on(s.cannot_sell_all)) add("critical", "cannot_sell_all", "Holders cannot sell their full balance.");
@@ -146,7 +159,7 @@ function analyze(chain, address, d, now = Date.now()) {
       if (on(h.is_locked)) return false;
       const a = String(h.address || h.account || "");
       if (ZERO_ADDRS.has(a.toLowerCase()) || SOL_SKIP_OWNERS.has(a)) return false;
-      if (chain === "base" && on(h.is_contract)) return false;
+      if (CHAINS[chain].evm && on(h.is_contract)) return false;
       return true;
     });
     top10 = list.slice(0, 10).reduce((t, h) => t + (num(h.percent) || 0), 0);
@@ -161,8 +174,8 @@ function analyze(chain, address, d, now = Date.now()) {
 
   // ----- market (GeckoTerminal) -----
   const pools = d.pools || [];
-  const liquidity = pools.length ? pools.reduce((t, p) => t + (num(p.reserve_in_usd) || 0), 0) : num(d.token && d.token.total_reserve_in_usd);
-  const volume24h = pools.length ? pools.reduce((t, p) => t + (num(p.volume_usd && p.volume_usd.h24) || 0), 0) : num(d.token && d.token.volume_usd && d.token.volume_usd.h24);
+  const liquidity = pools.length ? pools.reduce((t, p) => t + (num(p.reserve_in_usd) || 0), 0) : null;
+  const volume24h = pools.length ? pools.reduce((t, p) => t + (num(p.volume_usd && p.volume_usd.h24) || 0), 0) : null;
   const created = pools.map((p) => Date.parse(p.pool_created_at)).filter(Number.isFinite);
   const ageDays = created.length ? (now - Math.min(...created)) / 86400000 : null;
   if (d.marketMissing) add("high", "no_market", "No DEX pools found for this token.");
@@ -185,7 +198,7 @@ function analyze(chain, address, d, now = Date.now()) {
   const grade = critical || score >= 60 ? "JUNK" : score >= 30 ? "RISKY" : score >= 10 ? "CAUTION" : "CLEAN";
   const order = { critical: 0, high: 1, medium: 2, low: 3 };
   red.sort((a, b) => order[a.severity] - order[b.severity]);
-  const symbol = (d.token && d.token.symbol) || s.token_symbol || (s.metadata && s.metadata.symbol) || "This token";
+  const symbol = s.token_symbol || (s.metadata && s.metadata.symbol) || (d.token && d.token.symbol) || "This token";
   const top = red[0];
   const one_liner =
     grade === "JUNK" ? `${symbol}: junk. ${top ? top.detail : ""}`.trim()
@@ -197,8 +210,8 @@ function analyze(chain, address, d, now = Date.now()) {
     token: {
       chain,
       address,
-      name: (d.token && d.token.name) || s.token_name || (s.metadata && s.metadata.name) || null,
-      symbol: (d.token && d.token.symbol) || s.token_symbol || (s.metadata && s.metadata.symbol) || null,
+      name: s.token_name || (s.metadata && s.metadata.name) || null,
+      symbol: s.token_symbol || (s.metadata && s.metadata.symbol) || (d.token && d.token.symbol) || null,
       holders: holderCount,
     },
     grade,
@@ -268,8 +281,8 @@ function paymentRequired(env, url, error) {
                 body: {
                   type: "object",
                   properties: {
-                    tokenAddress: { type: "string", description: "Token contract address (Base 0x...) or Solana mint" },
-                    chain: { type: "string", enum: ["base", "solana"], description: "Optional; auto-detected from the address format" },
+                    tokenAddress: { type: "string", description: "Token contract address (0x...) or Solana mint" },
+                    chain: { type: "string", enum: Object.keys(CHAINS), description: "Optional; 0x addresses default to base, Solana mints are auto-detected" },
                   },
                   required: ["tokenAddress"],
                 },
@@ -305,7 +318,7 @@ function openapi(origin) {
     type: "object",
     properties: {
       tokenAddress: { type: "string", minLength: 32, description: "Token contract address (Base 0x...) or Solana mint address" },
-      chain: { type: "string", enum: ["base", "solana"], description: "Optional; auto-detected from the address format" },
+      chain: { type: "string", enum: Object.keys(CHAINS), description: "Optional; 0x addresses default to base, Solana mints are auto-detected" },
     },
     required: ["tokenAddress"],
   };
@@ -332,20 +345,20 @@ function openapi(origin) {
       title: SERVICE,
       version: "1.0.0",
       description: DESCRIPTION,
-      "x-guidance": "POST /check with JSON {\"tokenAddress\": \"<Base 0x address or Solana mint>\", \"chain\": \"base\"|\"solana\" (optional)} or GET /check?tokenAddress=...&chain=... to get a junk/rug-risk grade (JUNK, RISKY, CAUTION, CLEAN), a 0-100 risk score, red/green flags and market stats. $0.01 USDC on Base per check via x402. Invalid addresses and tokens with no data are rejected before payment is settled. Not financial advice.",
+      "x-guidance": "POST /check with JSON {\"tokenAddress\": \"<Base 0x address or Solana mint>\", \"chain\": one of base, ethereum, bsc, arbitrum, polygon, optimism, avalanche, solana (optional; 0x defaults to base)} or GET /check?tokenAddress=...&chain=... to get a junk/rug-risk grade (JUNK, RISKY, CAUTION, CLEAN), a 0-100 risk score, red/green flags and market stats. $0.01 USDC on Base per check via x402. Invalid addresses and tokens with no data are rejected before payment is settled. Not financial advice.",
     },
     servers: [{ url: origin }],
     paths: {
       "/check": {
-        post: { operationId: "checkToken", summary: "Grade a Base or Solana token for junk/rug risk", tags: ["Crypto", "Security"], "x-payment-info": pay, requestBody: { required: true, content: { "application/json": { schema: body } } }, responses },
+        post: { operationId: "checkToken", summary: "Grade a token on Base, Ethereum, BNB Chain, Arbitrum, Polygon, Optimism, Avalanche or Solana for junk/rug risk", tags: ["Crypto", "Security"], "x-payment-info": pay, requestBody: { required: true, content: { "application/json": { schema: body } } }, responses },
         get: {
           operationId: "checkTokenGet",
-          summary: "Grade a Base or Solana token for junk/rug risk",
+          summary: "Grade a token on Base, Ethereum, BNB Chain, Arbitrum, Polygon, Optimism, Avalanche or Solana for junk/rug risk",
           tags: ["Crypto", "Security"],
           "x-payment-info": pay,
           parameters: [
             { name: "tokenAddress", in: "query", required: true, schema: { type: "string" }, description: body.properties.tokenAddress.description },
-            { name: "chain", in: "query", required: false, schema: { type: "string", enum: ["base", "solana"] }, description: body.properties.chain.description },
+            { name: "chain", in: "query", required: false, schema: { type: "string", enum: Object.keys(CHAINS) }, description: body.properties.chain.description },
           ],
           responses,
         },

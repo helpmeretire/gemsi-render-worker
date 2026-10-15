@@ -41,12 +41,14 @@ globalThis.fetch = async (u, init) => {
     calls.push({ u, kind: "data" });
     if (upstream === "down") throw new Error("network down");
     if (upstream === "gt429" && u.includes("geckoterminal")) return new Response("rate limited", { status: 429 });
-    if (u.includes("/token_security/8453")) { const a = decodeURIComponent(u.split("=").pop()).toLowerCase(); return R({ code: 1, message: "OK", result: GP[a] ? { [a]: GP[a] } : {} }); }
+    if (/\/token_security\/\d+\?/.test(u)) { const a = decodeURIComponent(u.split("=").pop()).toLowerCase(); return R({ code: 1, message: "OK", result: GP[a] ? { [a]: GP[a] } : {} }); }
     if (u.includes("/solana/token_security")) { const a = decodeURIComponent(u.split("=").pop()); return R({ code: 1, message: "ok", result: GP_SOL[a] ? { [a]: GP_SOL[a] } : {} }); }
-    const m = u.match(/networks\/(base|solana)\/tokens\/([^/?]+)(\/pools)?/);
-    const net = m[1], a = net === "base" ? decodeURIComponent(m[2]).toLowerCase() : decodeURIComponent(m[2]);
-    if (m[3]) return GT_POOLS[net][a] ? R({ data: GT_POOLS[net][a].map((x) => ({ attributes: x })) }) : R({ errors: [{ status: "404" }] }, 404);
-    return GT_TOK[net][a] ? R({ data: { attributes: GT_TOK[net][a] } }) : R({ errors: [{ status: "404" }] }, 404);
+    const NETS = { base: "base", eth: "base", solana: "solana" };
+    const m2 = u.match(/networks\/([a-z_]+)\/tokens\/([^/?]+)(\/pools)?/);
+    const gnet = m2[1], key = NETS[gnet] || gnet, aa = key === "solana" ? decodeURIComponent(m2[2]) : decodeURIComponent(m2[2]).toLowerCase();
+    if (!m2[3]) return R({ errors: [{ status: "404" }] }, 404);
+    const tok = GT_TOK[key] && GT_TOK[key][aa];
+    return GT_POOLS[key] && GT_POOLS[key][aa] ? R({ data: GT_POOLS[key][aa].map((x) => ({ attributes: { ...x, name: (tok ? tok.symbol : "X") + " / WETH", base_token_price_usd: tok && tok.price_usd, fdv_usd: tok && tok.fdv_usd }, relationships: { base_token: { data: { id: gnet + "_" + aa } }, quote_token: { data: { id: gnet + "_0xweth" } } } })) }) : R({ errors: [{ status: "404" }] }, 404);
   }
   calls.push({ u, init, kind: "fac" });
   const op = u.split("/").pop();
@@ -69,7 +71,11 @@ const hdr = Buffer.from(JSON.stringify({ x402Version: 2, resource: pr.resource, 
 const paid = (body, extra = {}) => W.fetch(new Request(base + "/check", { method: "POST", headers: { "PAYMENT-SIGNATURE": hdr, "Content-Type": "application/json", ...extra }, body: JSON.stringify(body) }), env);
 
 calls = []; r = await paid({ tokenAddress: "not-an-address" }); ok(r.status === 400 && calls.length === 0, "bad address -> 400, nothing charged or fetched");
-calls = []; r = await paid({ tokenAddress: BRETT, chain: "ethereum" }); ok(r.status === 400 && calls.length === 0, "unsupported chain -> 400");
+calls = []; r = await paid({ tokenAddress: BRETT, chain: "tron" }); ok(r.status === 400 && calls.length === 0, "unsupported chain -> 400");
+calls = []; r = await paid({ tokenAddress: BRETT, chain: "eth" }); j = await r.json();
+ok(r.status === 200 && j.token.chain === "ethereum" && calls.some((c) => c.u.includes("/token_security/1?")) && calls.some((c) => c.u.includes("/networks/eth/")), "chain alias eth -> ethereum, right data URLs");
+ok(j.market.price_usd === 0.012 && j.market.fdv_usd === 120000000, "price/fdv read from pool data");
+calls = []; r = await paid({ tokenAddress: BRETT, chain: "solana" }); ok(r.status === 400 && calls.length === 0, "0x address with chain=solana -> 400");
 calls = []; r = await paid({ tokenAddress: BONK, chain: "base" }); ok(r.status === 400 && calls.length === 0, "solana mint with chain=base -> 400");
 
 calls = []; r = await paid({ tokenAddress: BRETT }); j = await r.json();
