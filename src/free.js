@@ -79,6 +79,6 @@ async function handleFree(request, url) {
   if (bad) return json({ error: "That doesn't look like a token address we can check. " + bad }, 400);
   const data = await fetchTokenData(params);
   if (data.upstreamDown) return json({ error: "Our data sources are busy right now. Please try again in a minute." }, 502);
-  if (!data.security && !data.token && !data.pools.length) return json({ error: `We couldn't find a token at that address on ${CHAINS[params.chain].label}. Check the address, or pick the right blockchain from the list.` }, 404);
+  if (!data.security && !data.token && !data.pools.length) return json({ error: `We couldn't find a token at that address on ${CHAINS[params.chain].label}. Check the address, or pick the right blockchain from the list.`, diag: data.diag }, 404);
   return json(analyze(params.chain, params.address, data), 200, { "Cache-Control": "no-store" });
 }

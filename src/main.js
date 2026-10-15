@@ -78,7 +78,7 @@ async function fetchTokenData({ address, chain }) {
   const upstreamDown = !gp.ok && gp.status !== 404 && !gtPools.ok && gtPools.status !== 404;
   const marketMissing = gtPools.status === 404 || (gtPools.ok && pools.length === 0);
   const marketUnavailable = !gtPools.ok && !marketMissing;
-  return { security, token, pools, gpOk: gp.ok, gtOk: gtPools.ok, upstreamDown, marketMissing, marketUnavailable };
+  return { security, token, pools, gpOk: gp.ok, gtOk: gtPools.ok, diag: { gp: gp.status, gpCode: gp.data && gp.data.code, gpMsg: gp.data && gp.data.message, gt: gtPools.status, err: gp.error || gtPools.error }, upstreamDown, marketMissing, marketUnavailable };
 }
 
 const num = (v) => {
