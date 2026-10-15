@@ -12,6 +12,7 @@ const HONEY = "0x1111111111111111111111111111111111111111";
 const NEWT = "0x2222222222222222222222222222222222222222";
 const UNKNOWN = "0x3333333333333333333333333333333333333333";
 const STABLE = "0x4444444444444444444444444444444444444444";
+const RENOUNCED = "0x5555555555555555555555555555555555555555";
 const GP = {
   [BRETT.toLowerCase()]: { buy_tax: "0", sell_tax: "0", is_honeypot: "0", cannot_sell_all: "0", cannot_buy: "0", is_open_source: "1", hidden_owner: "0", is_mintable: "0", owner_address: "0x0000000000000000000000000000000000000000", owner_percent: "0.0", creator_percent: "0.000000", honeypot_with_same_creator: "3", holder_count: "908869", token_symbol: "BRETT", token_name: "Brett",
     holders: [{ address: "0xpool", is_contract: 1, percent: "0.30", is_locked: 0 }, { address: "0xaaa", is_contract: 0, percent: "0.05", is_locked: 0 }, { address: "0xbbb", is_contract: 0, percent: "0.04", is_locked: 0 }] },
@@ -21,6 +22,7 @@ const GP = {
     holders: [{ address: "0xddd", is_contract: 0, percent: "0.20", is_locked: 0 }, { address: "0xeee", is_contract: 0, percent: "0.15", is_locked: 0 }, { address: "0x000000000000000000000000000000000000dead", is_contract: 0, percent: "0.30", is_locked: 0 }] },
 };
 GP[STABLE] = { buy_tax: "0", sell_tax: "0", is_honeypot: "0", is_open_source: "1", is_proxy: "1", is_mintable: "1", is_blacklisted: "1", owner_address: "0x7777777777777777777777777777777777777777", trust_list: "1", holder_count: "11000000", token_symbol: "USDX", holders: [] };
+GP[RENOUNCED] = { buy_tax: "0", sell_tax: "0", is_honeypot: "0", is_open_source: "1", transfer_pausable: "1", is_blacklisted: "1", owner_address: "0x0000000000000000000000000000000000000000", holder_count: "500000", token_symbol: "FROG", holders: [] };
 const GP_SOL = { [BONK]: { balance_mutable_authority: { authority: [], status: "0" }, closable: { status: "0" }, freezable: { status: "0" }, mintable: { status: "0" }, metadata_mutable: { status: "1" }, non_transferable: "0", transfer_fee: {}, transfer_hook: [], trusted_token: 0, holder_count: "1020153", metadata: { name: "Bonk", symbol: "Bonk" },
   holders: [{ account: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM", percent: "0.0883", is_locked: 0 }, { account: "51yZyDSnec4xnUv7XLRVYcDyV4x3wUtzrDcRaYbmQU5j", percent: "0.0679", is_locked: 0 }] } };
 const GT_TOK = {
@@ -102,6 +104,8 @@ upstream = "gt429"; r = await paid({ tokenAddress: BRETT }); j = await r.json();
 ok(r.status === 200 && !j.red_flags.some((f) => f.flag === "no_market") && j.red_flags.some((f) => f.flag === "market_data_unavailable"), "market throttled -> 'unavailable' note, not 'no market' (" + j.grade + ")");
 r = await paid({ tokenAddress: STABLE }); j = await r.json();
 ok(r.status === 200 && !j.red_flags.some((f) => ["upgradeable_proxy", "mintable", "blacklist"].includes(f.flag)) && j.green_flags.some((g) => g.includes("trusted")), "trusted stablecoin admin controls not counted (" + j.grade + ", flags " + j.red_flags.map((f) => f.flag) + ")");
+r = await paid({ tokenAddress: RENOUNCED }); j = await r.json();
+ok(j.red_flags.filter((f) => ["transfer_pausable", "blacklist"].includes(f.flag)).every((f) => f.severity === "low"), "renounced owner -> pause/blacklist downgraded to low (" + j.grade + " " + j.risk_score + ")");
 calls = []; r = await paid({ tokenAddress: UNKNOWN }); j = await r.json();
 ok(r.status === 404 && !calls.some((c) => c.kind === "fac" && c.u.endsWith("settle")), "unknown token -> 404, not settled");
 upstream = "down"; calls = []; r = await paid({ tokenAddress: BRETT });

@@ -249,7 +249,11 @@ function analyze(chain, address, d, now = Date.now()) {
     const insider = (num(s.creator_percent) || 0) + (ownerLive ? num(s.owner_percent) || 0 : 0);
     if (insider > 0.1) add("medium", "insider_holdings", `Creator/owner hold about ${pct(insider)} of supply.`);
     if (on(s.anti_whale_modifiable)) add("low", "anti_whale_modifiable", "Anti-whale limits can be changed.");
-    if (!ownerLive && s.owner_address !== undefined) green.push("Ownership renounced or no owner.");
+    if (!ownerLive && s.owner_address !== undefined) {
+      green.push("Ownership renounced or no owner.");
+      const OWNER_ONLY = ["transfer_pausable", "blacklist", "tax_modifiable", "trading_cooldown", "anti_whale_modifiable"];
+      for (const f of red) if (OWNER_ONLY.includes(f.flag)) { f.severity = "low"; f.detail += " Owner is renounced, so this is likely unusable."; }
+    }
     if (s.is_open_source === "1") green.push("Contract source is verified.");
     if (on(s.trust_list)) {
       green.push("On GoPlus trusted list (e.g. major stablecoin or blue-chip); its admin controls are expected and not counted as risk.");
