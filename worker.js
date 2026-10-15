@@ -90,10 +90,13 @@ async function wallet(env) {
     const latest = Number(BigInt(await rpc("eth_blockNumber", [])));
     const saved = env.STATUS ? tryJson((await env.STATUS.get("payments")) || "") : null;
     // First run: start about 3 days before now (Base makes a block every 2 s).
-    let cursor = saved && saved.cursor ? saved.cursor : latest - 130000;
+    // The public node only serves recent blocks, so the cursor stays near the head; a 5-minute cron keeps it moving.
+    const MAX_BEHIND = 900, CHUNK = 450;
+    let cursor = saved && saved.cursor ? saved.cursor : latest - MAX_BEHIND;
     let items = saved && Array.isArray(saved.items) ? saved.items : [];
-    const CHUNK = 10000; let steps = 0;
-    while (cursor < latest && steps < 4) {
+    if (cursor < latest - MAX_BEHIND) { out.note = `gap: blocks ${cursor + 1}-${latest - MAX_BEHIND} not scanned`; cursor = latest - MAX_BEHIND; }
+    let steps = 0;
+    while (cursor < latest && steps < 2) {
       const to = Math.min(cursor + CHUNK, latest);
       const logs = await rpc("eth_getLogs", [{ address: USDC, fromBlock: hex(cursor + 1), toBlock: hex(to), topics: [TRANSFER_TOPIC, null, "0x" + WALLET.slice(2).padStart(64, "0")] }]);
       for (const l of logs) {
@@ -191,6 +194,7 @@ tick(); setInterval(tick,20000);
 </script></body></html>`;
 
 export default {
+  async scheduled(event, env, ctx) { ctx.waitUntil(wallet(env)); },
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.pathname === "/api/status") {
