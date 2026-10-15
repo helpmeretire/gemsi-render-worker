@@ -223,9 +223,63 @@ function send402(env, url, error) {
   return json(pr, 402, { "PAYMENT-REQUIRED": b64e(pr) });
 }
 
-function lookup(url) {
-  const p = url.searchParams;
-  const q = { name: p.get("name") || "", city: p.get("city") || undefined, zip: p.get("zip") || undefined, county: p.get("county") || undefined };
+async function readParams(request, url) {
+  const p = Object.fromEntries(url.searchParams);
+  if (request.method === "POST") {
+    try { const b = await request.clone().json(); if (b && typeof b === "object") Object.assign(p, b); } catch {}
+  }
+  const s = (v) => (v === undefined || v === null || v === "" ? undefined : String(v));
+  return { name: s(p.name) || "", city: s(p.city), zip: s(p.zip), county: s(p.county) };
+}
+
+function openapi(origin) {
+  const params = {
+    type: "object",
+    properties: {
+      name: { type: "string", minLength: 1, description: "Condo building or association name, e.g. 'Alexander Towers'" },
+      city: { type: "string", description: "Optional city filter, e.g. 'Hollywood'" },
+      zip: { type: "string", description: "Optional 5-digit zip filter" },
+      county: { type: "string", description: "Optional county filter, e.g. 'Broward', 'Dade', 'Palm Beach'" },
+    },
+    required: ["name"],
+  };
+  const out = {
+    type: "object",
+    properties: {
+      query: { type: "object" },
+      sirs_reported: { type: "boolean", description: "true if a strong name match appears in the state's completed-SIRS list" },
+      matches: { type: "array", items: { type: "object", properties: { match: { type: "string" }, project_name: { type: "string" }, association_name: { type: "string" }, city: { type: "string" }, zip: { type: "string" }, county: { type: "string" }, reported: { type: "string" } } } },
+      note: { type: "string" },
+      data_as_of: { type: "string" },
+      records_searched: { type: "integer" },
+      source: { type: "string" },
+    },
+    required: ["sirs_reported", "matches"],
+  };
+  const op = (method) => ({
+    operationId: method === "post" ? "checkSirsPost" : "checkSirs",
+    summary: "Florida condo SIRS filing check - has a condo association reported its Structural Integrity Reserve Study to the state?",
+    tags: ["Real Estate", "Florida", "Condo"],
+    "x-payment-info": { price: { mode: "fixed", currency: "USD", amount: "0.010000" }, protocols: [{ x402: {} }] },
+    ...(method === "post"
+      ? { requestBody: { required: true, content: { "application/json": { schema: params } } } }
+      : { parameters: Object.entries(params.properties).map(([n, sch]) => ({ name: n, in: "query", required: n === "name", schema: { type: "string" }, description: sch.description })) }),
+    responses: { 200: { description: "Lookup result", content: { "application/json": { schema: out } } }, 402: { description: "Payment Required" } },
+  });
+  return {
+    openapi: "3.1.0",
+    info: {
+      title: "Florida Condo SIRS Check",
+      version: "1.0.0",
+      description: DESCRIPTION,
+      "x-guidance": "Use GET /sirs?name=<building or association>&city=<optional> (or POST /sirs with a JSON body {name, city, zip, county}) to check whether a Florida condominium association appears in the Florida DBPR list of completed Structural Integrity Reserve Study (SIRS) submissions. Costs $0.01 USDC on Base per lookup via x402. Covers " + ROWS.length + " filings, data as of " + DATA_AS_OF + ". A missing building is not proof of non-compliance.",
+    },
+    servers: [{ url: origin }],
+    paths: { "/sirs": { get: op("get"), post: op("post") } },
+  };
+}
+
+function lookup(q) {
   const matches = search(q.name, q.city, q.zip, q.county);
   return {
     query: Object.fromEntries(Object.entries(q).filter(([, v]) => v)),
@@ -243,12 +297,13 @@ export default {
     const env = { ...env0, PAY_TO: (env0 && env0.PAY_TO) || DEFAULT_PAY_TO };
     const url = new URL(request.url);
     if (request.method === "OPTIONS") {
-      return new Response(null, { headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "PAYMENT-SIGNATURE, Content-Type", "Access-Control-Allow-Methods": "GET, OPTIONS" } });
+      return new Response(null, { headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "PAYMENT-SIGNATURE, Content-Type", "Access-Control-Allow-Methods": "GET, POST, OPTIONS" } });
     }
     if (url.pathname === "/" || url.pathname === "/health") {
       return json({
         service: "Florida Condo SIRS Check",
         description: DESCRIPTION,
+        openapi: `${url.origin}/openapi.json`,
         endpoint: `${url.origin}/sirs?name=<building or association>&city=<optional>&zip=<optional>&county=<optional>`,
         price: "$0.01 USDC on Base per lookup (x402)",
         records: ROWS.length,
@@ -257,12 +312,15 @@ export default {
         facilitator: env.CDP_API_KEY_ID && env.CDP_API_KEY_SECRET ? "cdp" : "payai",
       });
     }
+    if (url.pathname === "/openapi.json" || url.pathname === "/.well-known/openapi.json") return json(openapi(url.origin));
     if (url.pathname !== "/sirs") return json({ error: "Not found. Use /sirs?name=..." }, 404);
     if (!env.PAY_TO || !/^0x[0-9a-fA-F]{40}$/.test(env.PAY_TO)) return json({ error: "Service not configured: PAY_TO wallet address missing" }, 500);
-    if (!(url.searchParams.get("name") || "").trim()) return json({ error: "Missing required query parameter: name" }, 400);
+    if (request.method !== "GET" && request.method !== "POST") return json({ error: "Use GET or POST" }, 405);
 
     const header = request.headers.get("PAYMENT-SIGNATURE") || request.headers.get("X-PAYMENT");
     if (!header) return send402(env, url, "PAYMENT-SIGNATURE header is required");
+    const params = await readParams(request, url);
+    if (!params.name.trim()) return json({ error: "Missing required parameter: name (no payment was taken)" }, 400);
 
     let payload;
     try { payload = b64d(header); } catch { return json({ error: "Invalid payment payload" }, 400); }
@@ -275,7 +333,7 @@ export default {
     try { v = await fac.call("verify", body); } catch (e) { return json({ error: "Facilitator unreachable", detail: String(e) }, 500); }
     if (!v.ok || !v.data.isValid) return send402(env, url, v.data.invalidReason || v.data.error || `verify failed (${v.status})`);
 
-    const result = lookup(url);
+    const result = lookup(params);
 
     let s;
     try { s = await fac.call("settle", body); } catch (e) { return json({ error: "Facilitator unreachable", detail: String(e) }, 500); }
