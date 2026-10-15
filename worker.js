@@ -663,7 +663,7 @@ function partnersHtml(env) {
   const cards = live
     .map((p) => `<div class="p"><b>${safe(p.name)}<span class="paid">paid link</span></b><span>${safe(p.blurb)}</span><a href="${safe(String(env[p.env]).trim())}" rel="sponsored noopener" target="_blank">Visit ${safe(p.name)}</a></div>`)
     .join("");
-  return `<section class="wrap partners"><h2>Skip the junk entirely</h2><p class="dek">Newcomers do best buying established coins on a regulated exchange and holding them in a wallet they control. If you open an account through a link marked "paid link", we may earn a flat fee. It never changes a grade.</p><div class="plist">${cards}</div></section>`;
+  return `<section class="wrap partners"><h2>Skip the junk entirely</h2><p class="dek">Newcomers do best buying established coins on a regulated exchange and holding them in a wallet they control. If you open an account through a link marked "paid link", we may earn a fee or a share of fees. It never changes a grade.</p><div class="plist">${cards}</div></section>`;
 }
 
 function scanPage(env, url) {
