@@ -50,3 +50,10 @@ console.log(fails ? fails + " FAILED" : "ALL PASS");
   ok(j.service === "NoJunk Token Check", "workers.dev root unchanged");
   console.log(fails ? fails + " FAILED" : "ALL PASS");
 }
+{
+  let r = await W.fetch(new Request("https://nojunkcrypto.com/og.png"), {}); const b = new Uint8Array(await r.arrayBuffer());
+  ok(r.status === 200 && r.headers.get("Content-Type") === "image/png" && b[0] === 0x89 && b[1] === 0x50 && b.length > 20000, "og.png served as PNG " + b.length + " bytes");
+  r = await W.fetch(new Request("https://nojunkcrypto.com/"), {}); const t = await r.text();
+  ok(t.includes('property="og:image" content="https://nojunkcrypto.com/og.png"') && t.includes('name="twitter:card" content="summary_large_image"') && !t.includes("__OGIMG__"), "share image tags present");
+  console.log(fails ? fails + " FAILED" : "ALL PASS");
+}

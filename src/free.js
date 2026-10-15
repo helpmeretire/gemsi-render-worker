@@ -30,7 +30,7 @@ function scanPage(env, url) {
   const isPublic = /(^|\.)nojunkcrypto\.com$/i.test(url.hostname);
   const homeHref = /^https:\/\/\S+$/.test(home) ? home.replace(/"/g, "") : isPublic ? "https://nojunkcrypto.com/" : url.origin + "/scan";
   const canonical = isPublic ? "https://nojunkcrypto.com/" : url.origin + "/scan";
-  const html = PAGE_HTML.replace("__HOME__", homeHref).split("__CANONICAL__").join(canonical).replace("__PARTNERS__", partnersHtml(env));
+  const html = PAGE_HTML.replace("__HOME__", homeHref).split("__CANONICAL__").join(canonical).split("__OGIMG__").join((isPublic ? "https://nojunkcrypto.com" : url.origin) + "/og.png").replace("__PARTNERS__", partnersHtml(env));
   return new Response(html, {
     headers: {
       "Content-Type": "text/html; charset=utf-8",
@@ -82,4 +82,10 @@ async function handleFree(request, url) {
   if (!data.gpOk && !data.gtOk) return json({ error: "Our data sources are busy right now. Please wait a minute and try again." }, 502);
   if (!data.security && !data.token && !data.pools.length) return json({ error: `We couldn't find a token at that address on ${CHAINS[params.chain].label}. Check the address, or pick the right blockchain from the list.` }, 404);
   return json(analyze(params.chain, params.address, data), 200, { "Cache-Control": "no-store" });
+}
+
+function ogImage() {
+  const bin = atob(OG_PNG_B64);
+  const bytes = Uint8Array.from(bin, (ch) => ch.charCodeAt(0));
+  return new Response(bytes, { headers: { "Content-Type": "image/png", "Cache-Control": "public, max-age=86400", "Access-Control-Allow-Origin": "*" } });
 }
