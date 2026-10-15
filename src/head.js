@@ -15,13 +15,16 @@ const CDP_URL = "https://api.cdp.coinbase.com/platform/v2/x402";
 const PAYAI_URL = "https://facilitator.payai.network";
 const SERVICE = "NoJunk Web Search";
 const DESCRIPTION =
-  "Cheap web search for AI agents: give it a query, get up to 10 live web results back as JSON (rank, title, url, domain, snippet). Optional region (e.g. us-en) and safe-search level. Results link to the live web; pair with a /read service to fetch the pages.";
+  "Cheap web search for AI agents: give it a query, get up to 10 live web results back as JSON (rank, title, url, domain, snippet). Optional region (e.g. us-en) and safe-search level. Sources tried in order: DuckDuckGo, Bing, Yahoo. Results link to the live web; pair with a /read service to fetch the pages.";
 
-const UPSTREAM = "https://lite.duckduckgo.com/lite/";
-// DDG lite serves a plain HTML page to browser-like clients; this UA is what it expects.
+// Sources are tried in this order; the first one that yields at least one organic result wins.
+const DDG_URL = "https://lite.duckduckgo.com/lite/";
+const BING_URL = "https://www.bing.com/search";
+const YAHOO_URL = "https://search.yahoo.com/search";
+// The engines serve plain HTML pages to browser-like clients; this UA is what they expect.
 const UPSTREAM_UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36";
-const TIMEOUT_MS = 8000; // upstream fetch must finish within this
-const CACHE_TTL_S = 120; // upstream HTML cached in caches.default for this long, keyed by the DDG URL
+const TIMEOUT_MS = 8000; // each upstream fetch must finish within this
+const CACHE_TTL_S = 120; // upstream HTML cached in caches.default for this long, keyed by the upstream URL
 const MAX_QUERY_CHARS = 400;
 const MAX_COUNT = 10;
 const DEFAULT_COUNT = 10;

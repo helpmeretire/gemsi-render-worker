@@ -76,6 +76,42 @@ ${row(11, rd("https://stackoverflow.com/questions/tagged/cloudflare-workers", 11
 const NO_RESULTS_HTML = `<html><head><title>zzqqxxyy at DuckDuckGo</title></head><body><form action="/lite/" method="post"><table><tr><td><input class="query" type="text" name="q" value="zzqqxxyy"></td></tr></table></form><table border="0"><tr><td class="result-snippet">No results.</td></tr></table></body></html>`;
 const ANOMALY_HTML = `<html><head><title>DuckDuckGo</title></head><body><div class="anomaly-modal__title">Unfortunately, bots use DuckDuckGo too.</div><p>Please complete the following challenge to confirm this search was made by a human.</p><form action="/lite/" method="post"><input type="hidden" name="q" value="cloudflare workers"></form></body></html>`;
 
+
+// ---- Bing HTML fixture: <li class="b_algo"> blocks, one <li class="b_ad">, ck/a redirectors ----
+const bingCk = (target) => "https://www.bing.com/ck/a?!&&p=0123456789abcdefJmltdHM9MTcyMDA&ptn=3&ver=2&hsh=3&fclid=abc&u=a1" + Buffer.from(target).toString("base64url") + "&ntb=1";
+const BING_HTML = `<!DOCTYPE html><html lang="en" dir="ltr"><head><meta charset="utf-8"><title>cloudflare workers - Search</title></head>
+<body><header id="b_header"><form action="/search" id="sb_form"><input id="sb_form_q" name="q" value="cloudflare workers"></form></header>
+<main aria-label="Search Results"><ol id="b_results">
+<li class="b_ad"><ul><li><div class="sb_add sb_adTA"><h2><a href="https://www.bing.com/aclick?ld=e8xyz&u=aHR0cHMlM2ElMmYlMmZ3d3cuY2xvdWRmbGFyZS5jb20&rlid=1" h="ID=SERP,5000.1">Cloudflare Workers | Official Site</a></h2><p>Ad Deploy serverless code in seconds. Free tier available.</p></div></li></ul></li>
+<li class="b_algo"><div class="b_tpcn"><a href="${bingCk("https://workers.cloudflare.com/")}"><div class="tptt">Cloudflare</div></a></div><h2><a href="${bingCk("https://workers.cloudflare.com/")}" h="ID=SERP,5115.1">Cloudflare <strong>Workers</strong>&reg; | Build &amp; deploy serverless code</a></h2><div class="b_caption"><p class="b_lineclamp2">Build serverless applications and deploy instantly across the globe for exceptional performance, reliability, and <strong>scale</strong>.</p></div></li>
+<li class="b_algo"><h2><a href="https://developers.cloudflare.com/workers/" h="ID=SERP,5130.1">Overview &middot; Cloudflare Workers docs</a></h2><div class="b_caption"><div class="b_attribution"><cite>https://developers.cloudflare.com/workers</cite></div><p>A serverless platform for building, deploying, and scaling apps across Cloudflare&#39;s global network &#8212; with a single command.</p></div></li>
+<li class="b_algo"><h2><a href="${bingCk("https://github.com/cloudflare/workers-sdk")}">GitHub - cloudflare/workers-sdk</a></h2><p>&#9889; The Cloudflare Developer Platform SDK: Wrangler CLI, Miniflare and more.</p></li>
+<li class="b_ans"><div class="b_rich"><h2>People also ask</h2><ul><li><a href="https://www.bing.com/search?q=what+are+cloudflare+workers">What are Cloudflare Workers?</a></li></ul></div></li>
+<li class="b_algo"><h2><a href="https://www.bing.com/ck/a?!&&p=zzz&u=a1bm90LWEtdmFsaWQtdXJs&ntb=1">Broken redirector (decodes to non-URL)</a></h2><p>Should be dropped.</p></li>
+<li class="b_algo"><h2><a href="https://www.bing.com/ck/a?!&&p=zzz&u=garbage&ntb=1">Broken redirector (no a1 prefix)</a></h2><p>Should be dropped too.</p></li>
+<li class="b_algo"><h2><a href="${bingCk("https://blog.cloudflare.com/introducing-cloudflare-workers/")}">Introducing Cloudflare Workers</a></h2></li>
+<li class="b_algo"><h2><a href="${bingCk("https://en.wikipedia.org/wiki/Cloudflare")}">Cloudflare - Wikipedia</a></h2><div class="b_caption"><p>Cloudflare, Inc. is an American company. <span class="algoSlug_icon">Web</span>Workers launched in 2017.</p></div></li>
+<li class="b_algo"><h2><a href="${bingCk("https://workers.cloudflare.com/")}">Duplicate of first</a></h2><p>dupe</p></li>
+</ol></main><footer id="b_footer">&copy; 2026 Microsoft</footer></body></html>`;
+const BING_BLOCK_HTML = `<html><head><title>Bing</title></head><body><div id="b_content"><h1>Please verify you are a human</h1><p>Our systems have detected unusual traffic from your computer network. Complete the challenge to continue.</p></div></body></html>`;
+const BING_EMPTY_HTML = `<html><body><ol id="b_results"><li class="b_no"><h1>There are no results for <strong>zzqqxxyy</strong></h1></li></ol></body></html>`;
+
+// ---- Yahoo fixture: <div class="algo"> blocks, <h3 class="title">, r.search.yahoo.com redirectors, an ads block ----
+const yr = (target, i) => `https://r.search.yahoo.com/_ylt=Awr${i}abc;_ylu=Y29sbwNiZjEEcG9zAzEEdnRpZAMEc2VjA3Ny/RV=2/RE=1760000000/RO=10/RU=${encodeURIComponent(target)}/RK=2/RS=abcdef${i}-`;
+const YAHOO_HTML = `<!DOCTYPE html><html lang="en-US"><head><title>cloudflare workers - Yahoo Search Results</title></head><body>
+<div id="web"><ol class="mb-15 reg searchCenterMiddle">
+<li><div class="ads dd algo-ads"><div class="compTitle"><h3 class="title"><a class="ad-title" href="https://r.search.yahoo.com/cbclk/dWU9...;_ylt=x/RU=https%3a%2f%2fwww.bing.com%2faclick%3fld%3dabc/RK=2/RS=y">Cloudflare Workers - Official Site</a></h3></div><div class="compText"><p>Ad · Deploy serverless code instantly.</p></div></div></li>
+<li><div class="dd algo algo-sr relsrch richAlgo Sr"><div class="compTitle options-toggle"><h3 class="title"><a class=" d-ib fz-20 lh-26 td-hu tc va-bot mxw-100p" referrerpolicy="origin" target="_blank" href="${yr("https://workers.cloudflare.com/", 1)}" aria-label="Cloudflare Workers"><span class="fc-falcon">Cloudflare</span> <b>Workers</b>&reg; | Build &amp; deploy serverless code</a></h3><div><span class="fz-ms fw-m fc-12th wr-bw lh-17"><span class="s-url">workers.cloudflare.com</span></span></div></div><div class="compText aAbs"><p class="s-desc fc-falcon">Build serverless applications and deploy instantly across the globe for exceptional performance, reliability, and <b>scale</b>.</p></div></div></li>
+<li><div class="dd algo algo-sr Sr"><div class="compTitle"><h3 class="title"><a href="${yr("https://developers.cloudflare.com/workers/", 2)}">Overview &middot; Cloudflare Workers docs</a></h3></div><div class="compText aAbs"><p>A serverless platform for building, deploying, and scaling apps across Cloudflare&#39;s global network &#8212; with a single command.</p></div></div></li>
+<li><div class="dd algo algo-sr Sr"><div class="compTitle"><h3 class="title"><a href="https://github.com/cloudflare/workers-sdk">GitHub - cloudflare/workers-sdk</a></h3></div><div class="compText"><p class="s-desc">&#9889; The Cloudflare Developer Platform SDK.</p></div></div></li>
+<li><div class="dd algo algo-sr Sr"><div class="compTitle"><h3 class="title"><a href="https://r.search.yahoo.com/_ylt=zzz/RV=2/RO=10/RK=2/RS=nope">Redirector without RU (drop me)</a></h3></div><p class="s-desc">bad</p></div></li>
+<li><div class="dd algo algo-sr Sr"><div class="compTitle"><h3 class="title"><a href="${yr("https://blog.cloudflare.com/introducing-cloudflare-workers/", 5)}">Introducing Cloudflare Workers</a></h3></div></div></li>
+<li><div class="dd algo algo-sr Sr"><div class="compTitle"><h3 class="title"><a href="${yr("https://en.wikipedia.org/wiki/Cloudflare?x=1&y=2", 6)}">Cloudflare - Wikipedia</a></h3></div><div class="compText aAbs"><p class="s-desc">Cloudflare, Inc. is an American company.</p></div></div></li>
+<li><div class="dd algo algo-sr Sr"><div class="compTitle"><h3 class="title"><a href="${yr("https://workers.cloudflare.com/", 7)}">Duplicate of first</a></h3></div></div></li>
+</ol></div><div class="algo-footer">Yahoo</div></body></html>`;
+const YAHOO_BLOCK_HTML = `<html><body><h1>Yahoo</h1><p>We have detected automated access from your network. Please verify you are not a robot by solving the CAPTCHA.</p></body></html>`;
+const YAHOO_EMPTY_HTML = `<html><body><div id="web"><div class="compNoResult"><h2>We did not find results for: <b>zzqqxxyy</b>.</h2></div></div></body></html>`;
+
 // ---- cache mock (Cloudflare caches.default) ----
 const cacheMap = new Map(); let cachePuts = 0, cacheHits = 0;
 const keyOf = (k) => (typeof k === "string" ? k : k.url);
@@ -85,7 +121,7 @@ globalThis.caches = { default: {
 } };
 
 // ---- fetch mock ----
-let calls = [], mode = "good", upstream = [];
+let calls = [], mode = "good", upstream = [], bingMode = "down", yahooMode = "down"; // fallbacks unreachable unless a test enables them
 const html = (body, status = 200) => new Response(body, { status, headers: { "Content-Type": "text/html; charset=utf-8" } });
 globalThis.fetch = async (u, init) => {
   u = String(u);
@@ -98,8 +134,24 @@ globalThis.fetch = async (u, init) => {
     return new Response(JSON.stringify({ success: true, payer: "0xabc", transaction: "0xdeadbeef", network: "eip155:8453" }));
   }
   upstream.push({ u, init });
+  const sp = new URL(u).searchParams;
+  if (u.startsWith("https://www.bing.com/search?")) {
+    const q = sp.get("q");
+    if (bingMode === "down") return html("Service Unavailable", 503);
+    if (bingMode === "block") return html(BING_BLOCK_HTML);
+    if (bingMode === "empty" || q === "zzqqxxyy") return html(BING_EMPTY_HTML);
+    if (bingMode === "neterr") throw new TypeError("fetch failed");
+    return html(BING_HTML);
+  }
+  if (u.startsWith("https://search.yahoo.com/search?")) {
+    const q = sp.get("p");
+    if (yahooMode === "down") return html("Service Unavailable", 503);
+    if (yahooMode === "block") return html(YAHOO_BLOCK_HTML);
+    if (yahooMode === "empty" || q === "zzqqxxyy") return html(YAHOO_EMPTY_HTML);
+    return html(YAHOO_HTML);
+  }
   if (!u.startsWith("https://lite.duckduckgo.com/lite/?")) return new Response("Not Found", { status: 404 });
-  const q = new URL(u).searchParams.get("q");
+  const q = sp.get("q");
   if (q === "boom") return html("<html><body>Internal Server Error</body></html>", 500);
   if (q === "ratelimited") return html("<html><body>Too Many Requests</body></html>", 429);
   if (q === "neterr") throw new TypeError("fetch failed");
@@ -236,14 +288,14 @@ ok(r.status === 200 && new URL(upstream[0].u).searchParams.get("q") === 'site:ex
 for (const [q, label, re] of [["boom", "upstream 500", /HTTP 500/], ["ratelimited", "upstream 429", /HTTP 429/], ["neterr", "network error", /Could not reach/], ["hang", "timeout abort", /8 seconds/]]) {
   calls = []; upstream = [];
   r = await paidQ(q); j = await r.json();
-  ok(r.status === 502 && calls.length === 1 && calls[0].u.endsWith("/verify") && !r.headers.get("PAYMENT-RESPONSE") && re.test(j.error) && /no payment was taken/.test(j.error) && upstream.length === 1, `${label} -> 502, not settled: ${j.error}`);
+  ok(r.status === 502 && calls.length === 1 && calls[0].u.endsWith("/verify") && !r.headers.get("PAYMENT-RESPONSE") && re.test(j.error) && /no payment was taken/.test(j.error) && upstream.length === 3 && upstream.map((x) => new URL(x.u).hostname).join() === "lite.duckduckgo.com,www.bing.com,search.yahoo.com", `${label} -> 502 after trying DDG, Bing, Yahoo in order; not settled: ${j.error}`);
 }
 calls = []; upstream = []; cachePuts = 0;
 r = await paidQ("anomaly"); j = await r.json(); await flush();
-ok(r.status === 502 && calls.length === 1 && !r.headers.get("PAYMENT-RESPONSE") && /challenge/i.test(j.error) && /no payment was taken/i.test(j.error) && cachePuts === 0, "anomaly/CAPTCHA page -> 502, not settled, not cached");
+ok(r.status === 502 && calls.length === 1 && !r.headers.get("PAYMENT-RESPONSE") && /challenge/i.test(j.error) && /no payment was taken/i.test(j.error) && cachePuts === 0 && upstream.length === 3, "anomaly/CAPTCHA page (fallbacks down) -> 502, not settled, not cached");
 calls = []; upstream = [];
 r = await paidQ("zzqqxxyy"); j = await r.json(); await flush();
-ok(r.status === 404 && calls.length === 1 && !r.headers.get("PAYMENT-RESPONSE") && /no results/i.test(j.error) && /no payment was taken/i.test(j.error) && j.query === "zzqqxxyy" && cachePuts === 0, "zero results -> 404, not settled, not cached");
+ok(r.status === 404 && calls.length === 1 && !r.headers.get("PAYMENT-RESPONSE") && /no results/i.test(j.error) && /no payment was taken/i.test(j.error) && j.query === "zzqqxxyy" && cachePuts === 0 && upstream.length === 3, "zero results on all sources -> 404, not settled, not cached");
 calls = [];
 r = await paidQ("blank"); j = await r.json();
 ok(r.status === 404 && calls.length === 1 && !r.headers.get("PAYMENT-RESPONSE"), "empty 200 body -> 404 no results, not settled");
@@ -269,26 +321,110 @@ ok(e.status === 200 && e.j.results.length === 1 && e.j.results[0].url === "https
 e = await parseVia(`<a class="result-link other" href="https://x.example/">X</a>`);
 ok(e.status === 200 && e.j.results[0].snippet === "" && e.j.results[0].domain === "x.example", "result without snippet/link-text rows still parsed");
 e = await parseVia(`<a class="result-link result-sponsored" href="https://ad.example/">Ad</a><td class="result-snippet">ad text</td>`);
-ok(e.status === 404, "only sponsored results -> 404 no results");
+ok(e.status === 404, "only sponsored results (fallbacks down) -> 404 no results");
 e = await parseVia(`<html><body>Unfortunately, bots use DuckDuckGo too. <a href="/">home</a></body></html>`);
-ok(e.status === 502, "anomaly text without result-link anchors -> 502");
+ok(e.status === 502, "anomaly text without result-link anchors (fallbacks down) -> 502");
 e = await parseVia(`<html><body><p>Results about robots and challenge coins</p><a class="result-link" href="https://bots.example/">Bots &amp; challenge coins</a></body></html>`);
 ok(e.status === 200 && e.j.results[0].title === "Bots & challenge coins", "page with results is never treated as an anomaly even if it mentions bots/challenge");
+
+// ---- fallback sources: DDG blocked -> Bing -> Yahoo ----
+const ddgDown = (fn) => { const rf = globalThis.fetch; globalThis.fetch = async (u, init) => (String(u).startsWith("https://lite.duckduckgo.com/") ? (upstream.push({ u: String(u), init }), html(ANOMALY_HTML)) : rf(u, init)); return fn().finally(() => { globalThis.fetch = rf; }); };
+cacheMap.clear(); cachePuts = 0; bingMode = "good"; yahooMode = "good";
+await ddgDown(async () => {
+  calls = []; upstream = [];
+  r = await paidQ("cloudflare workers"); j = await r.json(); await flush();
+  ok(r.status === 200 && j.source === "Bing" && calls.length === 2 && dec(r.headers.get("PAYMENT-RESPONSE")).success === true, "DDG anomaly -> Bing answers, 200, settled, source=Bing");
+  ok(upstream.length === 2 && upstream[0].u.startsWith("https://lite.duckduckgo.com/lite/?") && upstream[1].u === "https://www.bing.com/search?q=cloudflare+workers&count=10&setlang=en&cc=us", "fallback order DDG then Bing; Bing URL has q, count, setlang=en, cc=us: " + upstream[1].u);
+  const bh = upstream[1].init.headers;
+  ok(bh["user-agent"].startsWith("Mozilla/5.0 (X11; Linux x86_64)") && bh.accept === "text/html" && bh["accept-language"] === "en-US,en;q=0.9" && upstream[1].init.signal, "Bing request: browser UA, accept, accept-language, abort signal");
+  ok(Object.keys(j).join() === "query,region,safe,count,results,source,fetched_at" && j.results.every((x) => Object.keys(x).join() === "rank,title,url,domain,snippet"), "Bing output shape identical");
+  ok(j.count === 5 && j.results.map((x) => x.rank).join() === "1,2,3,4,5", "Bing: 8 b_algo blocks minus 2 broken redirectors minus 1 duplicate = 5 results, ranks sequential");
+  ok(j.results[0].url === "https://workers.cloudflare.com/" && j.results[0].domain === "workers.cloudflare.com" && j.results[0].title === "Cloudflare Workers® | Build & deploy serverless code" && j.results[0].snippet === "Build serverless applications and deploy instantly across the globe for exceptional performance, reliability, and scale.", "Bing: ck/a redirector decoded (a1 + base64url), title/snippet from <h2>/<div class=b_caption><p>, nested tags stripped");
+  ok(j.results[1].url === "https://developers.cloudflare.com/workers/" && j.results[1].title === "Overview · Cloudflare Workers docs" && j.results[1].snippet.includes("Cloudflare's global network — with a single command."), "Bing: direct href kept, caption <p> after <cite> picked, entities decoded");
+  ok(j.results[2].url === "https://github.com/cloudflare/workers-sdk" && j.results[2].snippet === "⚡ The Cloudflare Developer Platform SDK: Wrangler CLI, Miniflare and more.", "Bing: bare <p> snippet (no b_caption)");
+  ok(j.results[3].url === "https://blog.cloudflare.com/introducing-cloudflare-workers/" && j.results[3].snippet === "", "Bing: result without snippet -> empty string");
+  ok(j.results[4].url === "https://en.wikipedia.org/wiki/Cloudflare" && j.results[4].snippet === "Cloudflare, Inc. is an American company. WebWorkers launched in 2017.", "Bing: inline span inside snippet stripped");
+  ok(!j.results.some((x) => /Official Site|Broken redirector|People also ask|What are Cloudflare|Duplicate/.test(x.title) || /bing\.com|aclick/.test(x.url) || /^Ad /.test(x.snippet)), "Bing: b_ad block, b_ans block, undecodable ck/a links and duplicate url all skipped");
+  ok(cachePuts === 1 && cacheMap.has("https://www.bing.com/search?q=cloudflare+workers&count=10&setlang=en&cc=us"), "Bing HTML cached keyed by the Bing URL (DDG anomaly page not cached)");
+  calls = []; upstream = [];
+  r = await paidQ("cloudflare workers", "&count=2"); j = await r.json();
+  ok(r.status === 200 && j.source === "Bing" && j.count === 2 && upstream.length === 1 && upstream[0].u.startsWith("https://lite.duckduckgo.com/"), "Bing cache hit: DDG retried (uncached), Bing served from cache, count=2 applied");
+  // Bing blocked too -> Yahoo
+  bingMode = "block"; cacheMap.clear(); cachePuts = 0; calls = []; upstream = [];
+  r = await paidQ("cloudflare workers"); j = await r.json(); await flush();
+  ok(r.status === 200 && j.source === "Yahoo" && calls.length === 2 && upstream.length === 3 && upstream.map((x) => new URL(x.u).hostname).join() === "lite.duckduckgo.com,www.bing.com,search.yahoo.com", "DDG anomaly + Bing challenge -> Yahoo answers, source=Yahoo, order DDG,Bing,Yahoo");
+  ok(upstream[2].u === "https://search.yahoo.com/search?p=cloudflare+workers&n=10" && upstream[2].init.headers["user-agent"].startsWith("Mozilla/5.0") && upstream[2].init.headers["accept-language"] === "en-US,en;q=0.9", "Yahoo URL has p and n; browser headers");
+  ok(j.count === 5 && j.results.map((x) => x.rank).join() === "1,2,3,4,5", "Yahoo: 7 algo blocks minus 1 RU-less redirector minus 1 duplicate = 5 results");
+  ok(j.results[0].url === "https://workers.cloudflare.com/" && j.results[0].domain === "workers.cloudflare.com" && j.results[0].title === "Cloudflare Workers® | Build & deploy serverless code" && j.results[0].snippet === "Build serverless applications and deploy instantly across the globe for exceptional performance, reliability, and scale.", "Yahoo: RU= redirector decoded, title from h3.title>a with nested spans stripped, p.s-desc snippet");
+  ok(j.results[1].url === "https://developers.cloudflare.com/workers/" && j.results[1].snippet.includes("Cloudflare's global network — with a single command."), "Yahoo: div.compText > p snippet, entities decoded");
+  ok(j.results[2].url === "https://github.com/cloudflare/workers-sdk" && j.results[2].snippet === "⚡ The Cloudflare Developer Platform SDK.", "Yahoo: direct href kept");
+  ok(j.results[3].url === "https://blog.cloudflare.com/introducing-cloudflare-workers/" && j.results[3].snippet === "", "Yahoo: no snippet -> empty string");
+  ok(j.results[4].url === "https://en.wikipedia.org/wiki/Cloudflare?x=1&y=2" && j.results[4].domain === "en.wikipedia.org", "Yahoo: query string survives RU decoding");
+  ok(!j.results.some((x) => /Official Site|Redirector without RU|Duplicate/.test(x.title) || /yahoo\.com|bing\.com/.test(x.url) || /^Ad /.test(x.snippet)), "Yahoo: ads block, RU-less redirector and duplicate skipped");
+  ok(cachePuts === 1 && cacheMap.has("https://search.yahoo.com/search?p=cloudflare+workers&n=10"), "Yahoo HTML cached keyed by the Yahoo URL; blocked Bing page not cached");
+  // Bing empty (not blocked) -> Yahoo still tried
+  bingMode = "empty"; cacheMap.clear(); calls = []; upstream = [];
+  r = await paidQ("cloudflare workers"); j = await r.json(); await flush();
+  ok(r.status === 200 && j.source === "Yahoo" && upstream.length === 3, "Bing zero results -> falls through to Yahoo");
+  // Bing network error -> Yahoo
+  bingMode = "neterr"; cacheMap.clear(); calls = []; upstream = [];
+  r = await paidQ("cloudflare workers"); j = await r.json(); await flush();
+  ok(r.status === 200 && j.source === "Yahoo", "Bing network error -> Yahoo");
+  // everything blocked -> 502 not settled, error names each source
+  bingMode = "block"; yahooMode = "block"; cacheMap.clear(); cachePuts = 0; calls = []; upstream = [];
+  r = await paidQ("cloudflare workers"); j = await r.json(); await flush();
+  ok(r.status === 502 && calls.length === 1 && !r.headers.get("PAYMENT-RESPONSE") && /DuckDuckGo/.test(j.error) && /Bing/.test(j.error) && /Yahoo/.test(j.error) && /challenge/.test(j.error) && /no payment was taken/.test(j.error) && cachePuts === 0 && upstream.length === 3, "all three sources blocked -> 502, not settled, nothing cached: " + j.error);
+  // all sources down (errors) -> 502; one clean empty page among failures -> 404
+  bingMode = "down"; yahooMode = "down"; calls = []; upstream = [];
+  r = await paidQ("cloudflare workers"); j = await r.json();
+  ok(r.status === 502 && calls.length === 1 && /HTTP 503/.test(j.error), "DDG blocked + Bing/Yahoo 503 -> 502, not settled");
+  bingMode = "empty"; yahooMode = "down"; calls = [];
+  r = await paidQ("cloudflare workers"); j = await r.json();
+  ok(r.status === 404 && calls.length === 1 && /no results/i.test(j.error), "DDG blocked + Bing clean empty + Yahoo down -> 404 (an engine said no results), not settled");
+  // health reports the source that answered
+  bingMode = "good"; yahooMode = "good"; cacheMap.clear(); calls = []; upstream = [];
+  r = await W.fetch(new Request(base + "/health/search"), env, ctx); j = await r.json(); await flush();
+  ok(r.status === 200 && Object.keys(j).join() === "status,result_count,ms,source" && j.status === "ok" && j.source === "Bing" && j.result_count === 5 && calls.length === 0 && !JSON.stringify(j).includes("cloudflare.com"), "health: DDG blocked -> ok via Bing, source=Bing, result_count 5, no result data");
+  bingMode = "block"; cacheMap.clear();
+  r = await W.fetch(new Request(base + "/health/search"), env, ctx); j = await r.json(); await flush();
+  ok(r.status === 200 && j.status === "ok" && j.source === "Yahoo" && j.result_count === 5, "health: DDG + Bing blocked -> ok via Yahoo, source=Yahoo");
+  yahooMode = "block"; cacheMap.clear();
+  r = await W.fetch(new Request(base + "/health/search"), env, ctx); j = await r.json();
+  ok(r.status === 503 && j.status === "down" && j.source === null && j.result_count === 0, "health: all blocked -> 503 down, source null");
+});
+bingMode = "down"; yahooMode = "down"; cacheMap.clear();
+// Bing/Yahoo parser edge cases, fed through the cache (DDG page is an anomaly page so the fallback runs)
+const viaBing = async (body) => { const q = "bedge" + Math.random(); cacheMap.set(`https://lite.duckduckgo.com/lite/?q=${encodeURIComponent(q)}&kp=-1`, ANOMALY_HTML); cacheMap.set(`https://www.bing.com/search?q=${encodeURIComponent(q)}&count=10&setlang=en&cc=us`, body); const rr = await paidQ(q); return { status: rr.status, j: await rr.json() }; };
+e = await viaBing(`<ol><li class='b_algo'><h2><a href='https://one.example/'>One</a></h2><p>p1</p></li><li class="b_algo"><h2><a href="https://two.example/">Two</a></h2></li></ol>`);
+ok(e.status === 200 && e.j.source === "Bing" && e.j.results.length === 2 && e.j.results[0].snippet === "p1" && e.j.results[1].snippet === "", "Bing: single-quoted attrs, missing snippet");
+e = await viaBing(`<li class="b_algo"><h2><a href="https://only.example/">Only</a></h2><p>x</p></li><li class="b_ad"><h2><a href="https://ad.example/">Ad</a></h2><p>ad</p></li>`);
+ok(e.status === 200 && e.j.results.length === 1 && e.j.results[0].url === "https://only.example/", "Bing: trailing b_ad skipped");
+e = await viaBing(BING_BLOCK_HTML);
+ok(e.status === 502, "Bing block page (no b_algo, challenge text) -> treated as failure");
+e = await viaBing(BING_EMPTY_HTML);
+ok(e.status === 404, "Bing empty page -> no results");
+const viaYahoo = async (body) => { const q = "yedge" + Math.random(); cacheMap.set(`https://lite.duckduckgo.com/lite/?q=${encodeURIComponent(q)}&kp=-1`, ANOMALY_HTML); cacheMap.set(`https://www.bing.com/search?q=${encodeURIComponent(q)}&count=10&setlang=en&cc=us`, BING_BLOCK_HTML); cacheMap.set(`https://search.yahoo.com/search?p=${encodeURIComponent(q)}&n=10`, body); const rr = await paidQ(q); return { status: rr.status, j: await rr.json() }; };
+e = await viaYahoo(`<div class='algo'><h3 class='title'><a href='https://r.search.yahoo.com/_ylt=A;_ylu=B/RV=2/RE=1/RO=10/RU=https%3a%2f%2fone.example%2fpath%3fa%3d1%26b%3d2/RK=2/RS=zzz'>One</a></h3><div class="compText"><p>c1</p></div></div><div class="algo"><h3 class="title"><a href="https://two.example/">Two</a></h3></div>`);
+ok(e.status === 200 && e.j.source === "Yahoo" && e.j.results.length === 2 && e.j.results[0].url === "https://one.example/path?a=1&b=2" && e.j.results[0].snippet === "c1" && e.j.results[1].snippet === "", "Yahoo: lowercase-hex RU decoding with query string, compText snippet, missing snippet");
+e = await viaYahoo(YAHOO_BLOCK_HTML);
+ok(e.status === 502, "Yahoo block page -> failure");
+e = await viaYahoo(YAHOO_EMPTY_HTML);
+ok(e.status === 404, "Yahoo empty page -> no results");
 
 // ---- /health/search ----
 cacheMap.clear(); calls = []; upstream = [];
 r = await W.fetch(new Request(base + "/health/search"), env, ctx); j = await r.json(); await flush();
-ok(r.status === 200 && Object.keys(j).join() === "status,result_count,ms" && j.status === "ok" && j.result_count === 10 && typeof j.ms === "number" && j.ms >= 0 && !JSON.stringify(j).includes("cloudflare.com"), "health: fixed query, {status,result_count,ms} only, no result data");
+ok(r.status === 200 && Object.keys(j).join() === "status,result_count,ms,source" && j.status === "ok" && j.result_count === 10 && typeof j.ms === "number" && j.ms >= 0 && j.source === "DuckDuckGo" && !JSON.stringify(j).includes("cloudflare.com"), "health: fixed query, {status,result_count,ms,source} only, no result data");
 ok(upstream.length === 1 && new URL(upstream[0].u).searchParams.get("q") === "cloudflare workers" && calls.length === 0 && !r.headers.get("PAYMENT-RESPONSE"), "health: runs 'cloudflare workers' upstream, free (no facilitator calls)");
 r = await W.fetch(new Request(base + "/health/search", { headers: { "PAYMENT-SIGNATURE": hdr } }), env, ctx); ok(r.status === 200 && calls.length === 0, "health ignores payment header, never charges");
 const realFetch = globalThis.fetch;
 cacheMap.clear();
 globalThis.fetch = async (u, init) => (String(u).startsWith("https://lite.duckduckgo.com/") ? html(NO_RESULTS_HTML) : realFetch(u, init));
 r = await W.fetch(new Request(base + "/health/search"), env, ctx); j = await r.json();
-ok(r.status === 503 && j.status === "degraded" && j.result_count === 0 && Object.keys(j).join() === "status,result_count,ms", "health: markup change / zero results -> 503 degraded, result_count 0");
+ok(r.status === 503 && j.status === "degraded" && j.result_count === 0 && j.source === null && Object.keys(j).join() === "status,result_count,ms,source", "health: markup change / zero results everywhere -> 503 degraded, result_count 0, source null");
 globalThis.fetch = async (u, init) => (String(u).startsWith("https://lite.duckduckgo.com/") ? html("down", 503) : realFetch(u, init));
 r = await W.fetch(new Request(base + "/health/search"), env, ctx); j = await r.json();
-ok(r.status === 503 && j.status === "down" && j.result_count === 0, "health: upstream error -> 503 down");
+ok(r.status === 503 && j.status === "down" && j.result_count === 0 && j.source === null, "health: every source erroring -> 503 down");
 globalThis.fetch = realFetch;
 r = await W.fetch(new Request(base + "/health/search", { method: "POST" }), env, ctx); ok(r.status === 405, "health POST -> 405");
 
@@ -331,6 +467,6 @@ const txt = await r.text(); ok(!txt.includes(secret) && !txt.includes("test-key-
 r = await W.fetch(new Request(base + "/"), envC, ctx); ok((await r.json()).facilitator === "cdp", "info page reports cdp facilitator");
 
 // ---- hard rule: no real network ever touched ----
-ok(upstream.every((x) => x.u.startsWith("https://lite.duckduckgo.com/lite/?")), "all upstream calls went to the DDG mock");
+ok(upstream.every((x) => /^https:\/\/(lite\.duckduckgo\.com\/lite\/|www\.bing\.com\/search|search\.yahoo\.com\/search)\?/.test(x.u)), "all upstream calls went to the DDG/Bing/Yahoo mocks");
 console.log(fails ? `${fails} FAILED` : "ALL PASS");
 process.exitCode = fails ? 1 : 0;

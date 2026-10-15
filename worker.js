@@ -15,13 +15,16 @@ const CDP_URL = "https://api.cdp.coinbase.com/platform/v2/x402";
 const PAYAI_URL = "https://facilitator.payai.network";
 const SERVICE = "NoJunk Web Search";
 const DESCRIPTION =
-  "Cheap web search for AI agents: give it a query, get up to 10 live web results back as JSON (rank, title, url, domain, snippet). Optional region (e.g. us-en) and safe-search level. Results link to the live web; pair with a /read service to fetch the pages.";
+  "Cheap web search for AI agents: give it a query, get up to 10 live web results back as JSON (rank, title, url, domain, snippet). Optional region (e.g. us-en) and safe-search level. Sources tried in order: DuckDuckGo, Bing, Yahoo. Results link to the live web; pair with a /read service to fetch the pages.";
 
-const UPSTREAM = "https://lite.duckduckgo.com/lite/";
-// DDG lite serves a plain HTML page to browser-like clients; this UA is what it expects.
+// Sources are tried in this order; the first one that yields at least one organic result wins.
+const DDG_URL = "https://lite.duckduckgo.com/lite/";
+const BING_URL = "https://www.bing.com/search";
+const YAHOO_URL = "https://search.yahoo.com/search";
+// The engines serve plain HTML pages to browser-like clients; this UA is what they expect.
 const UPSTREAM_UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36";
-const TIMEOUT_MS = 8000; // upstream fetch must finish within this
-const CACHE_TTL_S = 120; // upstream HTML cached in caches.default for this long, keyed by the DDG URL
+const TIMEOUT_MS = 8000; // each upstream fetch must finish within this
+const CACHE_TTL_S = 120; // upstream HTML cached in caches.default for this long, keyed by the upstream URL
 const MAX_QUERY_CHARS = 400;
 const MAX_COUNT = 10;
 const DEFAULT_COUNT = 10;
@@ -182,8 +185,30 @@ function resolveResultUrl(href) {
 }
 const domainOf = (url) => { try { return new URL(url).hostname.toLowerCase().replace(/^www\./, ""); } catch { return ""; } };
 
-// Returns { results, anomaly } where results = [{title, url, domain, snippet}] in page order (ads skipped).
-function parseResults(html) {
+// A page with no parseable results is a block/CAPTCHA page if it talks like one; otherwise a clean "no results".
+const looksBlocked = (html) => /anomaly|bots? use|challenge|captcha|unusual traffic|not a robot|verify (?:that )?you|automated (?:queries|access|traffic)/i.test(html);
+// Open tags <tag ...> whose class list contains `cls`, with their positions and parsed attrs.
+function openTags(html, tag, cls) {
+  const out = [];
+  const re = new RegExp(`<${tag}\\b([^>]*)>`, "gi");
+  let m;
+  while ((m = re.exec(html))) { const attrs = parseAttrs(m[1]); if (cls === null || hasClass(attrs, cls)) out.push({ start: m.index, end: re.lastIndex, attrs }); }
+  return out;
+}
+// Finalize a raw result list: drop broken ones, dedupe by URL, attach domain.
+function finalize(raw) {
+  const results = [], seen = new Set();
+  for (const r of raw) {
+    if (!r.url || !r.title || seen.has(r.url)) continue;
+    seen.add(r.url);
+    results.push({ title: r.title, url: r.url, domain: domainOf(r.url), snippet: r.snippet || "" });
+  }
+  return results;
+}
+const firstInner = (seg, tag) => { const m = new RegExp(`<${tag}\\b[^>]*>([\\s\\S]*?)<\\/${tag}\\s*>`, "i").exec(seg); return m ? m[1] : null; };
+
+// ---- DuckDuckGo lite: table rows; <a class="result-link"> + <td class="result-snippet"> + <span class="link-text"> ----
+function parseDdg(html) {
   const anchors = [];
   const re = /<a\b([^>]*)>([\s\S]*?)<\/a\s*>/gi;
   let m;
@@ -191,41 +216,108 @@ function parseResults(html) {
     const attrs = parseAttrs(m[1]);
     if (hasClass(attrs, "result-link")) anchors.push({ start: m.index, end: re.lastIndex, attrs, inner: m[2] });
   }
-  if (!anchors.length) {
-    const anomaly = /anomaly|bots?\b|challenge|captcha|unusual traffic/i.test(html);
-    return { results: [], anomaly };
-  }
-  const results = [];
-  const seen = new Set();
+  if (!anchors.length) return { results: [], anomaly: looksBlocked(html) };
+  const raw = [];
   for (let i = 0; i < anchors.length; i++) {
     const a = anchors[i];
     const href = a.attrs.href || "";
     if (hasClass(a.attrs, "result-sponsored") || /result-sponsored/i.test(a.attrs.class || "") || /duckduckgo\.com\/y\.js/i.test(href) || /^\/\/?y\.js/i.test(href)) continue;
-    const url = resolveResultUrl(href);
-    if (!url) continue;
-    const title = textOf(a.inner);
-    if (!title) continue;
-    if (seen.has(url)) continue;
-    seen.add(url);
     // Everything up to the next result anchor belongs to this result (snippet row, url row).
     const seg = html.slice(a.end, i + 1 < anchors.length ? anchors[i + 1].start : html.length);
     const sn = innerOfClass(seg, "td", "result-snippet");
-    const lt = innerOfClass(seg, "span", "link-text");
-    results.push({ title, url, domain: domainOf(url) || textOf(lt || "").split("/")[0], snippet: sn === null ? "" : textOf(sn) });
+    raw.push({ title: textOf(a.inner), url: resolveResultUrl(href), snippet: sn === null ? "" : textOf(sn) });
   }
-  return { results, anomaly: false };
+  return { results: finalize(raw), anomaly: false };
 }
+
+// ---- Bing HTML: <li class="b_algo"> blocks with <h2><a href>TITLE</a></h2> and a <p> snippet; ads are <li class="b_ad"> ----
+// bing.com/ck/a redirector: the real URL is in the "u" param, base64url after an "a1" prefix.
+function resolveBingUrl(href) {
+  if (!href) return null;
+  href = href.trim();
+  let u;
+  try { u = new URL(href, "https://www.bing.com/"); } catch { return null; }
+  if (/(^|\.)bing\.com$/i.test(u.hostname) && /^\/ck\/a\/?$/i.test(u.pathname)) {
+    const enc = u.searchParams.get("u");
+    if (!enc || !/^a1/.test(enc)) return null;
+    try {
+      const b64 = enc.slice(2).replace(/-/g, "+").replace(/_/g, "/");
+      const bin = atob(b64 + "=".repeat((4 - (b64.length % 4)) % 4));
+      u = new URL(new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0))));
+    } catch { return null; }
+  }
+  if (u.protocol !== "http:" && u.protocol !== "https:") return null;
+  if (/(^|\.)bing\.com$/i.test(u.hostname) || /(^|\.)microsoft\.com$/i.test(u.hostname) && /^\/?(ads|aclick)/i.test(u.pathname)) return null;
+  return u.toString();
+}
+function parseBing(html) {
+  // Segment by result/ad <li> boundaries so an ad block never leaks into an organic one.
+  const lis = openTags(html, "li", null).filter((t) => hasClass(t.attrs, "b_algo") || hasClass(t.attrs, "b_ad") || hasClass(t.attrs, "b_ans"));
+  const algos = lis.filter((t) => hasClass(t.attrs, "b_algo"));
+  if (!algos.length) return { results: [], anomaly: looksBlocked(html) };
+  const raw = [];
+  for (const t of algos) {
+    const next = lis.find((x) => x.start > t.start);
+    const seg = html.slice(t.end, next ? next.start : html.length);
+    const h2 = firstInner(seg, "h2");
+    if (h2 === null) continue;
+    const am = /<a\b([^>]*)>([\s\S]*?)<\/a\s*>/i.exec(h2);
+    if (!am) continue;
+    const attrs = parseAttrs(am[1]);
+    const after = seg.slice(seg.indexOf(h2) + h2.length);
+    const p = firstInner(after, "p"); // snippet <p> is either a direct child or inside <div class="b_caption">
+    raw.push({ title: textOf(am[2]), url: resolveBingUrl(attrs.href), snippet: p === null ? "" : textOf(p) });
+  }
+  return { results: finalize(raw), anomaly: false };
+}
+
+// ---- Yahoo: <div class="algo"> blocks with <h3 class="title"><a href>TITLE</a></h3> and <p class="s-desc"> / <div class="compText"><p> ----
+// r.search.yahoo.com redirector: the real URL is the URL-encoded "/RU=...../RK=" path segment.
+function resolveYahooUrl(href) {
+  if (!href) return null;
+  href = href.trim();
+  let u;
+  try { u = new URL(href, "https://search.yahoo.com/"); } catch { return null; }
+  if (/(^|\.)yahoo\.com$/i.test(u.hostname) && /^r\./i.test(u.hostname)) {
+    const m = /\/RU=([^/]+?)\/R[KS]=/i.exec(u.pathname) || /\/RU=([^/]+)$/i.exec(u.pathname);
+    if (!m) return null;
+    try { u = new URL(decodeURIComponent(m[1])); } catch { return null; }
+  }
+  if (u.protocol !== "http:" && u.protocol !== "https:") return null;
+  if (/(^|\.)yahoo\.com$/i.test(u.hostname) && /^(r|search|s)\./i.test(u.hostname)) return null;
+  return u.toString();
+}
+function parseYahoo(html) {
+  const divs = openTags(html, "div", null).filter((t) => hasClass(t.attrs, "algo") || hasClass(t.attrs, "ads") || hasClass(t.attrs, "ad"));
+  const algos = divs.filter((t) => hasClass(t.attrs, "algo"));
+  if (!algos.length) return { results: [], anomaly: looksBlocked(html) };
+  const raw = [];
+  for (const t of algos) {
+    const next = divs.find((x) => x.start > t.start);
+    const seg = html.slice(t.end, next ? next.start : html.length);
+    const h3 = innerOfClass(seg, "h3", "title");
+    if (h3 === null) continue;
+    const am = /<a\b([^>]*)>([\s\S]*?)<\/a\s*>/i.exec(h3);
+    if (!am) continue;
+    const attrs = parseAttrs(am[1]);
+    const after = seg.slice(seg.indexOf(h3) + h3.length);
+    let sn = innerOfClass(after, "p", "s-desc");
+    if (sn === null) { const comp = innerOfClass(after, "div", "compText"); if (comp !== null) sn = firstInner(comp, "p"); }
+    if (sn === null) sn = firstInner(after, "p");
+    raw.push({ title: textOf(am[2]), url: resolveYahooUrl(attrs.href), snippet: sn === null ? "" : textOf(sn) });
+  }
+  return { results: finalize(raw), anomaly: false };
+}
+
+const SOURCES = [
+  { name: "DuckDuckGo", parse: parseDdg, url: (q) => { const u = new URL(DDG_URL); u.searchParams.set("q", q.q); if (q.region) u.searchParams.set("kl", q.region); u.searchParams.set("kp", SAFE_LEVELS[q.safe]); return u.toString(); } },
+  // Fallbacks always ask for MAX_COUNT results (count is applied after parsing) so cache keys do not fragment by count.
+  { name: "Bing", parse: parseBing, url: (q) => { const u = new URL(BING_URL); u.searchParams.set("q", q.q); u.searchParams.set("count", String(MAX_COUNT)); u.searchParams.set("setlang", "en"); u.searchParams.set("cc", "us"); return u.toString(); } },
+  { name: "Yahoo", parse: parseYahoo, url: (q) => { const u = new URL(YAHOO_URL); u.searchParams.set("p", q.q); u.searchParams.set("n", String(MAX_COUNT)); return u.toString(); } },
+];
 
 // ---------- fetching ----------
 class FetchError extends Error { constructor(status, message) { super(message); this.status = status; } }
-
-function upstreamUrl(q) {
-  const u = new URL(UPSTREAM);
-  u.searchParams.set("q", q.q);
-  if (q.region) u.searchParams.set("kl", q.region);
-  u.searchParams.set("kp", SAFE_LEVELS[q.safe]);
-  return u.toString();
-}
 
 function cacheStore() {
   try { return typeof caches !== "undefined" && caches && caches.default ? caches.default : null; } catch { return null; }
@@ -268,23 +360,28 @@ function cachePut(ddgUrl, html, ctx) {
   return p;
 }
 
-// Runs the search end to end. Returns { status, body } — status !== 200 means do not settle.
+// Runs the search end to end, trying each source in order until one yields results.
+// Returns { status, body } — status !== 200 means do not settle.
 async function search(q, ctx) {
-  const ddgUrl = upstreamUrl(q);
-  let page;
-  try { page = await fetchUpstream(ddgUrl); } catch (e) {
-    return { status: e instanceof FetchError ? e.status : 502, body: { error: `${e.message || "The search engine could not be reached"}; no payment was taken.`, query: q.q } };
+  const problems = [];
+  let sawEmpty = false;
+  for (const src of SOURCES) {
+    const upstream = src.url(q);
+    let page;
+    try { page = await fetchUpstream(upstream); } catch (e) { problems.push(`${src.name}: ${e.message || "could not be reached"}`); continue; }
+    let parsed;
+    try { parsed = src.parse(page.html); } catch (e) { problems.push(`${src.name}: results could not be parsed (${String(e && e.message ? e.message : e).slice(0, 100)})`); continue; }
+    if (parsed.anomaly) { problems.push(`${src.name}: refusing automated queries (challenge page)`); continue; }
+    if (!parsed.results.length) { sawEmpty = true; problems.push(`${src.name}: no results`); continue; }
+    if (!page.cached) { const p = cachePut(upstream, page.html, ctx); if (p && !(ctx && typeof ctx.waitUntil === "function")) await p; }
+    const results = parsed.results.slice(0, q.count).map((r, i) => ({ rank: i + 1, title: r.title, url: r.url, domain: r.domain, snippet: r.snippet }));
+    return {
+      status: 200,
+      body: { query: q.q, region: q.region, safe: q.safe, count: results.length, results, source: src.name, fetched_at: new Date().toISOString() },
+    };
   }
-  let parsed;
-  try { parsed = parseResults(page.html); } catch (e) { return { status: 502, body: { error: "The search results could not be parsed; no payment was taken.", detail: String(e && e.message ? e.message : e).slice(0, 200), query: q.q } }; }
-  if (parsed.anomaly) return { status: 502, body: { error: "The search engine is temporarily refusing automated queries (challenge page); try again shortly. No payment was taken.", query: q.q } };
-  if (!parsed.results.length) return { status: 404, body: { error: "No results found for this query; no payment was taken.", query: q.q, region: q.region, safe: q.safe } };
-  if (!page.cached) { const p = cachePut(ddgUrl, page.html, ctx); if (p && !(ctx && typeof ctx.waitUntil === "function")) await p; }
-  const results = parsed.results.slice(0, q.count).map((r, i) => ({ rank: i + 1, title: r.title, url: r.url, domain: r.domain, snippet: r.snippet }));
-  return {
-    status: 200,
-    body: { query: q.q, region: q.region, safe: q.safe, count: results.length, results, source: "DuckDuckGo", fetched_at: new Date().toISOString() },
-  };
+  if (sawEmpty) return { status: 404, body: { error: `No results found for this query (${problems.join("; ")}); no payment was taken.`, query: q.q, region: q.region, safe: q.safe } };
+  return { status: 502, body: { error: `All search sources failed: ${problems.join("; ")}. Try again shortly; no payment was taken.`, query: q.q } };
 }
 
 // ---------- params ----------
@@ -414,7 +511,7 @@ function openapi(origin) {
     type: "object",
     properties: {
       query: { type: "string", description: "The query that was searched (whitespace normalized)" },
-      region: { type: ["string", "null"], description: "Region code used, or null" },
+      region: { type: ["string", "null"], description: "Region code requested, or null (applied by the DuckDuckGo source; fallbacks use en/us defaults)" },
       safe: { type: "string", enum: ["moderate", "off", "strict"] },
       count: { type: "integer", description: "Number of results returned (1-10)" },
       results: {
@@ -431,7 +528,7 @@ function openapi(origin) {
           required: ["rank", "title", "url", "domain", "snippet"],
         },
       },
-      source: { type: "string", const: "DuckDuckGo" },
+      source: { type: "string", enum: SOURCES.map((s) => s.name), description: "Search engine that served this result set (sources are tried in order until one returns results)" },
       fetched_at: { type: "string", format: "date-time" },
     },
     required: ["query", "region", "safe", "count", "results", "source", "fetched_at"],
@@ -450,7 +547,7 @@ function openapi(origin) {
       402: { description: "Payment Required" },
       404: { description: "The search returned no results (no charge)" },
       413: { description: "Request body too large (no charge)" },
-      502: { description: "The search engine could not be reached, timed out (8 s), returned an error, or served a bot-challenge page (no charge)" },
+      502: { description: "Every search source failed: unreachable, timed out (8 s each), error status, or bot-challenge page (no charge)" },
     },
   });
   return {
@@ -459,7 +556,7 @@ function openapi(origin) {
       title: SERVICE,
       version: "1.0.0",
       description: DESCRIPTION,
-      "x-guidance": "Cheap web search for AI agents. GET /search?q=your+query (or POST /search with JSON body {\"q\": \"...\", \"count\": 10, \"region\": \"us-en\", \"safe\": \"moderate\"}) returns up to 10 live web results as JSON: for each result its rank, title, url, domain and snippet. Costs $0.002 USDC on Base per request via x402; you are only charged when at least one result is returned (no charge on 400/404/502). Results link to the live web: use a /read service (such as NoJunk Web Read) to fetch and read the pages you pick. Optional region (DuckDuckGo code like us-en, uk-en, de-de) biases results by country/language; safe is moderate by default and can be off or strict. Results come from DuckDuckGo's HTML interface and are cached for 2 minutes per identical query. Best for: finding sources, looking up current facts, discovering URLs to read, checking what exists on a topic before answering.",
+      "x-guidance": "Cheap web search for AI agents. GET /search?q=your+query (or POST /search with JSON body {\"q\": \"...\", \"count\": 10, \"region\": \"us-en\", \"safe\": \"moderate\"}) returns up to 10 live web results as JSON: for each result its rank, title, url, domain and snippet. Costs $0.002 USDC on Base per request via x402; you are only charged when at least one result is returned (no charge on 400/404/502). Results link to the live web: use a /read service (such as NoJunk Web Read) to fetch and read the pages you pick. Optional region (DuckDuckGo code like us-en, uk-en, de-de) biases results by country/language; safe is moderate by default and can be off or strict. Results come from DuckDuckGo's HTML interface, falling back to Bing and then Yahoo when a source is blocked or empty (the source field says which one answered); upstream pages are cached for 2 minutes per identical query. region/safe apply to DuckDuckGo; fallbacks use English/US defaults. Best for: finding sources, looking up current facts, discovering URLs to read, checking what exists on a topic before answering.",
     },
     servers: [{ url: origin }],
     paths: { "/search": { get: op("get"), post: op("post") } },
@@ -482,9 +579,9 @@ export default {
         health: `${url.origin}/health/search`,
         price: "$0.002 USDC on Base per request (x402)",
         params: { q: "required, 1-400 chars", count: "1-10, default 10", region: "optional DuckDuckGo region code, e.g. us-en", safe: "moderate (default) | off | strict" },
-        source: "DuckDuckGo",
+        sources: SOURCES.map((s) => s.name),
         limits: { timeout_seconds: TIMEOUT_MS / 1000, max_results: MAX_COUNT, max_query_chars: MAX_QUERY_CHARS, cache_seconds: CACHE_TTL_S },
-        no_charge_on: ["400 invalid input", "404 no results", "502 search engine error, timeout or bot challenge"],
+        no_charge_on: ["400 invalid input", "404 no results", "502 all search sources failed (error, timeout or bot challenge)"],
         configured: Boolean(env.PAY_TO),
         facilitator: env.CDP_API_KEY_ID && env.CDP_API_KEY_SECRET ? "cdp" : "payai",
       });
@@ -497,7 +594,7 @@ export default {
       const r = await search({ q: HEALTH_QUERY, count: MAX_COUNT, region: null, safe: "moderate" }, ctx);
       const result_count = r.status === 200 ? r.body.results.length : 0;
       const status = r.status === 200 ? "ok" : r.status === 404 ? "degraded" : "down";
-      return json({ status, result_count, ms: Date.now() - t0 }, status === "ok" ? 200 : 503);
+      return json({ status, result_count, ms: Date.now() - t0, source: r.status === 200 ? r.body.source : null }, status === "ok" ? 200 : 503);
     }
     if (url.pathname !== "/search") return json({ error: "Not found. Use /search?q=your+query" }, 404);
     if (!env.PAY_TO || !/^0x[0-9a-fA-F]{40}$/.test(env.PAY_TO)) return json({ error: "Service not configured: PAY_TO wallet address missing" }, 500);
