@@ -38,7 +38,7 @@ async function getJSON(url, ttl = 120) {
     const text = await res.text();
     let data = null;
     try { data = JSON.parse(text); } catch {}
-    if (res.ok && data && cache) {
+    if (res.ok && data && cache && !(data.code !== undefined && data.code !== 1)) {
       await cache.put(key, new Response(text, { headers: { "Content-Type": "application/json", "Cache-Control": `max-age=${ttl}` } }));
     }
     return { ok: res.ok && data !== null, status: res.status, data };
@@ -54,6 +54,13 @@ async function fetchTokenData({ address, chain }) {
   const gpUrl = c.goplus + encodeURIComponent(address);
   const gtBase = `https://api.geckoterminal.com/api/v2/networks/${c.gt}/tokens/${encodeURIComponent(address)}`;
   const [gp, gtPools] = await Promise.all([getJSON(gpUrl), getJSON(gtBase + "/pools?page=1")]);
+  return interpretTokenData({ address, chain }, gp, gtPools);
+}
+
+function interpretTokenData({ address, chain }, gp, gtPools) {
+  const c = CHAINS[chain];
+  // GoPlus signals throttling with HTTP 200 + code 4029; treat any non-1 code as a failed lookup, not "no token".
+  if (gp.ok && gp.data && gp.data.code !== undefined && gp.data.code !== 1) gp = { ...gp, ok: false, status: gp.data.code === 4029 ? 429 : 502 };
   let security = null;
   if (gp.ok && gp.data && gp.data.result && typeof gp.data.result === "object") {
     const r = gp.data.result;
@@ -78,7 +85,7 @@ async function fetchTokenData({ address, chain }) {
   const upstreamDown = !gp.ok && gp.status !== 404 && !gtPools.ok && gtPools.status !== 404;
   const marketMissing = gtPools.status === 404 || (gtPools.ok && pools.length === 0);
   const marketUnavailable = !gtPools.ok && !marketMissing;
-  return { security, token, pools, gpOk: gp.ok, gtOk: gtPools.ok, diag: { gp: gp.status, gpCode: gp.data && gp.data.code, gpMsg: gp.data && gp.data.message, gt: gtPools.status, err: gp.error || gtPools.error }, upstreamDown, marketMissing, marketUnavailable };
+  return { security, token, pools, gpOk: gp.ok, gtOk: gtPools.ok, upstreamDown, marketMissing, marketUnavailable };
 }
 
 const num = (v) => {

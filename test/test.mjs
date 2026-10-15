@@ -42,6 +42,7 @@ globalThis.fetch = async (u, init) => {
   if (u.includes("gopluslabs") || u.includes("geckoterminal")) {
     calls.push({ u, kind: "data" });
     if (upstream === "down") throw new Error("network down");
+    if (upstream === "throttled") return u.includes("gopluslabs") ? R({ code: 4029, message: "too many requests" }) : new Response("rate limited", { status: 429 });
     if (upstream === "gt429" && u.includes("geckoterminal")) return new Response("rate limited", { status: 429 });
     if (/\/token_security\/\d+\?/.test(u)) { const a = decodeURIComponent(u.split("=").pop()).toLowerCase(); return R({ code: 1, message: "OK", result: GP[a] ? { [a]: GP[a] } : {} }); }
     if (u.includes("/solana/token_security")) { const a = decodeURIComponent(u.split("=").pop()); return R({ code: 1, message: "ok", result: GP_SOL[a] ? { [a]: GP_SOL[a] } : {} }); }
@@ -127,4 +128,6 @@ calls = []; r = await W.fetch(new Request(base + "/check", { method: "POST", hea
 const fc = calls.find((c) => c.kind === "fac");
 const [h, p, sg] = fc.init.headers.Authorization.slice(7).split(".");
 ok(r.status === 200 && fc.u === "https://api.cdp.coinbase.com/platform/v2/x402/verify" && nverify(null, Buffer.from(h + "." + p), publicKey, Buffer.from(sg, "base64url")) && JSON.parse(Buffer.from(p, "base64url")).uris[0] === "POST api.cdp.coinbase.com/platform/v2/x402/verify", "CDP Ed25519 JWT valid");
+upstream = "throttled"; calls = []; r = await paid({ tokenAddress: BRETT, chain: "base" });
+ok(r.status === 502 && !calls.some((c) => c.kind === "fac" && c.u.endsWith("settle")), "both sources throttled -> 502 (not 404), not settled"); upstream = "up";
 console.log(fails ? `${fails} FAILED` : "ALL PASS");

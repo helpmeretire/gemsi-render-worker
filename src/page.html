@@ -215,13 +215,32 @@ function run(addr,chain){
  addr=pick(addr);a.value=addr;
  if(!addr){err('Paste a token contract address first.');a.focus();return}
  busy(true);out.innerHTML='';
- var q='free?address='+encodeURIComponent(addr)+(chain?'&chain='+encodeURIComponent(chain):'');
- fetch(q,{headers:{accept:'application/json'}}).then(function(res){return res.json().then(function(j){return{ok:res.ok,j:j}})}).then(function(x){
+ var evm=/^0x[0-9a-fA-F]{40}$/.test(addr),sol=!evm&&/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(addr);
+ if(!evm&&!sol){busy(false);err("That doesn't look like a token address. It should start with 0x, or be a Solana mint address.");return}
+ (chain?Promise.resolve(chain):sol?Promise.resolve('solana'):detect(addr)).then(function(ch){
+  if(evm&&ch==='solana')ch='ethereum';
+  c.value=ch;
+  var n=NET[ch],gpu=n.gp+'?contract_addresses='+encodeURIComponent(addr),gtu=GT+'/networks/'+n.gt+'/tokens/'+encodeURIComponent(addr)+'/pools?page=1';
+  return Promise.all([raw(gpu),raw(gtu)]).then(function(x){
+   return fetch('free',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({address:addr,chain:ch,gp:x[0],gt:x[1]})});
+  });
+ }).then(function(res){return res.json().then(function(j){return{ok:res.ok,j:j}})}).then(function(x){
   busy(false);
   if(!x.ok){err(x.j&&x.j.error?x.j.error:'Something went wrong. Please try again.');return}
-  if(x.j.token&&x.j.token.chain)c.value=x.j.token.chain;
   render(x.j);
  }).catch(function(){busy(false);err('Could not reach the checker. Check your connection and try again.')});
+}
+var GPB='https://api.gopluslabs.io/api/v1/',GT='https://api.geckoterminal.com/api/v2';
+var NET={ethereum:{gp:GPB+'token_security/1',gt:'eth'},base:{gp:GPB+'token_security/8453',gt:'base'},bsc:{gp:GPB+'token_security/56',gt:'bsc'},arbitrum:{gp:GPB+'token_security/42161',gt:'arbitrum'},polygon:{gp:GPB+'token_security/137',gt:'polygon_pos'},optimism:{gp:GPB+'token_security/10',gt:'optimism'},avalanche:{gp:GPB+'token_security/43114',gt:'avax'},solana:{gp:GPB+'solana/token_security',gt:'solana'}};
+var FROMGT={eth:'ethereum',base:'base',bsc:'bsc',arbitrum:'arbitrum',polygon_pos:'polygon',optimism:'optimism',avax:'avalanche'};
+function raw(u){return fetch(u,{headers:{accept:'application/json'}}).then(function(r){return r.text().then(function(t){var d=null;try{d=JSON.parse(t)}catch(e){}return{status:r.status,data:d}})},function(){return{status:0,data:null}})}
+function rid(d,k){try{return String(d.relationships[k].data.id||'')}catch(e){return''}}
+function detect(addr){
+ var want=addr.toLowerCase();
+ return raw(GT+'/search/pools?query='+encodeURIComponent(addr)).then(function(x){
+  var n={};(x.data&&x.data.data||[]).forEach(function(d){var net=rid(d,'network');if(FROMGT[net]&&[rid(d,'base_token'),rid(d,'quote_token')].map(function(s){return s.toLowerCase()}).indexOf(net+'_'+want)>-1)n[net]=(n[net]||0)+1});
+  var best=Object.keys(n).sort(function(a,b){return n[b]-n[a]})[0];return best?FROMGT[best]:'ethereum';
+ });
 }
 f.addEventListener('submit',function(e){e.preventDefault();run(a.value,c.value)});
 document.querySelectorAll('.tries button').forEach(function(b){b.addEventListener('click',function(){c.value=b.getAttribute('data-c');run(b.getAttribute('data-a'),b.getAttribute('data-c'))})});
