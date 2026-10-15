@@ -397,7 +397,12 @@ export default {
         cgKey ? fetch("https://api.coingecko.com/api/v3/onchain" + probe, { headers: { accept: "application/json", "x-cg-demo-api-key": cgKey } }).then((r) => r.status, () => 0) : Promise.resolve(null),
         fetch("https://api.gopluslabs.io/api/v1/token_security/8453?contract_addresses=0x833589fcd6edb6e08f4c7c32d4f71b54bda02913").then((r) => r.json().then((j) => (j && j.code) || r.status, () => r.status), () => 0),
       ]);
-      return json({ coingecko_key_set: !!cgKey, coingecko_status: m, goplus_code: g }, 200, { "Cache-Control": "no-store" });
+      const st = (u) => fetch(u, { headers: { accept: "application/json" } }).then((r) => r.status, () => 0);
+      const [hp, rc] = await Promise.all([
+        st("https://api.honeypot.is/v2/IsHoneypot?address=0x6982508145454Ce325dDbE47a25d4ec3d2311933&chainID=1"),
+        st("https://api.rugcheck.xyz/v1/tokens/EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm/report"),
+      ]);
+      return json({ coingecko_key_set: !!cgKey, coingecko_status: m, goplus_code: g, honeypot_is_status: hp, rugcheck_status: rc }, 200, { "Cache-Control": "no-store" });
     }
     if (url.pathname === "/" || url.pathname === "/health") {
       return json({
