@@ -18,6 +18,8 @@ const SERVICES = [
   { id: "nojunk-image", name: "NoJunk Image", what: "Generate a picture from text; describe any image.", route: "/generate", price: "$0.01", probe: "/" },
   { id: "nojunk-document", name: "NoJunk Document", what: "PDF, Word, Excel or image file turned into text.", route: "/convert", price: "$0.01", probe: "/" },
   { id: "nojunk-web-search", name: "NoJunk Web Search", what: "Ten live web results for any query.", route: "/search", price: "$0.002", probe: "/health/search", demo: "/health/search", demoLabel: "Live search check" },
+  { id: "nojunk-geo", name: "NoJunk Geo", what: "Address to coordinates and back; 7-day weather for any place.", route: "/geocode", price: "$0.002", probe: "/health/data", demo: "/health/data", demoLabel: "Data sources" },
+  { id: "nojunk-qr", name: "NoJunk QR", what: "QR codes as SVG, PNG or data; single or batch of 25.", route: "/qr", price: "$0.001", probe: "/", demo: "/sample.svg", demoLabel: "Sample QR" },
   { id: "nojunk-llm", name: "NoJunk LLM", what: "OpenAI-compatible 70B chat model and embeddings.", route: "/v1/chat/completions", price: "$0.005", probe: "/v1/models", demo: "/v1/models", demoLabel: "Models offered" },
 ];
 const SITE = { id: "nojunkcrypto.com", name: "nojunkcrypto.com (free checkers)", url: "https://nojunkcrypto.com/" };
@@ -44,6 +46,7 @@ function summarizeDemo(svc, j) {
   if (svc.id === "nojunk-web-search") return `${j.status}: ${j.result_count} results in ${j.ms} ms`;
   if (svc.id === "nojunk-llm") return Array.isArray(j.data) ? j.data.map((m) => m.id).join(", ") : null;
   if (svc.id === "nojunk-crypto-price") return `CoinGecko key ${j.coingecko_key_set ? "set" : "missing"}, status ${j.coingecko_status}`;
+  if (svc.id === "nojunk-geo") return `Nominatim ${j.nominatim_status}, Open-Meteo ${j.open_meteo_status} (${j.ms} ms)`;
   if (svc.id === "nojunk-token-check") return `CoinGecko ${j.coingecko_status}, GoPlus ${j.goplus_code === 1 ? "ok" : "throttled (backup: Honeypot.is " + j.honeypot_is_status + ", RugCheck " + j.rugcheck_status + ")"}`;
   return null;
 }
@@ -65,7 +68,7 @@ async function checkService(svc) {
     up, ms: info.ms, status: info.status,
     paywall: pay.ok && pay.status === 402 ? (paywall && paywall.ok ? "up, pays your wallet" : "up (wallet mismatch!)") : `NOT 402 (got ${pay.status})`,
     paywall_ok: pay.ok && pay.status === 402 && paywall && paywall.ok,
-    demo: svc.demo ? { label: svc.demoLabel, ok: demo && demo.ok && demo.status === 200, ms: demo && demo.ms, text: summarizeDemo(svc, demo && tryJson(demo.text)) } : null,
+    demo: svc.demo ? { label: svc.demoLabel, ok: demo && demo.ok && demo.status === 200, ms: demo && demo.ms, text: svc.id === "nojunk-qr" ? (demo && demo.status === 200 && demo.text.startsWith("<svg") ? `rendered ${demo.text.length} bytes of SVG in ${demo.ms} ms` : null) : summarizeDemo(svc, demo && tryJson(demo.text)) } : null,
   };
 }
 
