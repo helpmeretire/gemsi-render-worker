@@ -21,6 +21,9 @@ const SERVICES = [
   { id: "nojunk-geo", name: "NoJunk Geo", what: "Address to coordinates and back; 7-day weather for any place.", route: "/geocode", price: "$0.002", probe: "/health/data", demo: "/health/data", demoLabel: "Data sources" },
   { id: "nojunk-qr", name: "NoJunk QR", what: "QR codes as SVG, PNG or data; single or batch of 25.", route: "/qr", price: "$0.001", probe: "/", demo: "/sample.svg", demoLabel: "Sample QR" },
   { id: "nojunk-llm", name: "NoJunk LLM", what: "OpenAI-compatible 70B chat model and embeddings.", route: "/v1/chat/completions", price: "$0.005", probe: "/v1/models", demo: "/v1/models", demoLabel: "Models offered" },
+  { id: "nojunk-stocks", name: "NoJunk Stocks", what: "Stock, ETF, index, FX and commodity quotes, history and stats.", route: "/quote", price: "$0.001", probe: "/" },
+  { id: "nojunk-moderate", name: "NoJunk Moderate", what: "Sentiment, safety, rerank, PII detection and language ID.", route: "/sentiment", price: "$0.001", probe: "/" },
+  { id: "nojunk-chain", name: "NoJunk Chain", what: "Wallet balances, gas, transactions and blocks on 9 chains.", route: "/balance", price: "$0.002", probe: "/" },
 ];
 const SITE = { id: "nojunkcrypto.com", name: "nojunkcrypto.com (free checkers)", url: "https://nojunkcrypto.com/" };
 
