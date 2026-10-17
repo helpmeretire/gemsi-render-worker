@@ -432,7 +432,7 @@ function textResponse(t) {
 // Fixed, well-known examples for the free sample (results come live from GoPlus, cached 6 h).
 const SAMPLES = {
   sample: { address: "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD", chain: "ethereum", label: "Uniswap Universal Router (well-known contract)" },
-  "sample/flagged": { address: "0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b", chain: "ethereum", label: "Tornado Cash Router (well-known mixer contract)" },
+  "sample/flagged": { address: "0x098B716B8Aaf21512996dC57EB0615e2383E2f96", chain: "ethereum", label: "Ronin Bridge exploiter (2022 hack, publicly attributed and sanctioned)" },
 };
 function addressLlms(origin) {
   return `# ${SERVICE}
@@ -443,7 +443,7 @@ function addressLlms(origin) {
 - Price: $0.01 USDC on Base per check, paid with x402 (HTTP 402 -> pay -> retry with PAYMENT-SIGNATURE). No signup, no API key.
 - Invalid input is rejected before payment is settled.
 - Chains: ${Object.keys(CHAINS).join(", ")} (default base)
-- Free samples (no payment, cached): ${origin}/sample (well-known clean contract), ${origin}/sample/flagged (well-known mixer contract)
+- Free samples (no payment, cached): ${origin}/sample (well-known clean contract), ${origin}/sample/flagged (publicly reported hack address, sanctioned)
 - OpenAPI: ${origin}/openapi.json
 - x402 discovery: ${origin}/.well-known/x402
 
@@ -489,7 +489,7 @@ export default {
     { const k = url.pathname.replace(/^\/+|\/+$/g, "");
       if (SAMPLES[k]) {
         const sm = SAMPLES[k];
-        return sampleResponse(await cachedSample("address-" + k.replace("/", "-"), async () => {
+        return sampleResponse(await cachedSample("address-" + k.replace("/", "-") + "-v2", async () => {
           const d = await fetchAddressData({ address: sm.address, chain: sm.chain });
           if (d.upstreamDown) return null;
           return { note: `Free sample: ${sm.label} (cached up to 6 h). Paid endpoint: POST ${url.origin}/check, $0.01 USDC on Base via x402.`, request: { method: "POST", url: `${url.origin}/check`, body: { address: sm.address, chain: sm.chain } }, response: analyze(sm.chain, sm.address, d) };

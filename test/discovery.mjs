@@ -4,7 +4,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? "PASS " : "FAIL ") + m); 
 let calls = 0;
 globalThis.fetch = async (u) => {
   calls++; u = String(u);
-  if (u.includes("address_security/0xd90e")) return new Response(JSON.stringify({ code: 1, result: { mixer: "1", sanctioned: "0", contract_address: "1", data_source: "test" } }));
+  if (u.toLowerCase().includes("address_security/0x098b")) return new Response(JSON.stringify({ code: 1, result: { stealing_attack: "1", sanctioned: "1", data_source: "test" } }));
   if (u.includes("address_security")) return new Response(JSON.stringify({ code: 1, result: { contract_address: "1" } }));
   if (u.includes("approval_security")) return new Response(JSON.stringify({ code: 1, result: {} }));
   return new Response("{}", { status: 404 });
@@ -14,7 +14,7 @@ const get = (p) => W.fetch(new Request(B + p), {});
 let r = await get("/sample"); let j = await r.json();
 ok(r.status === 200 && j.response && j.response.verdict === "NO KNOWN ISSUES" && j.request.body.address, "/sample returns request + report");
 r = await get("/sample/flagged"); j = await r.json();
-ok(r.status === 200 && j.response.verdict === "SUSPICIOUS" && /mixer/i.test(j.note), "/sample/flagged shows a flagged report");
+ok(r.status === 200 && j.response.verdict === "DANGER" && /exploiter/i.test(j.note), "/sample/flagged shows a flagged report");
 const c1 = calls; for (let i = 0; i < 20; i++) { await get("/sample"); await get("/sample/flagged"); }
 ok(calls === c1, `40 more sample hits -> 0 extra upstream calls (got ${calls - c1})`);
 j = await (await get("/.well-known/x402")).json();
