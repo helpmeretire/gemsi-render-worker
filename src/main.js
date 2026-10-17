@@ -165,7 +165,7 @@ function paymentRequired(env, url, error) {
   return {
     x402Version: 2,
     error,
-    resource: { url: `${url.origin}/check`, description: DESCRIPTION, mimeType: "application/json" },
+    resource: { url: `${url.origin}/check`, description: `${DESCRIPTION} Free sample (no payment): ${url.origin}/sample. Docs: ${url.origin}/llms.txt.`, mimeType: "application/json" },
     accepts: [requirements(env)],
     extensions: {
       bazaar: {
@@ -241,7 +241,7 @@ function openapi(origin) {
     required: ["verdict", "red_flags"],
   };
   const pay = { price: { mode: "fixed", currency: "USD", amount: "0.010000" }, protocols: [{ x402: {} }] };
-  const responses = { 200: { description: "Safety report", content: { "application/json": { schema: out } } }, 402: { description: "Payment Required" } };
+  const responses = { 200: { description: "Safety report", content: { "application/json": { schema: out, example: EXAMPLE_OUT } } }, 402: { description: "Payment Required (x402 v2 challenge in the PAYMENT-REQUIRED header)" } };
   return {
     openapi: "3.1.0",
     info: {
@@ -252,8 +252,9 @@ function openapi(origin) {
     },
     servers: [{ url: origin }],
     paths: {
+      "/sample": { get: { operationId: "sampleAddressCheck", summary: "Free cached example report (Uniswap Universal Router); no payment. See also /sample/flagged", tags: ["Crypto", "Security"], responses: { 200: { description: "Example request and report" } } } },
       "/check": {
-        post: { operationId: "checkAddress", summary: "Wallet & contract safety check (phishing, theft, scam creator, sanctions, contract risks)", tags: ["Crypto", "Security"], "x-payment-info": pay, requestBody: { required: true, content: { "application/json": { schema: body } } }, responses },
+        post: { operationId: "checkAddress", summary: "Wallet & contract safety check (phishing, theft, scam creator, sanctions, contract risks)", tags: ["Crypto", "Security"], "x-payment-info": pay, requestBody: { required: true, content: { "application/json": { schema: body, example: { address: "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD", chain: "ethereum" } } } }, responses },
         get: {
           operationId: "checkAddressGet",
           summary: "Wallet & contract safety check (phishing, theft, scam creator, sanctions, contract risks)",
@@ -270,8 +271,78 @@ function openapi(origin) {
   };
 }
 
+
+// ---------- free sample + discovery (/sample, /.well-known/x402, /llms.txt) ----------
+// Samples are cached 6 h in memory (per isolate) and in caches.default (custom domains only; it is a
+// no-op on *.workers.dev), so a public sample costs at most one upstream call per isolate per 6 h.
+// A failed sample is remembered for 60 s so a burst of retries cannot hammer the upstream.
+const SAMPLE_TTL_S = 21600;
+const SAMPLE_FAIL_TTL_S = 60;
+const _sampleMem = new Map();
+async function cachedSample(name, produce, ctx) {
+  const now = Date.now();
+  const m = _sampleMem.get(name);
+  if (m && now - m.at < (m.body ? SAMPLE_TTL_S : SAMPLE_FAIL_TTL_S) * 1000) return m.body;
+  const cache = typeof caches !== "undefined" && caches && caches.default ? caches.default : null;
+  const key = "https://sample-cache.invalid/" + encodeURIComponent(SERVICE) + "/" + name + "/v1";
+  if (cache) {
+    try { const hit = await cache.match(key); if (hit) { const body = await hit.text(); _sampleMem.set(name, { at: now, body }); return body; } } catch {}
+  }
+  let out = null;
+  try { out = await produce(); } catch { out = null; }
+  const body = out ? JSON.stringify(out, null, 2) : null;
+  _sampleMem.set(name, { at: now, body });
+  if (body && cache) {
+    const p = cache.put(key, new Response(body, { headers: { "Content-Type": "application/json", "Cache-Control": `max-age=${SAMPLE_TTL_S}` } })).catch(() => {});
+    if (ctx && ctx.waitUntil) ctx.waitUntil(p); else await p;
+  }
+  return body;
+}
+function sampleResponse(body) {
+  if (!body) return json({ error: "Sample temporarily unavailable; please retry in a minute." }, 502, { "Cache-Control": "no-store" });
+  return new Response(body, { headers: { "Content-Type": "application/json; charset=utf-8", "Access-Control-Allow-Origin": "*", "Cache-Control": "public, max-age=3600" } });
+}
+const NOJUNK_INDEX = "https://nojunkcrypto.com/services";
+function wellKnownX402(origin, paths) {
+  return json({ version: 1, resources: paths.map((p) => origin + p), instructions: `${SERVICE}: ${DESCRIPTION} Pay per call in USDC on Base via x402. Free sample: ${origin}/sample. Docs: ${origin}/llms.txt. All NoJunk services: ${NOJUNK_INDEX}` }, 200, { "Cache-Control": "public, max-age=3600" });
+}
+function textResponse(t) {
+  return new Response(t, { headers: { "Content-Type": "text/plain; charset=utf-8", "Access-Control-Allow-Origin": "*", "Cache-Control": "public, max-age=3600" } });
+}
+
+// Fixed, well-known examples for the free sample (results come live from GoPlus, cached 6 h).
+const SAMPLES = {
+  sample: { address: "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD", chain: "ethereum", label: "Uniswap Universal Router (well-known contract)" },
+  "sample/flagged": { address: "0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b", chain: "ethereum", label: "Tornado Cash Router (well-known mixer contract)" },
+};
+function addressLlms(origin) {
+  return `# ${SERVICE}
+
+> ${DESCRIPTION}
+
+- Endpoint: POST ${origin}/check (or GET ${origin}/check?address=...&chain=...)
+- Price: $0.01 USDC on Base per check, paid with x402 (HTTP 402 -> pay -> retry with PAYMENT-SIGNATURE). No signup, no API key.
+- Invalid input is rejected before payment is settled.
+- Chains: ${Object.keys(CHAINS).join(", ")} (default base)
+- Free samples (no payment, cached): ${origin}/sample (well-known clean contract), ${origin}/sample/flagged (well-known mixer contract)
+- OpenAPI: ${origin}/openapi.json
+- x402 discovery: ${origin}/.well-known/x402
+
+## When to call
+Before sending funds to an address, approving a token spender, or interacting with an unknown contract.
+
+## Example
+Request: POST ${origin}/check {"address":"${SAMPLES.sample.address}","chain":"ethereum"}
+Response (abridged): ${JSON.stringify({ verdict: EXAMPLE_OUT.verdict, summary: EXAMPLE_OUT.summary, red_flags: EXAMPLE_OUT.red_flags, green_flags: EXAMPLE_OUT.green_flags })}
+
+## Related
+- NoJunk Token Check (token rug/junk risk): https://nojunk-token-check.mick8511.workers.dev/llms.txt
+- All NoJunk services: ${NOJUNK_INDEX}
+`;
+}
+
 export default {
-  async fetch(request, env0) {
+  async fetch(request, env0, ctx) {
     const env = { ...(env0 || {}), PAY_TO: (env0 && env0.PAY_TO) || DEFAULT_PAY_TO };
     const url = new URL(request.url);
     if (request.method === "OPTIONS") {
@@ -286,12 +357,27 @@ export default {
         usage: 'POST /check {"address":"0x...","chain":"base"} or GET /check?address=...&chain=...',
         price: "$0.01 USDC on Base per check (x402)",
         chains: Object.keys(CHAINS),
+        free_sample: `${url.origin}/sample`,
+        llms_txt: `${url.origin}/llms.txt`,
+        x402_discovery: `${url.origin}/.well-known/x402`,
+        all_services: NOJUNK_INDEX,
         facilitator: env.CDP_API_KEY_ID && env.CDP_API_KEY_SECRET ? "cdp" : "payai",
         sources: SOURCES,
         disclaimer: DISCLAIMER,
       });
     }
     if (url.pathname === "/openapi.json" || url.pathname === "/.well-known/openapi.json") return json(openapi(url.origin));
+    { const k = url.pathname.replace(/^\/+|\/+$/g, "");
+      if (SAMPLES[k]) {
+        const sm = SAMPLES[k];
+        return sampleResponse(await cachedSample("address-" + k.replace("/", "-"), async () => {
+          const d = await fetchAddressData({ address: sm.address, chain: sm.chain });
+          if (d.upstreamDown) return null;
+          return { note: `Free sample: ${sm.label} (cached up to 6 h). Paid endpoint: POST ${url.origin}/check, $0.01 USDC on Base via x402.`, request: { method: "POST", url: `${url.origin}/check`, body: { address: sm.address, chain: sm.chain } }, response: analyze(sm.chain, sm.address, d) };
+        }, ctx));
+      } }
+    if (url.pathname === "/.well-known/x402") return wellKnownX402(url.origin, ["/check"]);
+    if (url.pathname === "/llms.txt") return textResponse(addressLlms(url.origin));
     if (url.pathname !== "/check") return json({ error: "Not found. Use POST /check" }, 404);
     if (!/^0x[0-9a-fA-F]{40}$/.test(env.PAY_TO)) return json({ error: "Service not configured: PAY_TO wallet address invalid" }, 500);
     if (request.method !== "GET" && request.method !== "POST") return json({ error: "Use GET or POST" }, 405);
