@@ -55,11 +55,12 @@ function summarizeDemo(svc, j) {
 }
 
 async function checkService(svc) {
-  const [info, pay, demo] = await Promise.all([
+  let [info, pay, demo] = await Promise.all([
     timed(BASE(svc.id) + svc.probe),
     timed(BASE(svc.id) + svc.route, { method: svc.id === "nojunk-llm" ? "POST" : "GET" }),
-    svc.demo ? timed(BASE(svc.id) + svc.demo) : Promise.resolve(null),
+    svc.demo && svc.demo !== svc.probe ? timed(BASE(svc.id) + svc.demo) : Promise.resolve(null),
   ]);
+  if (svc.demo && svc.demo === svc.probe) demo = info; // same URL: reuse, no second upstream call
   let paywall = null;
   if (pay.ok && pay.status === 402) {
     const h = pay.headers.get("payment-required");
@@ -85,7 +86,11 @@ async function rpc(method, params) {
 }
 const hex = (n) => "0x" + n.toString(16);
 // Scans the chain for USDC Transfer events to the wallet, keeping a cursor + found payments in KV.
-async function wallet(env) {
+// KV budget (free tier: 1,000 writes/day): only the cron (scan=true) scans and writes, and it writes
+// only when a new payment appears or the cursor moved >= CURSOR_WRITE_EVERY blocks (~15 min on Base).
+// Page viewers (scan=false) do one KV read and never write.
+const CURSOR_WRITE_EVERY = 450;
+async function wallet(env, { scan = false } = {}) {
   const out = { ok: false, usdc_balance: 0, usdc_payments: [], payments_count: 0, last_any_transfer: null, scanned_to_block: null, note: null };
   try {
     const data = "0x70a08231" + WALLET.slice(2).padStart(64, "0");
@@ -93,8 +98,15 @@ async function wallet(env) {
     out.usdc_balance = Number(BigInt(bal)) / 1e6;
   } catch (e) { out.note = "balance: " + e.message; }
   try {
-    const latest = Number(BigInt(await rpc("eth_blockNumber", [])));
     const saved = env.STATUS ? tryJson((await env.STATUS.get("payments")) || "") : null;
+    if (!scan) {
+      const items = saved && Array.isArray(saved.items) ? saved.items : [];
+      out.ok = true; out.scanned_to_block = saved && saved.cursor ? saved.cursor : null;
+      out.usdc_payments = items.slice(0, 10); out.payments_count = items.length;
+      out.last_any_transfer = items[0] ? { when: items[0].when, token: "USDC" } : null;
+      return out;
+    }
+    const latest = Number(BigInt(await rpc("eth_blockNumber", [])));
     // First run: start about 3 days before now (Base makes a block every 2 s).
     // The public node only serves recent blocks, so the cursor stays near the head; a 5-minute cron keeps it moving.
     const MAX_BEHIND = 900, CHUNK = 450;
@@ -112,7 +124,9 @@ async function wallet(env) {
       cursor = to; steps++;
     }
     items = items.filter((x, i, a) => a.findIndex((y) => y.tx === x.tx) === i).sort((a, b) => b.block - a.block).slice(0, 200);
-    if (env.STATUS && (!saved || saved.cursor !== cursor || saved.items.length !== items.length)) await env.STATUS.put("payments", JSON.stringify({ cursor, items }));
+    const prevLen = saved && Array.isArray(saved.items) ? saved.items.length : -1;
+    const moved = !saved || !saved.cursor || cursor - saved.cursor >= CURSOR_WRITE_EVERY;
+    if (env.STATUS && (prevLen !== items.length || moved)) await env.STATUS.put("payments", JSON.stringify({ cursor, items }));
     out.ok = true; out.scanned_to_block = cursor; out.usdc_payments = items.slice(0, 10); out.payments_count = items.length;
     out.last_any_transfer = items[0] ? { when: items[0].when, token: "USDC" } : null;
   } catch (e) { out.note = (out.note ? out.note + "; " : "") + "scan: " + e.message; }
@@ -123,10 +137,41 @@ async function status(env) {
   const [services, site, w, log] = await Promise.all([
     Promise.all(SERVICES.map(checkService)),
     timed(SITE.url),
-    wallet(env),
+    wallet(env, { scan: false }),
     env.STATUS ? env.STATUS.get("buildlog").then((v) => tryJson(v || "[]") || []) : Promise.resolve([]),
   ]);
   return { checked_at: new Date().toISOString(), services, site: { ...SITE, up: site.ok && site.status === 200, ms: site.ms }, wallet: w, buildlog: log.slice(-60).reverse() };
+}
+
+// Status is computed at most once per STATUS_TTL_S per isolate (and shared via caches.default on the
+// custom domain), so N open tabs or bots cost ~1 computation per 5 min instead of 1 per poll each.
+// No KV writes on this path. caches.default is a no-op on *.workers.dev, so the in-memory copy is the fallback.
+const STATUS_TTL_S = 300;
+const CACHE_KEY = "https://status-cache.invalid/api/status/v2";
+let mem = null; // { at, body }
+let inflight = null;
+async function cachedStatus(env, ctx) {
+  const now = Date.now();
+  if (mem && now - mem.at < STATUS_TTL_S * 1000) return mem.body;
+  const cache = typeof caches !== "undefined" && caches && caches.default ? caches.default : null;
+  if (cache) {
+    try {
+      const hit = await cache.match(CACHE_KEY);
+      if (hit) { const body = await hit.text(); const j = tryJson(body); if (j && now - Date.parse(j.checked_at) < STATUS_TTL_S * 1000) { mem = { at: Date.parse(j.checked_at), body }; return body; } }
+    } catch {}
+  }
+  if (!inflight) {
+    inflight = status(env).then((s) => {
+      const body = JSON.stringify(s);
+      mem = { at: Date.now(), body };
+      if (cache) {
+        const put = cache.put(CACHE_KEY, new Response(body, { headers: { "content-type": "application/json", "cache-control": `public, max-age=${STATUS_TTL_S}` } })).catch(() => {});
+        if (ctx && ctx.waitUntil) ctx.waitUntil(put);
+      }
+      return body;
+    }).finally(() => { inflight = null; });
+  }
+  return inflight;
 }
 
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
@@ -174,16 +219,17 @@ h2{font-stretch:74%;font-weight:850;font-size:26px;margin:26px 0 10px}
 <div class="grid">
 <section><h2>Build floor <span class="muted">(what I'm doing, newest first)</span></h2><div class="log" id="log"></div>
 <h2>Money</h2><div class="tile pay"><div class="big" id="usdc">$0.000</div><div id="pays" class="muted">No agent payments yet.</div></div></section>
-<section><h2>Services running <span class="muted">(checked live from Cloudflare every 20 s)</span></h2><div id="svcs"></div></section>
+<section><h2>Services running <span class="muted">(checked from Cloudflare every 5 min)</span></h2><div id="svcs"></div></section>
 </div>
 <p class="muted" id="site"></p>
 </div>
 <script>
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})}
 function fmtT(t){var d=new Date(t);return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' '+d.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'})}
-async function tick(){
+var lastTick=0;
+async function tick(){ lastTick=Date.now();
  try{
-  var r=await fetch('/api/status?t='+Date.now(),{cache:'no-store'}); var j=await r.json();
+  var r=await fetch('/api/status'); var j=await r.json();
   var up=j.services.filter(function(s){return s.up}).length, pay=j.services.filter(function(s){return s.paywall_ok}).length;
   var ms=Math.round(j.services.reduce(function(a,s){return a+s.ms},0)/j.services.length);
   document.getElementById('n-up').textContent=up+'/'+j.services.length; document.getElementById('n-pay').textContent=pay+'/'+j.services.length;
@@ -196,18 +242,20 @@ async function tick(){
   document.getElementById('upd').textContent='live · updated '+new Date().toLocaleTimeString();
  }catch(e){document.getElementById('upd').textContent='check failed, retrying';}
 }
-tick(); setInterval(tick,20000);
+tick(); setInterval(function(){ if(!document.hidden) tick(); },300000);
+document.addEventListener('visibilitychange',function(){ if(!document.hidden && Date.now()-lastTick>300000) tick(); });
 </script></body></html>`;
 
 export default {
-  async scheduled(event, env, ctx) { ctx.waitUntil(wallet(env)); },
-  async fetch(request, env) {
+  async scheduled(event, env, ctx) { ctx.waitUntil(wallet(env, { scan: true })); },
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.pathname === "/api/status") {
-      const s = await status(env);
-      return new Response(JSON.stringify(s), { headers: { "content-type": "application/json", "cache-control": "no-store", "access-control-allow-origin": "*" } });
+      if (request.method !== "GET" && request.method !== "HEAD") return new Response("Use GET", { status: 405 });
+      const body = await cachedStatus(env, ctx);
+      return new Response(body, { headers: { "content-type": "application/json", "cache-control": `public, max-age=60, s-maxage=${STATUS_TTL_S}`, "access-control-allow-origin": "*" } });
     }
-    if (url.pathname === "/" || url.pathname === "/status") return new Response(PAGE, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
+    if (url.pathname === "/" || url.pathname === "/status") return new Response(PAGE, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "public, max-age=300" } });
     return new Response("Not found", { status: 404 });
   },
 };
