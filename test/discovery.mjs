@@ -1,0 +1,34 @@
+// Free sample, /.well-known/x402, /llms.txt, /services and 402 metadata. Usage: node test/discovery.mjs ./worker.mjs
+const W = (await import(process.argv[2])).default;
+let fails = 0; const ok = (c, m) => { console.log((c ? "PASS " : "FAIL ") + m); if (!c) fails++; };
+const BRETT = "0x532f27101965dd16442e59d40670faf5ebb142e4";
+let calls = 0, mode = "ok";
+globalThis.fetch = async (u) => {
+  calls++; u = String(u);
+  if (mode === "down") return new Response("{}", { status: 503 });
+  if (u.includes("gopluslabs")) return new Response(JSON.stringify({ code: 1, result: { [BRETT]: { buy_tax: "0", sell_tax: "0", is_honeypot: "0", is_open_source: "1", owner_address: "0x0000000000000000000000000000000000000000", holder_count: "900000", token_symbol: "BRETT", token_name: "Brett", holders: [] } } }));
+  if (u.includes("geckoterminal") || u.includes("coingecko")) return new Response(JSON.stringify({ data: [], included: [] }));
+  return new Response("{}", { status: 404 });
+};
+const B = "https://nojunk-token-check.mick8511.workers.dev";
+const get = (p, host = B) => W.fetch(new Request(host + p), {});
+let r = await get("/sample"); let j = await r.json();
+ok(r.status === 200 && j.response && j.response.grade && j.request.body.tokenAddress, "/sample returns request + graded report");
+ok(/max-age=3600/.test(r.headers.get("cache-control") || ""), "/sample is cacheable");
+const c1 = calls; for (let i = 0; i < 20; i++) await get("/sample");
+ok(calls === c1, `20 more /sample hits -> 0 extra upstream calls (got ${calls - c1})`);
+r = await get("/.well-known/x402"); j = await r.json();
+ok(j.version === 1 && j.resources[0] === B + "/check", "/.well-known/x402 lists /check");
+r = await get("/llms.txt"); let t = await r.text();
+ok(/text\/plain/.test(r.headers.get("content-type")) && t.includes(B + "/check") && t.includes("/sample") && t.includes("$0.01"), "service /llms.txt");
+r = await get("/llms.txt", "https://nojunkcrypto.com"); t = await r.text();
+ok(t.includes("nojunk-address-check") && t.includes("sec-company-snapshot") && !t.includes("nojunk-llm"), "site /llms.txt is the catalog (no generic services)");
+r = await get("/services", "https://nojunkcrypto.com"); t = await r.text();
+ok(r.status === 200 && t.includes("SEC Company Snapshot") && t.includes("free sample"), "/services index page");
+r = await get("/sitemap.xml", "https://nojunkcrypto.com"); ok((await r.text()).includes("/services"), "sitemap lists /services");
+r = await get("/check");
+const pr = JSON.parse(Buffer.from(r.headers.get("PAYMENT-REQUIRED"), "base64").toString());
+ok(r.status === 402 && pr.resource.description.includes("/sample") && pr.extensions.bazaar.info.output.example.grade, "402 has description with sample + worked example");
+const oa = await (await get("/openapi.json")).json();
+ok(oa.paths["/check"].post.requestBody.content["application/json"].example.tokenAddress && oa.paths["/check"].post.responses[200].content["application/json"].example, "openapi has request/response examples");
+console.log(fails ? `${fails} FAILED` : "ALL PASS"); process.exit(fails ? 1 : 0);

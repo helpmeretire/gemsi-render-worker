@@ -456,7 +456,7 @@ function paymentRequired(env, url, error) {
   return {
     x402Version: 2,
     error,
-    resource: { url: `${url.origin}/check`, description: DESCRIPTION, mimeType: "application/json" },
+    resource: { url: `${url.origin}/check`, description: `${DESCRIPTION} Free sample (no payment): ${url.origin}/sample. Docs: ${url.origin}/llms.txt.`, mimeType: "application/json" },
     accepts: [requirements(env)],
     extensions: {
       bazaar: {
@@ -534,7 +534,7 @@ function openapi(origin) {
     required: ["grade", "risk_score", "red_flags"],
   };
   const pay = { price: { mode: "fixed", currency: "USD", amount: "0.010000" }, protocols: [{ x402: {} }] };
-  const responses = { 200: { description: "Risk report", content: { "application/json": { schema: out } } }, 402: { description: "Payment Required" } };
+  const responses = { 200: { description: "Risk report", content: { "application/json": { schema: out, example: EXAMPLE_OUT } } }, 402: { description: "Payment Required (x402 v2 challenge in the PAYMENT-REQUIRED header)" } };
   return {
     openapi: "3.1.0",
     info: {
@@ -545,8 +545,9 @@ function openapi(origin) {
     },
     servers: [{ url: origin }],
     paths: {
+      "/sample": { get: { operationId: "sampleTokenCheck", summary: "Free cached example report (BRETT on Base); no payment", tags: ["Crypto", "Security"], responses: { 200: { description: "Example request and report" } } } },
       "/check": {
-        post: { operationId: "checkToken", summary: "Grade a token on Base, Ethereum, BNB Chain, Arbitrum, Polygon, Optimism, Avalanche or Solana for junk/rug risk", tags: ["Crypto", "Security"], "x-payment-info": pay, requestBody: { required: true, content: { "application/json": { schema: body } } }, responses },
+        post: { operationId: "checkToken", summary: "Grade a token on Base, Ethereum, BNB Chain, Arbitrum, Polygon, Optimism, Avalanche or Solana for junk/rug risk", tags: ["Crypto", "Security"], "x-payment-info": pay, requestBody: { required: true, content: { "application/json": { schema: body, example: SAMPLE_TOKEN } } }, responses },
         get: {
           operationId: "checkTokenGet",
           summary: "Grade a token on Base, Ethereum, BNB Chain, Arbitrum, Polygon, Optimism, Avalanche or Solana for junk/rug risk",
@@ -563,8 +564,71 @@ function openapi(origin) {
   };
 }
 
+
+// ---------- free sample + discovery (/sample, /.well-known/x402, /llms.txt) ----------
+// Samples are cached 6 h in memory (per isolate) and in caches.default (custom domains only; it is a
+// no-op on *.workers.dev), so a public sample costs at most one upstream call per isolate per 6 h.
+// A failed sample is remembered for 60 s so a burst of retries cannot hammer the upstream.
+const SAMPLE_TTL_S = 21600;
+const SAMPLE_FAIL_TTL_S = 60;
+const _sampleMem = new Map();
+async function cachedSample(name, produce, ctx) {
+  const now = Date.now();
+  const m = _sampleMem.get(name);
+  if (m && now - m.at < (m.body ? SAMPLE_TTL_S : SAMPLE_FAIL_TTL_S) * 1000) return m.body;
+  const cache = typeof caches !== "undefined" && caches && caches.default ? caches.default : null;
+  const key = "https://sample-cache.invalid/" + encodeURIComponent(SERVICE) + "/" + name + "/v1";
+  if (cache) {
+    try { const hit = await cache.match(key); if (hit) { const body = await hit.text(); _sampleMem.set(name, { at: now, body }); return body; } } catch {}
+  }
+  let out = null;
+  try { out = await produce(); } catch { out = null; }
+  const body = out ? JSON.stringify(out, null, 2) : null;
+  _sampleMem.set(name, { at: now, body });
+  if (body && cache) {
+    const p = cache.put(key, new Response(body, { headers: { "Content-Type": "application/json", "Cache-Control": `max-age=${SAMPLE_TTL_S}` } })).catch(() => {});
+    if (ctx && ctx.waitUntil) ctx.waitUntil(p); else await p;
+  }
+  return body;
+}
+function sampleResponse(body) {
+  if (!body) return json({ error: "Sample temporarily unavailable; please retry in a minute." }, 502, { "Cache-Control": "no-store" });
+  return new Response(body, { headers: { "Content-Type": "application/json; charset=utf-8", "Access-Control-Allow-Origin": "*", "Cache-Control": "public, max-age=3600" } });
+}
+const NOJUNK_INDEX = "https://nojunkcrypto.com/services";
+function wellKnownX402(origin, paths) {
+  return json({ version: 1, resources: paths.map((p) => origin + p), instructions: `${SERVICE}: ${DESCRIPTION} Pay per call in USDC on Base via x402. Free sample: ${origin}/sample. Docs: ${origin}/llms.txt. All NoJunk services: ${NOJUNK_INDEX}` }, 200, { "Cache-Control": "public, max-age=3600" });
+}
+function textResponse(t) {
+  return new Response(t, { headers: { "Content-Type": "text/plain; charset=utf-8", "Access-Control-Allow-Origin": "*", "Cache-Control": "public, max-age=3600" } });
+}
+
+const SAMPLE_TOKEN = { tokenAddress: "0x532f27101965dd16442E59d40670FaF5eBB142E4", chain: "base" }; // BRETT on Base, a well-known token
+function tokenLlms(origin) {
+  return `# ${SERVICE}
+
+> ${DESCRIPTION}
+
+- Endpoint: POST ${origin}/check (or GET ${origin}/check?tokenAddress=...&chain=...)
+- Price: $0.01 USDC on Base per check, paid with x402 (HTTP 402 -> pay -> retry with PAYMENT-SIGNATURE). No signup, no API key.
+- Invalid addresses and tokens with no data are rejected before payment is settled.
+- Chains: ${Object.keys(CHAINS).join(", ")} (0x addresses default to base; Solana mints are auto-detected)
+- Free sample (no payment, cached): ${origin}/sample
+- OpenAPI: ${origin}/openapi.json
+- x402 discovery: ${origin}/.well-known/x402
+
+## Example
+Request: POST ${origin}/check {"tokenAddress":"${SAMPLE_TOKEN.tokenAddress}","chain":"base"}
+Response (abridged): ${JSON.stringify({ grade: EXAMPLE_OUT.grade, risk_score: EXAMPLE_OUT.risk_score, one_liner: EXAMPLE_OUT.one_liner, red_flags: EXAMPLE_OUT.red_flags, green_flags: EXAMPLE_OUT.green_flags })}
+
+## Related
+- NoJunk Address Check (wallet/contract safety before you send or approve): https://nojunk-address-check.mick8511.workers.dev/llms.txt
+- All NoJunk services: ${NOJUNK_INDEX}
+`;
+}
+
 export default {
-  async fetch(request, env0) {
+  async fetch(request, env0, ctx) {
     const env = { ...(env0 || {}), PAY_TO: (env0 && env0.PAY_TO) || DEFAULT_PAY_TO };
     const url = new URL(request.url);
     if (request.method === "OPTIONS") {
@@ -574,6 +638,16 @@ export default {
     const publicSite = /(^|\.)nojunkcrypto\.com$/i.test(url.hostname);
     if (publicSite && url.pathname === "/") return scanPage(env, url);
     if (url.pathname === "/api") url.pathname = "/";
+    if (url.pathname === "/sample") {
+      return sampleResponse(await cachedSample("token-brett-base", async () => {
+        const d = await fetchTokenData({ address: SAMPLE_TOKEN.tokenAddress, chain: SAMPLE_TOKEN.chain }, env);
+        if (d.upstreamDown || !d.gpOk) return null;
+        if (!d.security && !d.token && !d.pools.length) return null;
+        return { note: `Free sample (cached up to 6 h). Paid endpoint: POST ${url.origin}/check, $0.01 USDC on Base via x402.`, request: { method: "POST", url: `${url.origin}/check`, body: SAMPLE_TOKEN }, response: analyze(SAMPLE_TOKEN.chain, SAMPLE_TOKEN.tokenAddress, d) };
+      }, ctx));
+    }
+    if (url.pathname === "/.well-known/x402") return wellKnownX402(url.origin, ["/check"]);
+    if (url.pathname === "/llms.txt") return textResponse(publicSite ? catalogLlms() : tokenLlms(url.origin));
     if (url.pathname === "/health/data") {
       // Reports only upstream status codes (no data, no keys) so the operator can confirm the data sources respond.
       const cgKey = String(env.CG_DEMO_KEY || "").trim();
@@ -598,6 +672,10 @@ export default {
         usage: 'POST /check {"tokenAddress":"0x...","chain":"base"} or GET /check?tokenAddress=...',
         price: "$0.01 USDC on Base per check (x402)",
         humans: `Free web checker: ${url.origin}/scan`,
+        free_sample: `${url.origin}/sample`,
+        llms_txt: `${url.origin}/llms.txt`,
+        x402_discovery: `${url.origin}/.well-known/x402`,
+        all_services: NOJUNK_INDEX,
         chains: Object.keys(CHAINS),
         facilitator: env.CDP_API_KEY_ID && env.CDP_API_KEY_SECRET ? "cdp" : "payai",
         sources: SOURCES,
@@ -1311,7 +1389,7 @@ var p=new URLSearchParams(location.search);if(p.get('a'))run(p.get('a'),p.get('c
 // ---------- sitemap / robots ----------
 function sitemapXml() {
   const today = new Date().toISOString().slice(0, 10);
-  const urls = ["/", "/wallet", "/learn", ...Object.keys(FLAG_PAGES).map((s) => "/learn/" + s), "/about", "/disclosure", "/privacy", "/contact"];
+  const urls = ["/", "/wallet", "/learn", ...Object.keys(FLAG_PAGES).map((s) => "/learn/" + s), "/about", "/services", "/disclosure", "/privacy", "/contact"];
   const body = urls.map((u) => `<url><loc>${SITE_ORIGIN}${u}</loc><lastmod>${today}</lastmod><changefreq>${u === "/" || u === "/wallet" ? "weekly" : "monthly"}</changefreq><priority>${u === "/" ? "1.0" : u === "/wallet" ? "0.9" : u.startsWith("/learn") ? "0.7" : "0.4"}</priority></url>`).join("");
   return new Response(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${body}</urlset>`, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
 }
@@ -1326,10 +1404,56 @@ function siteRoute(request, url, env) {
   if (p === "/learn") return htmlResponse(learnIndex());
   if (p.startsWith("/learn/")) { const h = learnPage(p.slice(7)); return h ? htmlResponse(h) : null; }
   if (p === "/about") return htmlResponse(aboutPage());
+  if (p === "/services") return htmlResponse(servicesPage());
   if (p === "/disclosure") return htmlResponse(disclosurePage());
   if (p === "/privacy") return htmlResponse(privacyPage());
   if (p === "/contact") return htmlResponse(contactPage());
   if (p === "/sitemap.xml") return sitemapXml();
   if (p === "/robots.txt") return robotsTxt();
   return null;
+}
+
+// ---------- NoJunk catalog (shared by /services and /llms.txt on nojunkcrypto.com) ----------
+const NJ = (n) => `https://${n}.mick8511.workers.dev`;
+const NOJUNK_CATALOG = [
+  { name: "NoJunk Token Check", base: NJ("nojunk-token-check"), path: "/check", price: "$0.01", hero: true, what: "Junk/rug-risk grade (JUNK, RISKY, CAUTION, CLEAN), 0-100 risk score, honeypot, taxes, owner powers, holder concentration, liquidity. Base, Ethereum, BNB, Arbitrum, Polygon, Optimism, Avalanche, Solana.", example: 'POST /check {"tokenAddress":"0x532f27101965dd16442E59d40670FaF5eBB142E4","chain":"base"}' },
+  { name: "NoJunk Address Check", base: NJ("nojunk-address-check"), path: "/check", price: "$0.01", hero: true, what: "Before sending funds or approving a spender: is this wallet or contract reported for phishing, theft, scams, sanctions or mixers? Contract risks too.", example: 'POST /check {"address":"0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD","chain":"ethereum"}' },
+  { name: "SEC Company Snapshot", base: NJ("sec-company-snapshot"), path: "/company", price: "$0.02", hero: true, what: "Revenue, net income, EPS, balance sheet and recent filings for any US-listed company, straight from SEC EDGAR with citations.", example: 'POST /company {"ticker":"AAPL"}' },
+  { name: "NoJunk Crypto Price", base: NJ("nojunk-crypto-price"), path: "/price", price: "$0.001", what: "USD price and market data for major coins or any on-chain token." },
+  { name: "NoJunk Chain", base: NJ("nojunk-chain"), path: "/balance", price: "$0.002", what: "Wallet balances, gas, transactions and blocks on 9 chains." },
+  { name: "NoJunk Stocks", base: NJ("nojunk-stocks"), path: "/quote", price: "$0.001", what: "Stock, ETF, index, FX and commodity quotes, history and stats." },
+  { name: "NoJunk Domain Intel", base: NJ("nojunk-domain-intel"), path: "/domain", price: "$0.003", what: "Domain age, registrar, DNS, email security and a risk score." },
+  { name: "NoJunk Email Check", base: NJ("nojunk-email-check"), path: "/verify", price: "$0.001", what: "Is this email real? Syntax, mail server, disposable, typos." },
+  { name: "Florida Condo SIRS Check", base: NJ("florida-sirs-check"), path: "/sirs", price: "$0.01", what: "Has a Florida condo association filed its structural integrity reserve study?" },
+];
+function catalogLlms() {
+  const hero = NOJUNK_CATALOG.filter((s) => s.hero), more = NOJUNK_CATALOG.filter((s) => !s.hero);
+  return `# NoJunk APIs
+
+> Pay-per-call APIs for AI agents. No signup, no API key: call the endpoint, get an HTTP 402 with x402 payment requirements, pay in USDC on Base, retry with the PAYMENT-SIGNATURE header. Invalid input and upstream failures are rejected before payment is settled.
+
+## Main services
+${hero.map((s) => `- [${s.name}](${s.base}${s.path}): ${s.what} ${s.price} per call. Example: \`${s.example}\`. Free sample: ${s.base}/sample. Docs: ${s.base}/llms.txt. OpenAPI: ${s.base}/openapi.json`).join("\n")}
+
+## More services
+${more.map((s) => `- [${s.name}](${s.base}${s.path}): ${s.what} ${s.price} per call. OpenAPI: ${s.base}/openapi.json`).join("\n")}
+
+## Humans
+- Free token checker: https://nojunkcrypto.com/
+- Free wallet checker: https://nojunkcrypto.com/wallet
+`;
+}
+function servicesPage() {
+  const card = (s) => `<li><strong><a href="${esc(s.base)}/">${esc(s.name)}</a></strong> · <code>${esc(s.price)}</code> per call<br>${esc(s.what)}<br><small>Endpoint <code>${esc(s.base + s.path)}</code>${s.hero ? ` · <a href="${esc(s.base)}/sample">free sample</a> · <a href="${esc(s.base)}/llms.txt">llms.txt</a>` : ""} · <a href="${esc(s.base)}/openapi.json">OpenAPI</a></small></li>`;
+  return shell({
+    title: "APIs for AI agents",
+    description: "NoJunk pay-per-call APIs for AI agents: token risk, wallet safety, SEC fundamentals and more. x402, USDC on Base, no signup.",
+    path: "/services",
+    body: `<section class="hero plain"><div class="wrap"><p class="kick">For developers and AI agents</p><h1>NoJunk APIs</h1></div></section>
+<main class="wrap"><article class="prose">
+<p>Every service is pay-per-call over <a href="https://www.x402.org/">x402</a>: call the endpoint, get an HTTP 402 with the price, pay in USDC on Base, retry. No signup, no API key. Bad input and upstream failures are rejected before payment is settled. Machine-readable list: <a href="/llms.txt">/llms.txt</a>.</p>
+<h2>Main services</h2><ul>${NOJUNK_CATALOG.filter((s) => s.hero).map(card).join("")}</ul>
+<h2>More services</h2><ul>${NOJUNK_CATALOG.filter((s) => !s.hero).map(card).join("")}</ul>
+</article></main>`,
+  });
 }

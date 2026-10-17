@@ -334,7 +334,7 @@ function paymentRequired(env, url, error) {
   return {
     x402Version: 2,
     error,
-    resource: { url: `${url.origin}/check`, description: DESCRIPTION, mimeType: "application/json" },
+    resource: { url: `${url.origin}/check`, description: `${DESCRIPTION} Free sample (no payment): ${url.origin}/sample. Docs: ${url.origin}/llms.txt.`, mimeType: "application/json" },
     accepts: [requirements(env)],
     extensions: {
       bazaar: {
@@ -412,7 +412,7 @@ function openapi(origin) {
     required: ["grade", "risk_score", "red_flags"],
   };
   const pay = { price: { mode: "fixed", currency: "USD", amount: "0.010000" }, protocols: [{ x402: {} }] };
-  const responses = { 200: { description: "Risk report", content: { "application/json": { schema: out } } }, 402: { description: "Payment Required" } };
+  const responses = { 200: { description: "Risk report", content: { "application/json": { schema: out, example: EXAMPLE_OUT } } }, 402: { description: "Payment Required (x402 v2 challenge in the PAYMENT-REQUIRED header)" } };
   return {
     openapi: "3.1.0",
     info: {
@@ -423,8 +423,9 @@ function openapi(origin) {
     },
     servers: [{ url: origin }],
     paths: {
+      "/sample": { get: { operationId: "sampleTokenCheck", summary: "Free cached example report (BRETT on Base); no payment", tags: ["Crypto", "Security"], responses: { 200: { description: "Example request and report" } } } },
       "/check": {
-        post: { operationId: "checkToken", summary: "Grade a token on Base, Ethereum, BNB Chain, Arbitrum, Polygon, Optimism, Avalanche or Solana for junk/rug risk", tags: ["Crypto", "Security"], "x-payment-info": pay, requestBody: { required: true, content: { "application/json": { schema: body } } }, responses },
+        post: { operationId: "checkToken", summary: "Grade a token on Base, Ethereum, BNB Chain, Arbitrum, Polygon, Optimism, Avalanche or Solana for junk/rug risk", tags: ["Crypto", "Security"], "x-payment-info": pay, requestBody: { required: true, content: { "application/json": { schema: body, example: SAMPLE_TOKEN } } }, responses },
         get: {
           operationId: "checkTokenGet",
           summary: "Grade a token on Base, Ethereum, BNB Chain, Arbitrum, Polygon, Optimism, Avalanche or Solana for junk/rug risk",
@@ -441,8 +442,71 @@ function openapi(origin) {
   };
 }
 
+
+// ---------- free sample + discovery (/sample, /.well-known/x402, /llms.txt) ----------
+// Samples are cached 6 h in memory (per isolate) and in caches.default (custom domains only; it is a
+// no-op on *.workers.dev), so a public sample costs at most one upstream call per isolate per 6 h.
+// A failed sample is remembered for 60 s so a burst of retries cannot hammer the upstream.
+const SAMPLE_TTL_S = 21600;
+const SAMPLE_FAIL_TTL_S = 60;
+const _sampleMem = new Map();
+async function cachedSample(name, produce, ctx) {
+  const now = Date.now();
+  const m = _sampleMem.get(name);
+  if (m && now - m.at < (m.body ? SAMPLE_TTL_S : SAMPLE_FAIL_TTL_S) * 1000) return m.body;
+  const cache = typeof caches !== "undefined" && caches && caches.default ? caches.default : null;
+  const key = "https://sample-cache.invalid/" + encodeURIComponent(SERVICE) + "/" + name + "/v1";
+  if (cache) {
+    try { const hit = await cache.match(key); if (hit) { const body = await hit.text(); _sampleMem.set(name, { at: now, body }); return body; } } catch {}
+  }
+  let out = null;
+  try { out = await produce(); } catch { out = null; }
+  const body = out ? JSON.stringify(out, null, 2) : null;
+  _sampleMem.set(name, { at: now, body });
+  if (body && cache) {
+    const p = cache.put(key, new Response(body, { headers: { "Content-Type": "application/json", "Cache-Control": `max-age=${SAMPLE_TTL_S}` } })).catch(() => {});
+    if (ctx && ctx.waitUntil) ctx.waitUntil(p); else await p;
+  }
+  return body;
+}
+function sampleResponse(body) {
+  if (!body) return json({ error: "Sample temporarily unavailable; please retry in a minute." }, 502, { "Cache-Control": "no-store" });
+  return new Response(body, { headers: { "Content-Type": "application/json; charset=utf-8", "Access-Control-Allow-Origin": "*", "Cache-Control": "public, max-age=3600" } });
+}
+const NOJUNK_INDEX = "https://nojunkcrypto.com/services";
+function wellKnownX402(origin, paths) {
+  return json({ version: 1, resources: paths.map((p) => origin + p), instructions: `${SERVICE}: ${DESCRIPTION} Pay per call in USDC on Base via x402. Free sample: ${origin}/sample. Docs: ${origin}/llms.txt. All NoJunk services: ${NOJUNK_INDEX}` }, 200, { "Cache-Control": "public, max-age=3600" });
+}
+function textResponse(t) {
+  return new Response(t, { headers: { "Content-Type": "text/plain; charset=utf-8", "Access-Control-Allow-Origin": "*", "Cache-Control": "public, max-age=3600" } });
+}
+
+const SAMPLE_TOKEN = { tokenAddress: "0x532f27101965dd16442E59d40670FaF5eBB142E4", chain: "base" }; // BRETT on Base, a well-known token
+function tokenLlms(origin) {
+  return `# ${SERVICE}
+
+> ${DESCRIPTION}
+
+- Endpoint: POST ${origin}/check (or GET ${origin}/check?tokenAddress=...&chain=...)
+- Price: $0.01 USDC on Base per check, paid with x402 (HTTP 402 -> pay -> retry with PAYMENT-SIGNATURE). No signup, no API key.
+- Invalid addresses and tokens with no data are rejected before payment is settled.
+- Chains: ${Object.keys(CHAINS).join(", ")} (0x addresses default to base; Solana mints are auto-detected)
+- Free sample (no payment, cached): ${origin}/sample
+- OpenAPI: ${origin}/openapi.json
+- x402 discovery: ${origin}/.well-known/x402
+
+## Example
+Request: POST ${origin}/check {"tokenAddress":"${SAMPLE_TOKEN.tokenAddress}","chain":"base"}
+Response (abridged): ${JSON.stringify({ grade: EXAMPLE_OUT.grade, risk_score: EXAMPLE_OUT.risk_score, one_liner: EXAMPLE_OUT.one_liner, red_flags: EXAMPLE_OUT.red_flags, green_flags: EXAMPLE_OUT.green_flags })}
+
+## Related
+- NoJunk Address Check (wallet/contract safety before you send or approve): https://nojunk-address-check.mick8511.workers.dev/llms.txt
+- All NoJunk services: ${NOJUNK_INDEX}
+`;
+}
+
 export default {
-  async fetch(request, env0) {
+  async fetch(request, env0, ctx) {
     const env = { ...(env0 || {}), PAY_TO: (env0 && env0.PAY_TO) || DEFAULT_PAY_TO };
     const url = new URL(request.url);
     if (request.method === "OPTIONS") {
@@ -452,6 +516,16 @@ export default {
     const publicSite = /(^|\.)nojunkcrypto\.com$/i.test(url.hostname);
     if (publicSite && url.pathname === "/") return scanPage(env, url);
     if (url.pathname === "/api") url.pathname = "/";
+    if (url.pathname === "/sample") {
+      return sampleResponse(await cachedSample("token-brett-base", async () => {
+        const d = await fetchTokenData({ address: SAMPLE_TOKEN.tokenAddress, chain: SAMPLE_TOKEN.chain }, env);
+        if (d.upstreamDown || !d.gpOk) return null;
+        if (!d.security && !d.token && !d.pools.length) return null;
+        return { note: `Free sample (cached up to 6 h). Paid endpoint: POST ${url.origin}/check, $0.01 USDC on Base via x402.`, request: { method: "POST", url: `${url.origin}/check`, body: SAMPLE_TOKEN }, response: analyze(SAMPLE_TOKEN.chain, SAMPLE_TOKEN.tokenAddress, d) };
+      }, ctx));
+    }
+    if (url.pathname === "/.well-known/x402") return wellKnownX402(url.origin, ["/check"]);
+    if (url.pathname === "/llms.txt") return textResponse(publicSite ? catalogLlms() : tokenLlms(url.origin));
     if (url.pathname === "/health/data") {
       // Reports only upstream status codes (no data, no keys) so the operator can confirm the data sources respond.
       const cgKey = String(env.CG_DEMO_KEY || "").trim();
@@ -476,6 +550,10 @@ export default {
         usage: 'POST /check {"tokenAddress":"0x...","chain":"base"} or GET /check?tokenAddress=...',
         price: "$0.01 USDC on Base per check (x402)",
         humans: `Free web checker: ${url.origin}/scan`,
+        free_sample: `${url.origin}/sample`,
+        llms_txt: `${url.origin}/llms.txt`,
+        x402_discovery: `${url.origin}/.well-known/x402`,
+        all_services: NOJUNK_INDEX,
         chains: Object.keys(CHAINS),
         facilitator: env.CDP_API_KEY_ID && env.CDP_API_KEY_SECRET ? "cdp" : "payai",
         sources: SOURCES,

@@ -567,7 +567,7 @@ var p=new URLSearchParams(location.search);if(p.get('a'))run(p.get('a'),p.get('c
 // ---------- sitemap / robots ----------
 function sitemapXml() {
   const today = new Date().toISOString().slice(0, 10);
-  const urls = ["/", "/wallet", "/learn", ...Object.keys(FLAG_PAGES).map((s) => "/learn/" + s), "/about", "/disclosure", "/privacy", "/contact"];
+  const urls = ["/", "/wallet", "/learn", ...Object.keys(FLAG_PAGES).map((s) => "/learn/" + s), "/about", "/services", "/disclosure", "/privacy", "/contact"];
   const body = urls.map((u) => `<url><loc>${SITE_ORIGIN}${u}</loc><lastmod>${today}</lastmod><changefreq>${u === "/" || u === "/wallet" ? "weekly" : "monthly"}</changefreq><priority>${u === "/" ? "1.0" : u === "/wallet" ? "0.9" : u.startsWith("/learn") ? "0.7" : "0.4"}</priority></url>`).join("");
   return new Response(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${body}</urlset>`, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
 }
@@ -582,10 +582,56 @@ function siteRoute(request, url, env) {
   if (p === "/learn") return htmlResponse(learnIndex());
   if (p.startsWith("/learn/")) { const h = learnPage(p.slice(7)); return h ? htmlResponse(h) : null; }
   if (p === "/about") return htmlResponse(aboutPage());
+  if (p === "/services") return htmlResponse(servicesPage());
   if (p === "/disclosure") return htmlResponse(disclosurePage());
   if (p === "/privacy") return htmlResponse(privacyPage());
   if (p === "/contact") return htmlResponse(contactPage());
   if (p === "/sitemap.xml") return sitemapXml();
   if (p === "/robots.txt") return robotsTxt();
   return null;
+}
+
+// ---------- NoJunk catalog (shared by /services and /llms.txt on nojunkcrypto.com) ----------
+const NJ = (n) => `https://${n}.mick8511.workers.dev`;
+const NOJUNK_CATALOG = [
+  { name: "NoJunk Token Check", base: NJ("nojunk-token-check"), path: "/check", price: "$0.01", hero: true, what: "Junk/rug-risk grade (JUNK, RISKY, CAUTION, CLEAN), 0-100 risk score, honeypot, taxes, owner powers, holder concentration, liquidity. Base, Ethereum, BNB, Arbitrum, Polygon, Optimism, Avalanche, Solana.", example: 'POST /check {"tokenAddress":"0x532f27101965dd16442E59d40670FaF5eBB142E4","chain":"base"}' },
+  { name: "NoJunk Address Check", base: NJ("nojunk-address-check"), path: "/check", price: "$0.01", hero: true, what: "Before sending funds or approving a spender: is this wallet or contract reported for phishing, theft, scams, sanctions or mixers? Contract risks too.", example: 'POST /check {"address":"0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD","chain":"ethereum"}' },
+  { name: "SEC Company Snapshot", base: NJ("sec-company-snapshot"), path: "/company", price: "$0.02", hero: true, what: "Revenue, net income, EPS, balance sheet and recent filings for any US-listed company, straight from SEC EDGAR with citations.", example: 'POST /company {"ticker":"AAPL"}' },
+  { name: "NoJunk Crypto Price", base: NJ("nojunk-crypto-price"), path: "/price", price: "$0.001", what: "USD price and market data for major coins or any on-chain token." },
+  { name: "NoJunk Chain", base: NJ("nojunk-chain"), path: "/balance", price: "$0.002", what: "Wallet balances, gas, transactions and blocks on 9 chains." },
+  { name: "NoJunk Stocks", base: NJ("nojunk-stocks"), path: "/quote", price: "$0.001", what: "Stock, ETF, index, FX and commodity quotes, history and stats." },
+  { name: "NoJunk Domain Intel", base: NJ("nojunk-domain-intel"), path: "/domain", price: "$0.003", what: "Domain age, registrar, DNS, email security and a risk score." },
+  { name: "NoJunk Email Check", base: NJ("nojunk-email-check"), path: "/verify", price: "$0.001", what: "Is this email real? Syntax, mail server, disposable, typos." },
+  { name: "Florida Condo SIRS Check", base: NJ("florida-sirs-check"), path: "/sirs", price: "$0.01", what: "Has a Florida condo association filed its structural integrity reserve study?" },
+];
+function catalogLlms() {
+  const hero = NOJUNK_CATALOG.filter((s) => s.hero), more = NOJUNK_CATALOG.filter((s) => !s.hero);
+  return `# NoJunk APIs
+
+> Pay-per-call APIs for AI agents. No signup, no API key: call the endpoint, get an HTTP 402 with x402 payment requirements, pay in USDC on Base, retry with the PAYMENT-SIGNATURE header. Invalid input and upstream failures are rejected before payment is settled.
+
+## Main services
+${hero.map((s) => `- [${s.name}](${s.base}${s.path}): ${s.what} ${s.price} per call. Example: \`${s.example}\`. Free sample: ${s.base}/sample. Docs: ${s.base}/llms.txt. OpenAPI: ${s.base}/openapi.json`).join("\n")}
+
+## More services
+${more.map((s) => `- [${s.name}](${s.base}${s.path}): ${s.what} ${s.price} per call. OpenAPI: ${s.base}/openapi.json`).join("\n")}
+
+## Humans
+- Free token checker: https://nojunkcrypto.com/
+- Free wallet checker: https://nojunkcrypto.com/wallet
+`;
+}
+function servicesPage() {
+  const card = (s) => `<li><strong><a href="${esc(s.base)}/">${esc(s.name)}</a></strong> · <code>${esc(s.price)}</code> per call<br>${esc(s.what)}<br><small>Endpoint <code>${esc(s.base + s.path)}</code>${s.hero ? ` · <a href="${esc(s.base)}/sample">free sample</a> · <a href="${esc(s.base)}/llms.txt">llms.txt</a>` : ""} · <a href="${esc(s.base)}/openapi.json">OpenAPI</a></small></li>`;
+  return shell({
+    title: "APIs for AI agents",
+    description: "NoJunk pay-per-call APIs for AI agents: token risk, wallet safety, SEC fundamentals and more. x402, USDC on Base, no signup.",
+    path: "/services",
+    body: `<section class="hero plain"><div class="wrap"><p class="kick">For developers and AI agents</p><h1>NoJunk APIs</h1></div></section>
+<main class="wrap"><article class="prose">
+<p>Every service is pay-per-call over <a href="https://www.x402.org/">x402</a>: call the endpoint, get an HTTP 402 with the price, pay in USDC on Base, retry. No signup, no API key. Bad input and upstream failures are rejected before payment is settled. Machine-readable list: <a href="/llms.txt">/llms.txt</a>.</p>
+<h2>Main services</h2><ul>${NOJUNK_CATALOG.filter((s) => s.hero).map(card).join("")}</ul>
+<h2>More services</h2><ul>${NOJUNK_CATALOG.filter((s) => !s.hero).map(card).join("")}</ul>
+</article></main>`,
+  });
 }

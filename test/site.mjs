@@ -12,7 +12,7 @@ for (const p of pages) {
 let r = await get("/learn/nope"); ok(r.status === 404, "unknown learn slug -> 404");
 r = await get("/wallet"); let t = await r.text(); ok(t.includes("Visit Coinbase") && t.includes("paid link"), "wallet page shows referral partners");
 r = await get("/"); t = await r.text(); ok(t.includes('class="nav"') && t.includes('href="/wallet"') && t.includes('"honeypot":"honeypot"') && !t.includes("__NAV__") && !t.includes("__FLAGMAP__") && !t.includes("__EXTRA_CSS__"), "home has nav + flag map");
-r = await get("/sitemap.xml"); t = await r.text(); ok(r.status === 200 && t.includes("<loc>https://nojunkcrypto.com/learn/honeypot</loc>") && (t.match(/<url>/g) || []).length === 16, "sitemap lists 16 urls");
+r = await get("/sitemap.xml"); t = await r.text(); ok(r.status === 200 && t.includes("<loc>https://nojunkcrypto.com/learn/honeypot</loc>") && (t.match(/<url>/g) || []).length === 17, "sitemap lists 17 urls (incl. /services)");
 r = await get("/robots.txt"); t = await r.text(); ok(t.includes("Sitemap: https://nojunkcrypto.com/sitemap.xml") && t.includes("Disallow: /free"), "robots.txt");
 // wallet grading
 const post = (b, site = "same-origin") => W.fetch(new Request(B + "/free-wallet", { method: "POST", headers: { "Sec-Fetch-Site": site, "CF-Connecting-IP": "2.2.2.2", "content-type": "application/json" }, body: JSON.stringify(b) }), {});
