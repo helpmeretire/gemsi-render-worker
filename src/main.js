@@ -163,7 +163,7 @@ function paymentRequired(env, url, error) {
   return {
     x402Version: 2,
     error,
-    resource: { url: `${url.origin}/company`, description: DESCRIPTION, mimeType: "application/json" },
+    resource: { url: `${url.origin}/company`, description: `${DESCRIPTION} Free sample (no payment): ${url.origin}/sample. Docs: ${url.origin}/llms.txt.`, mimeType: "application/json" },
     accepts: [requirements(env)],
     extensions: {
       bazaar: {
@@ -226,7 +226,7 @@ function openapi(origin) {
     required: ["ticker", "cik", "latest_fiscal_year", "balance_sheet"],
   };
   const pay = { price: { mode: "fixed", currency: "USD", amount: PRICE_USD }, protocols: [{ x402: {} }] };
-  const responses = { 200: { description: "Company snapshot", content: { "application/json": { schema: out } } }, 402: { description: "Payment Required" } };
+  const responses = { 200: { description: "Company snapshot", content: { "application/json": { schema: out, example: EXAMPLE_OUT } } }, 402: { description: "Payment Required (x402 v2 challenge in the PAYMENT-REQUIRED header)" } };
   return {
     openapi: "3.1.0",
     info: {
@@ -237,16 +237,77 @@ function openapi(origin) {
     },
     servers: [{ url: origin }],
     paths: {
+      "/sample": { get: { operationId: "sampleCompanySnapshot", summary: "Free cached example snapshot (AAPL); no payment", tags: ["Finance", "SEC"], responses: { 200: { description: "Example snapshot" } } } },
       "/company": {
-        post: { operationId: "companySnapshot", summary: "SEC fundamentals snapshot for a US-listed company", tags: ["Finance", "SEC"], "x-payment-info": pay, requestBody: { required: true, content: { "application/json": { schema: body } } }, responses },
+        post: { operationId: "companySnapshot", summary: "SEC fundamentals snapshot for a US-listed company", tags: ["Finance", "SEC"], "x-payment-info": pay, requestBody: { required: true, content: { "application/json": { schema: body, example: { ticker: "AAPL" } } } }, responses },
         get: { operationId: "companySnapshotGet", summary: "SEC fundamentals snapshot for a US-listed company", tags: ["Finance", "SEC"], "x-payment-info": pay, parameters: [{ name: "ticker", in: "query", required: true, schema: { type: "string" }, description: body.properties.ticker.description }], responses },
       },
     },
   };
 }
 
+
+// ---------- free sample + discovery (/sample, /.well-known/x402, /llms.txt) ----------
+// Samples are cached 6 h in memory (per isolate) and in caches.default (custom domains only; it is a
+// no-op on *.workers.dev), so a public sample costs at most one upstream call per isolate per 6 h.
+// A failed sample is remembered for 60 s so a burst of retries cannot hammer the upstream.
+const SAMPLE_TTL_S = 21600;
+const SAMPLE_FAIL_TTL_S = 60;
+const _sampleMem = new Map();
+async function cachedSample(name, produce, ctx) {
+  const now = Date.now();
+  const m = _sampleMem.get(name);
+  if (m && now - m.at < (m.body ? SAMPLE_TTL_S : SAMPLE_FAIL_TTL_S) * 1000) return m.body;
+  const cache = typeof caches !== "undefined" && caches && caches.default ? caches.default : null;
+  const key = "https://sample-cache.invalid/" + encodeURIComponent(SERVICE) + "/" + name + "/v1";
+  if (cache) {
+    try { const hit = await cache.match(key); if (hit) { const body = await hit.text(); _sampleMem.set(name, { at: now, body }); return body; } } catch {}
+  }
+  let out = null;
+  try { out = await produce(); } catch { out = null; }
+  const body = out ? JSON.stringify(out, null, 2) : null;
+  _sampleMem.set(name, { at: now, body });
+  if (body && cache) {
+    const p = cache.put(key, new Response(body, { headers: { "Content-Type": "application/json", "Cache-Control": `max-age=${SAMPLE_TTL_S}` } })).catch(() => {});
+    if (ctx && ctx.waitUntil) ctx.waitUntil(p); else await p;
+  }
+  return body;
+}
+function sampleResponse(body) {
+  if (!body) return json({ error: "Sample temporarily unavailable; please retry in a minute." }, 502, { "Cache-Control": "no-store" });
+  return new Response(body, { headers: { "Content-Type": "application/json; charset=utf-8", "Access-Control-Allow-Origin": "*", "Cache-Control": "public, max-age=3600" } });
+}
+const NOJUNK_INDEX = "https://nojunkcrypto.com/services";
+function wellKnownX402(origin, paths) {
+  return json({ version: 1, resources: paths.map((p) => origin + p), instructions: `${SERVICE}: ${DESCRIPTION} Pay per call in USDC on Base via x402. Free sample: ${origin}/sample. Docs: ${origin}/llms.txt. All NoJunk services: ${NOJUNK_INDEX}` }, 200, { "Cache-Control": "public, max-age=3600" });
+}
+function textResponse(t) {
+  return new Response(t, { headers: { "Content-Type": "text/plain; charset=utf-8", "Access-Control-Allow-Origin": "*", "Cache-Control": "public, max-age=3600" } });
+}
+
+function secLlms(origin) {
+  return `# ${SERVICE}
+
+> ${DESCRIPTION}
+
+- Endpoint: POST ${origin}/company {"ticker":"AAPL"} (or GET ${origin}/company?ticker=AAPL)
+- Price: $0.02 USDC on Base per snapshot, paid with x402 (HTTP 402 -> pay -> retry with PAYMENT-SIGNATURE). No signup, no API key.
+- Unknown tickers and invalid input are rejected before payment is settled.
+- Free sample (no payment, cached): ${origin}/sample (Apple, AAPL)
+- OpenAPI: ${origin}/openapi.json
+- x402 discovery: ${origin}/.well-known/x402
+
+## Example
+Request: POST ${origin}/company {"ticker":"AAPL"}
+Response (abridged): ${JSON.stringify({ ticker: EXAMPLE_OUT.ticker, company: EXAMPLE_OUT.company, latest_fiscal_year: EXAMPLE_OUT.latest_fiscal_year })}
+
+## Related
+- All NoJunk services: ${NOJUNK_INDEX}
+`;
+}
+
 export default {
-  async fetch(request, env0) {
+  async fetch(request, env0, ctx) {
     const env = { ...(env0 || {}), PAY_TO: (env0 && env0.PAY_TO) || DEFAULT_PAY_TO };
     const url = new URL(request.url);
     if (request.method === "OPTIONS") {
@@ -259,6 +320,9 @@ export default {
         endpoint: `${url.origin}/company`,
         openapi: `${url.origin}/openapi.json`,
         free_sample: `${url.origin}/sample`,
+        llms_txt: `${url.origin}/llms.txt`,
+        x402_discovery: `${url.origin}/.well-known/x402`,
+        all_services: NOJUNK_INDEX,
         usage: 'POST /company {"ticker":"AAPL"} or GET /company?ticker=AAPL',
         price: "$0.02 USDC on Base per snapshot (x402)",
         facilitator: env.CDP_API_KEY_ID && env.CDP_API_KEY_SECRET ? "cdp" : "payai",
@@ -268,10 +332,14 @@ export default {
     }
     if (url.pathname === "/openapi.json" || url.pathname === "/.well-known/openapi.json") return json(openapi(url.origin));
     if (url.pathname === "/sample") {
-      const snap = await buildSnapshot("AAPL");
-      if (snap.status !== 200) return json({ error: "Sample temporarily unavailable" }, 502);
-      return json({ note: "Free sample. Paid endpoint: POST /company {\"ticker\": \"...\"}", ...snap.body });
+      return sampleResponse(await cachedSample("sec-aapl", async () => {
+        const snap = await buildSnapshot("AAPL");
+        if (snap.status !== 200) return null;
+        return { note: "Free sample (cached up to 6 h). Paid endpoint: POST /company {\"ticker\": \"...\"}, $0.02 USDC on Base via x402.", ...snap.body };
+      }, ctx));
     }
+    if (url.pathname === "/.well-known/x402") return wellKnownX402(url.origin, ["/company"]);
+    if (url.pathname === "/llms.txt") return textResponse(secLlms(url.origin));
     if (url.pathname !== "/company") return json({ error: "Not found. Use POST /company" }, 404);
     if (!/^0x[0-9a-fA-F]{40}$/.test(env.PAY_TO)) return json({ error: "Service not configured: PAY_TO wallet address invalid" }, 500);
     if (request.method !== "GET" && request.method !== "POST") return json({ error: "Use GET or POST" }, 405);
