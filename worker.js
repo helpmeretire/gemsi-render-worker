@@ -254,6 +254,7 @@ export default {
     const r = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0 (compatible; AgingInPlaceGrants research; +https://aginginplacegrants.com)" } });
     if (!r.ok) return new Response("upstream " + r.status + " " + url, { status: 502, headers: CORS });
     const buf = new Uint8Array(await r.arrayBuffer());
+    if (u.searchParams.get("raw") === "1") return new Response(buf, { headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/pdf", "Cache-Control": "public, max-age=86400" } });
     try {
       const text = await pdfToText(buf);
       return new Response("SOURCE: " + url + "\n\n" + text, { headers: CORS });
