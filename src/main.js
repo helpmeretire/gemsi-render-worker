@@ -154,8 +154,9 @@ function validateSpeak(b) {
   const t = checkText(b.text, MAX_SPEAK_CHARS); if (t.error) return t;
   let speaker = DEFAULT_SPEAKER;
   if (b.speaker !== undefined && b.speaker !== null) {
-    if (!isStr(b.speaker) || !SPEAKERS.includes(b.speaker.trim().toLowerCase())) return bad(`speaker must be one of ${SPEAKERS.join(", ")}`);
-    speaker = b.speaker.trim().toLowerCase();
+    const norm = isStr(b.speaker) ? normalizeSpeaker(b.speaker) : null;
+    if (!norm) return bad(`speaker must be one of ${SPEAKERS.join(", ")} (the older aura-<voice>-en names are also accepted)`);
+    speaker = norm;
   }
   let format = "mp3";
   if (b.format !== undefined && b.format !== null) {
@@ -371,7 +372,7 @@ const BODY_PROPS = {
   },
   "/speak": {
     text: { type: "string", description: `Text to speak (1 to ${MAX_SPEAK_CHARS} characters)` },
-    speaker: { type: "string", description: `Optional voice, default ${DEFAULT_SPEAKER}; one of ${SPEAKERS.join(", ")}` },
+    speaker: { type: "string", description: `Optional voice, default ${DEFAULT_SPEAKER}; one of ${SPEAKERS.join(", ")} (legacy aura-<voice>-en names also accepted)` },
     format: { type: "string", description: '"mp3" (default: raw audio/mpeg body) or "json" ({audio_base64, ...})' },
   },
   "/translate": {
@@ -449,7 +450,7 @@ function openapi(origin) {
       type: "object",
       properties: {
         text: { type: "string", minLength: 1, maxLength: MAX_SPEAK_CHARS, description: `Text to speak (max ${MAX_SPEAK_CHARS} characters)` },
-        speaker: { type: "string", enum: SPEAKERS, default: DEFAULT_SPEAKER, description: "Deepgram Aura voice (English)" },
+        speaker: { type: "string", enum: SPEAKERS_ACCEPTED, default: DEFAULT_SPEAKER, description: "Deepgram Aura voice (English). Bare names (asteria, luna, ...) are preferred; legacy aura-<voice>-en names are accepted and normalized." },
         format: { type: "string", enum: SPEAK_FORMATS, default: "mp3", description: "mp3: the response body is the raw audio/mpeg file; json: {audio_base64, content_type, bytes, ...}" },
       },
       required: ["text"],

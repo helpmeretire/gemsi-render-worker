@@ -37,8 +37,20 @@ const MAX_URL_LENGTH = 2048;
 const AUDIO_TYPES_EXTRA = ["video/mp4", "video/webm", "video/mpeg", "video/quicktime", "application/octet-stream", "application/ogg", "application/x-wav"]; // plus any audio/*
 // /speak limits
 const MAX_SPEAK_CHARS = 400;
-const DEFAULT_SPEAKER = "aura-asteria-en";
-const SPEAKERS = ["aura-asteria-en", "aura-luna-en", "aura-stella-en", "aura-athena-en", "aura-hera-en", "aura-orion-en", "aura-arcas-en", "aura-perseus-en", "aura-angus-en", "aura-orpheus-en", "aura-helios-en", "aura-zeus-en"];
+// @cf/deepgram/aura-1 now takes bare voice names (enum angus, asteria, ...); the old
+// "aura-<voice>-en" names are rejected with Workers AI error 5006. Callers may send either
+// form; it is normalized to the bare name before the model call.
+const DEFAULT_SPEAKER = "asteria";
+const SPEAKERS = ["asteria", "luna", "stella", "athena", "hera", "orion", "arcas", "perseus", "angus", "orpheus", "helios", "zeus"];
+const LEGACY_SPEAKERS = SPEAKERS.map((s) => `aura-${s}-en`);
+const SPEAKERS_ACCEPTED = [...SPEAKERS, ...LEGACY_SPEAKERS];
+// "aura-asteria-en" / "Asteria" / "asteria" -> "asteria"; null when not a known voice.
+function normalizeSpeaker(v) {
+  const s = String(v).trim().toLowerCase();
+  const m = /^aura-([a-z]+)-en$/.exec(s);
+  const name = m ? m[1] : s;
+  return SPEAKERS.includes(name) ? name : null;
+}
 const SPEAK_FORMATS = ["mp3", "json"];
 // /translate limits
 const MAX_TRANSLATE_CHARS = 5000;

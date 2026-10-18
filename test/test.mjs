@@ -239,19 +239,21 @@ reset(); r = await paid("/speak", { text: TEXT });
 ok(r.status === 200 && r.headers.get("Content-Type") === "audio/mpeg" && r.headers.get("X-Audio-Bytes") === "1000" && r.headers.get("X-Text-Chars") === String(TEXT.length) && r.headers.get("Content-Length") === "1000", "speak mp3: audio/mpeg, X-Audio-Bytes, X-Text-Chars");
 ok(dec(r.headers.get("PAYMENT-RESPONSE")).transaction === "0xdeadbeef" && r.headers.get("Access-Control-Expose-Headers").includes("PAYMENT-RESPONSE") && r.headers.get("Access-Control-Expose-Headers").includes("X-Audio-Bytes") && r.headers.get("Access-Control-Allow-Origin") === "*", "speak mp3: PAYMENT-RESPONSE header + CORS expose");
 let buf = Buffer.from(await r.arrayBuffer()); ok(buf.length === 1000 && buf[0] === 0xff && buf[1] === 0xfb && buf.equals(MP3), "speak mp3: body is the exact MP3 bytes (ReadableStream result)");
-ok(ai.calls.length === 1 && ai.calls[0].model === AURA && ai.calls[0].input.text === TEXT && ai.calls[0].input.speaker === "aura-asteria-en" && Object.keys(ai.calls[0].input).join() === "text,speaker", "aura called with text + default speaker");
+ok(ai.calls.length === 1 && ai.calls[0].model === AURA && ai.calls[0].input.text === TEXT && ai.calls[0].input.speaker === "asteria" && Object.keys(ai.calls[0].input).join() === "text,speaker", "aura called with text + default speaker");
 ok(calls.length === 2 && JSON.parse(calls[1].init.body).paymentRequirements.amount === "10000", "speak settled at 10000");
 reset(); order = []; AI.run = async (m, i) => { order.push("ai"); return origRun(m, i); }; globalThis.fetch = async (u, init) => { order.push(String(u).split("/").pop()); return origFetch(u, init); };
 r = await paid("/speak", { text: TEXT }); ok(r.status === 200 && order.join() === "verify,ai,settle", "speak order: verify -> generate -> settle -> audio"); AI.run = origRun; globalThis.fetch = origFetch;
+// bare (new) voice name passes through unchanged
+reset(); r = await paid("/speak", { text: TEXT, speaker: " Zeus " }); ok(r.status === 200 && ai.calls[0].input.speaker === "zeus" && Object.keys(ai.calls[0].input).join() === "text,speaker", "speak: bare voice name accepted and sent as-is (lowercased)");
 // base64 object result
 reset(); ai.reply[AURA] = { audio: b64(MP3) }; r = await paid("/speak", { text: TEXT, speaker: "Aura-Luna-EN" }); buf = Buffer.from(await r.arrayBuffer());
-ok(r.status === 200 && r.headers.get("Content-Type") === "audio/mpeg" && buf.equals(MP3) && ai.calls[0].input.speaker === "aura-luna-en", "speak: {audio: base64} result handled, speaker normalized");
+ok(r.status === 200 && r.headers.get("Content-Type") === "audio/mpeg" && buf.equals(MP3) && ai.calls[0].input.speaker === "luna", "speak: {audio: base64} result handled, speaker normalized");
 reset(); ai.reply[AURA] = MP3.buffer.slice(MP3.byteOffset, MP3.byteOffset + MP3.byteLength); r = await paid("/speak", { text: TEXT }); buf = Buffer.from(await r.arrayBuffer()); ok(r.status === 200 && buf.equals(MP3), "speak: ArrayBuffer result handled");
 reset(); ai.reply[AURA] = new Uint8Array(MP3); r = await paid("/speak", { text: TEXT }); buf = Buffer.from(await r.arrayBuffer()); ok(r.status === 200 && buf.equals(MP3), "speak: Uint8Array result handled");
 reset(); ai.reply[AURA] = new Response(MP3); r = await paid("/speak", { text: TEXT }); buf = Buffer.from(await r.arrayBuffer()); ok(r.status === 200 && buf.equals(MP3), "speak: Response result handled");
 // json format
 reset(); r = await paid("/speak", { text: TEXT, format: "JSON" }); j = await r.json();
-ok(r.status === 200 && r.headers.get("Content-Type") === "application/json" && j.audio_base64 === b64(MP3) && j.content_type === "audio/mpeg" && j.bytes === 1000 && j.text_chars === TEXT.length && j.speaker === "aura-asteria-en" && j.model === AURA && /^\d{4}-/.test(j.generated_at) && dec(r.headers.get("PAYMENT-RESPONSE")).success === true && r.headers.get("X-Audio-Bytes") === "1000", "speak json: base64 audio + fields + receipt");
+ok(r.status === 200 && r.headers.get("Content-Type") === "application/json" && j.audio_base64 === b64(MP3) && j.content_type === "audio/mpeg" && j.bytes === 1000 && j.text_chars === TEXT.length && j.speaker === "asteria" && j.model === AURA && /^\d{4}-/.test(j.generated_at) && dec(r.headers.get("PAYMENT-RESPONSE")).success === true && r.headers.get("X-Audio-Bytes") === "1000", "speak json: base64 audio + fields + receipt");
 ok(Object.keys(j).join() === "audio_base64,content_type,bytes,text_chars,speaker,model,generated_at", "speak json keys exact");
 // failures
 reset(); ai.fail.add(AURA); r = await paid("/speak", { text: TEXT }); j = await r.json(); ok(r.status === 502 && j.error === "AI model temporarily unavailable, no payment taken" && calls.length === 1 && !r.headers.get("PAYMENT-RESPONSE"), "aura throws -> 502 not settled");

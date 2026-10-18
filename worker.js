@@ -37,8 +37,20 @@ const MAX_URL_LENGTH = 2048;
 const AUDIO_TYPES_EXTRA = ["video/mp4", "video/webm", "video/mpeg", "video/quicktime", "application/octet-stream", "application/ogg", "application/x-wav"]; // plus any audio/*
 // /speak limits
 const MAX_SPEAK_CHARS = 400;
-const DEFAULT_SPEAKER = "aura-asteria-en";
-const SPEAKERS = ["aura-asteria-en", "aura-luna-en", "aura-stella-en", "aura-athena-en", "aura-hera-en", "aura-orion-en", "aura-arcas-en", "aura-perseus-en", "aura-angus-en", "aura-orpheus-en", "aura-helios-en", "aura-zeus-en"];
+// @cf/deepgram/aura-1 now takes bare voice names (enum angus, asteria, ...); the old
+// "aura-<voice>-en" names are rejected with Workers AI error 5006. Callers may send either
+// form; it is normalized to the bare name before the model call.
+const DEFAULT_SPEAKER = "asteria";
+const SPEAKERS = ["asteria", "luna", "stella", "athena", "hera", "orion", "arcas", "perseus", "angus", "orpheus", "helios", "zeus"];
+const LEGACY_SPEAKERS = SPEAKERS.map((s) => `aura-${s}-en`);
+const SPEAKERS_ACCEPTED = [...SPEAKERS, ...LEGACY_SPEAKERS];
+// "aura-asteria-en" / "Asteria" / "asteria" -> "asteria"; null when not a known voice.
+function normalizeSpeaker(v) {
+  const s = String(v).trim().toLowerCase();
+  const m = /^aura-([a-z]+)-en$/.exec(s);
+  const name = m ? m[1] : s;
+  return SPEAKERS.includes(name) ? name : null;
+}
 const SPEAK_FORMATS = ["mp3", "json"];
 // /translate limits
 const MAX_TRANSLATE_CHARS = 5000;
@@ -291,8 +303,9 @@ function validateSpeak(b) {
   const t = checkText(b.text, MAX_SPEAK_CHARS); if (t.error) return t;
   let speaker = DEFAULT_SPEAKER;
   if (b.speaker !== undefined && b.speaker !== null) {
-    if (!isStr(b.speaker) || !SPEAKERS.includes(b.speaker.trim().toLowerCase())) return bad(`speaker must be one of ${SPEAKERS.join(", ")}`);
-    speaker = b.speaker.trim().toLowerCase();
+    const norm = isStr(b.speaker) ? normalizeSpeaker(b.speaker) : null;
+    if (!norm) return bad(`speaker must be one of ${SPEAKERS.join(", ")} (the older aura-<voice>-en names are also accepted)`);
+    speaker = norm;
   }
   let format = "mp3";
   if (b.format !== undefined && b.format !== null) {
@@ -508,7 +521,7 @@ const BODY_PROPS = {
   },
   "/speak": {
     text: { type: "string", description: `Text to speak (1 to ${MAX_SPEAK_CHARS} characters)` },
-    speaker: { type: "string", description: `Optional voice, default ${DEFAULT_SPEAKER}; one of ${SPEAKERS.join(", ")}` },
+    speaker: { type: "string", description: `Optional voice, default ${DEFAULT_SPEAKER}; one of ${SPEAKERS.join(", ")} (legacy aura-<voice>-en names also accepted)` },
     format: { type: "string", description: '"mp3" (default: raw audio/mpeg body) or "json" ({audio_base64, ...})' },
   },
   "/translate": {
@@ -586,7 +599,7 @@ function openapi(origin) {
       type: "object",
       properties: {
         text: { type: "string", minLength: 1, maxLength: MAX_SPEAK_CHARS, description: `Text to speak (max ${MAX_SPEAK_CHARS} characters)` },
-        speaker: { type: "string", enum: SPEAKERS, default: DEFAULT_SPEAKER, description: "Deepgram Aura voice (English)" },
+        speaker: { type: "string", enum: SPEAKERS_ACCEPTED, default: DEFAULT_SPEAKER, description: "Deepgram Aura voice (English). Bare names (asteria, luna, ...) are preferred; legacy aura-<voice>-en names are accepted and normalized." },
         format: { type: "string", enum: SPEAK_FORMATS, default: "mp3", description: "mp3: the response body is the raw audio/mpeg file; json: {audio_base64, content_type, bytes, ...}" },
       },
       required: ["text"],
