@@ -221,8 +221,9 @@ class AiError extends Error {}
 
 // Runs FLUX; returns { bytes, b64, content_type } or throws AiError.
 async function runGenerate(env, q) {
+  // Current flux-1-schnell input schema accepts only { prompt (1-2048 chars), steps (<= 8) };
+  // extra fields such as seed are rejected with Workers AI error 5006, so never send them.
   const input = { prompt: q.prompt, steps: q.steps };
-  if (q.seed !== null) input.seed = q.seed;
   let raw;
   try { raw = await env.AI.run(GENERATE_MODEL, input); } catch { throw new AiError("generate failed"); }
   let b64 = null;
@@ -284,10 +285,9 @@ const HANDLERS = { generate: doGenerate, describe: doDescribe };
 
 // Builds the 200 response for /generate once payment has settled.
 function generateResponse(out, q, receiptHeader) {
-  const common = { "Access-Control-Allow-Origin": "*", "Access-Control-Expose-Headers": "PAYMENT-REQUIRED, PAYMENT-RESPONSE, X-Image-Bytes, X-Seed, X-Model", "PAYMENT-RESPONSE": receiptHeader, "X-Image-Bytes": String(out.bytes.length), "X-Model": GENERATE_MODEL };
-  if (q.seed !== null) common["X-Seed"] = String(q.seed);
+  const common = { "Access-Control-Allow-Origin": "*", "Access-Control-Expose-Headers": "PAYMENT-REQUIRED, PAYMENT-RESPONSE, X-Image-Bytes, X-Model", "PAYMENT-RESPONSE": receiptHeader, "X-Image-Bytes": String(out.bytes.length), "X-Model": GENERATE_MODEL };
   if (q.format === "json") {
-    const body = { image_base64: out.b64, content_type: out.content_type, bytes: out.bytes.length, prompt_chars: q.prompt.length, steps: q.steps, seed: q.seed, model: GENERATE_MODEL, generated_at: new Date().toISOString() };
+    const body = { image_base64: out.b64, content_type: out.content_type, bytes: out.bytes.length, prompt_chars: q.prompt.length, steps: q.steps, seed: null, model: GENERATE_MODEL, generated_at: new Date().toISOString() };
     return new Response(JSON.stringify(body, null, 2), { status: 200, headers: { "Content-Type": "application/json", ...common } });
   }
   return new Response(out.bytes, { status: 200, headers: { "Content-Type": out.content_type, "Content-Length": String(out.bytes.length), "Cache-Control": "no-store", ...common } });
@@ -309,8 +309,8 @@ function requirements(env, route) {
 const EXAMPLE_PNG_B64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
 const EXAMPLES = {
   "/generate": {
-    input: { prompt: "A cozy cabin in a snowy pine forest at dusk, warm light in the windows, soft falling snow, cinematic", steps: 4, seed: 42, format: "json" },
-    output: { image_base64: EXAMPLE_PNG_B64, content_type: "image/png", bytes: 1216384, prompt_chars: 103, steps: 4, seed: 42, model: GENERATE_MODEL, generated_at: "2026-10-15T12:00:00.000Z" },
+    input: { prompt: "A cozy cabin in a snowy pine forest at dusk, warm light in the windows, soft falling snow, cinematic", steps: 4, format: "json" },
+    output: { image_base64: EXAMPLE_PNG_B64, content_type: "image/png", bytes: 1216384, prompt_chars: 103, steps: 4, seed: null, model: GENERATE_MODEL, generated_at: "2026-10-15T12:00:00.000Z" },
   },
   "/describe": {
     input: { image_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/640px-PNG_transparency_demonstration_1.png", question: "What objects are in this picture and what colors are they?" },
@@ -321,7 +321,6 @@ const BODY_PROPS = {
   "/generate": {
     prompt: { type: "string", description: `Text description of the image to generate (${MIN_PROMPT_CHARS} to ${MAX_PROMPT_CHARS} characters)` },
     steps: { type: "integer", description: `Optional: diffusion steps, 1-${MAX_STEPS} (default ${DEFAULT_STEPS}); more steps = more detail, slower` },
-    seed: { type: "integer", description: "Optional: non-negative integer seed for reproducible output" },
     format: { type: "string", description: 'Optional: "png" (default; response body is the raw PNG bytes) or "json" ({image_base64, ...})' },
   },
   "/describe": {
@@ -390,7 +389,7 @@ function openapi(origin) {
     properties: {
       prompt: { type: "string", minLength: MIN_PROMPT_CHARS, maxLength: MAX_PROMPT_CHARS, description: "What to draw. Prompts describing sexual content involving minors are refused with 400 (no charge)." },
       steps: { type: "integer", minimum: 1, maximum: MAX_STEPS, default: DEFAULT_STEPS, description: "Diffusion steps; 4 is a good default for FLUX.1 schnell" },
-      seed: { type: "integer", minimum: 0, description: "Seed for reproducible output; echoed back in X-Seed / seed" },
+      seed: { type: "integer", minimum: 0, deprecated: true, description: "Deprecated and ignored: FLUX.1 schnell on Workers AI no longer accepts a seed. Still accepted for compatibility; seed is always null in the response." },
       format: { type: "string", enum: FORMATS, default: "png", description: "png: the response body is the image itself (image/png); json: a JSON object with the image as base64" },
     },
     required: ["prompt"],
@@ -442,7 +441,7 @@ function openapi(origin) {
       title: SERVICE,
       version: "1.0.0",
       description: DESCRIPTION,
-      "x-guidance": `Two POST endpoints paid per call in USDC on Base via x402 (you are only charged when a valid result is returned; every 4xx/5xx is free). POST /generate {prompt (${MIN_PROMPT_CHARS}-${MAX_PROMPT_CHARS} chars), steps?: 1-${MAX_STEPS} (default ${DEFAULT_STEPS}), seed?: integer, format?: "png"|"json"} costs $0.01 and runs FLUX.1 schnell; with format=png (default) the 200 response body IS the image (Content-Type image/png, X-Image-Bytes, X-Seed headers), with format=json you get {image_base64, content_type, bytes, prompt_chars, steps, seed, model, generated_at}. Prompts describing sexual content involving minors are refused with 400. POST /describe {image_url} or {image_base64}, question? (default "${DEFAULT_QUESTION}") costs $0.005 and runs LLaVA 1.5 7B (automatic uform-gen2 fallback) -> {description, question, image_bytes, model, generated_at}; image_url must be a public http(s) URL serving image/* up to ${MAX_IMAGE_BYTES} bytes (private/loopback hosts refused, 15 s timeout; non-image -> 415, unreachable -> 502, all unpaid). Request bodies over ${ROUTES["/generate"].max_request_bytes} bytes (/generate) or ${ROUTES["/describe"].max_request_bytes} bytes (/describe) are rejected with 413 before any payment work. Best for: illustrations, thumbnails, product mockups, concept art, social cards; alt-text, captioning, screenshot QA, moderation triage, "what is in this photo" questions.`,
+      "x-guidance": `Two POST endpoints paid per call in USDC on Base via x402 (you are only charged when a valid result is returned; every 4xx/5xx is free). POST /generate {prompt (${MIN_PROMPT_CHARS}-${MAX_PROMPT_CHARS} chars), steps?: 1-${MAX_STEPS} (default ${DEFAULT_STEPS}), format?: "png"|"json"} costs $0.01 and runs FLUX.1 schnell; with format=png (default) the 200 response body IS the image (Content-Type image/jpeg or image/png as returned, X-Image-Bytes header), with format=json you get {image_base64, content_type, bytes, prompt_chars, steps, seed (always null), model, generated_at}. Prompts describing sexual content involving minors are refused with 400. POST /describe {image_url} or {image_base64}, question? (default "${DEFAULT_QUESTION}") costs $0.005 and runs LLaVA 1.5 7B (automatic uform-gen2 fallback) -> {description, question, image_bytes, model, generated_at}; image_url must be a public http(s) URL serving image/* up to ${MAX_IMAGE_BYTES} bytes (private/loopback hosts refused, 15 s timeout; non-image -> 415, unreachable -> 502, all unpaid). Request bodies over ${ROUTES["/generate"].max_request_bytes} bytes (/generate) or ${ROUTES["/describe"].max_request_bytes} bytes (/describe) are rejected with 413 before any payment work. Best for: illustrations, thumbnails, product mockups, concept art, social cards; alt-text, captioning, screenshot QA, moderation triage, "what is in this photo" questions.`,
     },
     servers: [{ url: origin }],
     paths: {
@@ -456,7 +455,7 @@ function openapi(origin) {
           responses: {
             200: {
               description: "The generated image. With format=png (default) the body is the raw PNG; with format=json a JSON object carrying the image as base64.",
-              headers: { "PAYMENT-RESPONSE": hdr("Base64 x402 settlement receipt"), "X-Image-Bytes": hdr("Size of the image in bytes", "integer"), "X-Seed": hdr("The seed used (only when one was given)", "integer"), "X-Model": hdr("Model that generated the image") },
+              headers: { "PAYMENT-RESPONSE": hdr("Base64 x402 settlement receipt"), "X-Image-Bytes": hdr("Size of the image in bytes", "integer"), "X-Model": hdr("Model that generated the image") },
               content: { "image/png": { schema: { type: "string", format: "binary" } }, "application/json": { schema: generateJson } },
             },
             ...commonErrors,
@@ -488,7 +487,7 @@ export default {
     const env = { ...env0, PAY_TO: (env0 && env0.PAY_TO) || DEFAULT_PAY_TO };
     const url = new URL(request.url);
     if (request.method === "OPTIONS") {
-      return new Response(null, { headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "PAYMENT-SIGNATURE, Content-Type", "Access-Control-Allow-Methods": "GET, POST, OPTIONS", "Access-Control-Expose-Headers": "PAYMENT-REQUIRED, PAYMENT-RESPONSE, X-Image-Bytes, X-Seed, X-Model" } });
+      return new Response(null, { headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "PAYMENT-SIGNATURE, Content-Type", "Access-Control-Allow-Methods": "GET, POST, OPTIONS", "Access-Control-Expose-Headers": "PAYMENT-REQUIRED, PAYMENT-RESPONSE, X-Image-Bytes, X-Model" } });
     }
     if (url.pathname === "/" || url.pathname === "/health") {
       return json({
