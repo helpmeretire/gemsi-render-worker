@@ -3,17 +3,26 @@
 const WALLET = "0x6f762720b8515b7091e6aa69e8361f7b9909233f";
 const USDC = "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913";
 const BASE = (n) => `https://${n}.mick8511.workers.dev`;
-// Shown on the status page: the services we promote. Generic services (fx, web-read, ai-text, speech, image,
-// document, web-search, geo, qr, llm, moderate) still run but are no longer displayed or polled here.
 const SERVICES = [
   { id: "florida-sirs-check", name: "Florida Condo SIRS Check", what: "Has a Florida condo filed its structural reserve study?", route: "/sirs", price: "$0.01", probe: "/" },
   { id: "nojunk-token-check", name: "NoJunk Token Check", what: "Is this crypto token junk? Honeypot, taxes, owner powers, holders.", route: "/check", price: "$0.01", probe: "/health/data", demo: "/health/data", demoLabel: "Data sources" },
   { id: "nojunk-address-check", name: "NoJunk Address Check", what: "Has this wallet been reported for phishing, theft or scams?", route: "/check", price: "$0.01", probe: "/" },
+  { id: "fx-reference-rates", name: "FX Reference Rates", what: "Currency conversion from ECB reference rates.", route: "/rate", price: "$0.003", probe: "/" },
   { id: "sec-company-snapshot", name: "SEC Company Snapshot", what: "Revenue, income, balance sheet for any US-listed company.", route: "/company", price: "$0.02", probe: "/", demo: "/sample", demoLabel: "Live sample (AAPL)" },
+  { id: "nojunk-web-read", name: "NoJunk Web Read", what: "Any web page turned into clean text and markdown.", route: "/read", price: "$0.002", probe: "/" },
   { id: "nojunk-email-check", name: "NoJunk Email Check", what: "Is this email real? Syntax, mail server, disposable, typos.", route: "/verify", price: "$0.001", probe: "/" },
   { id: "nojunk-crypto-price", name: "NoJunk Crypto Price", what: "USD price and market data for 270+ coins or any on-chain token.", route: "/price", price: "$0.001", probe: "/health/data", demo: "/health/data", demoLabel: "Data source" },
   { id: "nojunk-domain-intel", name: "NoJunk Domain Intel", what: "Domain age, registrar, DNS, email security, risk score.", route: "/domain", price: "$0.003", probe: "/" },
+  { id: "nojunk-ai-text", name: "NoJunk AI Text", what: "Summarize, extract facts, classify text with a 70B model.", route: "/summarize", price: "$0.005", probe: "/" },
+  { id: "nojunk-speech", name: "NoJunk Speech", what: "Transcribe audio, speak text, translate 100 languages.", route: "/transcribe", price: "$0.02", probe: "/" },
+  { id: "nojunk-image", name: "NoJunk Image", what: "Generate a picture from text; describe any image.", route: "/generate", price: "$0.01", probe: "/" },
+  { id: "nojunk-document", name: "NoJunk Document", what: "PDF, Word, Excel or image file turned into text.", route: "/convert", price: "$0.01", probe: "/" },
+  { id: "nojunk-web-search", name: "NoJunk Web Search", what: "Ten live web results for any query.", route: "/search", price: "$0.002", probe: "/health/search", demo: "/health/search", demoLabel: "Live search check" },
+  { id: "nojunk-geo", name: "NoJunk Geo", what: "Address to coordinates and back; 7-day weather for any place.", route: "/geocode", price: "$0.002", probe: "/health/data", demo: "/health/data", demoLabel: "Data sources" },
+  { id: "nojunk-qr", name: "NoJunk QR", what: "QR codes as SVG, PNG or data; single or batch of 25.", route: "/qr", price: "$0.001", probe: "/", demo: "/sample.svg", demoLabel: "Sample QR" },
+  { id: "nojunk-llm", name: "NoJunk LLM", what: "OpenAI-compatible 70B chat model and embeddings.", route: "/v1/chat/completions", price: "$0.005", probe: "/v1/models", demo: "/v1/models", demoLabel: "Models offered" },
   { id: "nojunk-stocks", name: "NoJunk Stocks", what: "Stock, ETF, index, FX and commodity quotes, history and stats.", route: "/quote", price: "$0.001", probe: "/" },
+  { id: "nojunk-moderate", name: "NoJunk Moderate", what: "Sentiment, safety, rerank, PII detection and language ID.", route: "/sentiment", price: "$0.001", probe: "/" },
   { id: "nojunk-chain", name: "NoJunk Chain", what: "Wallet balances, gas, transactions and blocks on 9 chains.", route: "/balance", price: "$0.002", probe: "/" },
 ];
 const SITE = { id: "nojunkcrypto.com", name: "nojunkcrypto.com (free checkers)", url: "https://nojunkcrypto.com/" };
@@ -45,13 +54,19 @@ function summarizeDemo(svc, j) {
   return null;
 }
 
+// Subrequest budget (Workers Free: 50 per invocation). With 20 services we make at most 2 calls each:
+// when the info probe is just "/", the paywall call doubles as the liveness check (a 402 from the
+// Worker proves it is up), so those services cost 1 call; a demo URL equal to the probe is reused.
+// Total today: 20 paywall + 5 probes (demo reused) + 2 separate demos + 1 site + 1 RPC = 29.
 async function checkService(svc) {
+  const payOnly = svc.probe === "/";
   let [info, pay, demo] = await Promise.all([
-    timed(BASE(svc.id) + svc.probe),
+    payOnly ? Promise.resolve(null) : timed(BASE(svc.id) + svc.probe),
     timed(BASE(svc.id) + svc.route, { method: svc.id === "nojunk-llm" ? "POST" : "GET" }),
     svc.demo && svc.demo !== svc.probe ? timed(BASE(svc.id) + svc.demo) : Promise.resolve(null),
   ]);
   if (svc.demo && svc.demo === svc.probe) demo = info; // same URL: reuse, no second upstream call
+  if (payOnly) info = { ok: pay.ok, status: pay.ok && pay.status === 402 ? 200 : pay.status, ms: pay.ms };
   let paywall = null;
   if (pay.ok && pay.status === 402) {
     const h = pay.headers.get("payment-required");
