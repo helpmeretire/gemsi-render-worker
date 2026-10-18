@@ -1,0 +1,561 @@
+{
+  "state": "Arkansas",
+  "slug": "arkansas",
+  "abbr": "AR",
+  "source_pdf": "https://hmin.homemods.org/wp-content/uploads/2026/07/Arkansas.homemodfunding.grid_.USC_.2026.pdf",
+  "usc_profile": "https://homemods.org/directory-state-profile/ar/",
+  "checked": "2026-10-18",
+  "programs": [
+    {
+      "key": "aaa_title3",
+      "category": "Aging and Disability",
+      "name": "Arkansas Department of Human Services (State Unit on Aging)",
+      "federal_name": "Older Americans Act Title III-B and Title III-E (Area Agencies on Aging)",
+      "url": "https://humanservices.arkansas.gov/about-dhs/daabhs/aging-and-adult-services/about-daas",
+      "phone": "(800) 677-1116",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Landlords",
+        "Low income",
+        "Older adults",
+        "People with disabilities"
+      ],
+      "about": "Arkansas's aging agency funds local Area Agencies on Aging, which may pay for home safety checks and small modifications. Use the Eldercare Locator line to find your local office."
+    },
+    {
+      "key": "assistive_tech",
+      "category": "Aging and Disability",
+      "name": "Arkansas State Assistive Technology Program",
+      "federal_name": "Assistive Technology (AT Act)",
+      "url": "https://ar-ican.org/",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "People with disabilities"
+      ],
+      "about": "Arkansas's assistive technology program can help people with disabilities find, try or pay for devices and home changes."
+    },
+    {
+      "key": "cil",
+      "category": "Aging and Disability",
+      "name": "Arkansas Directory of Centers for Independent Living",
+      "federal_name": "Centers for Independent Living",
+      "url": "https://www.ar-silc.org/resources.html",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Low income",
+        "Older adults",
+        "People with disabilities"
+      ],
+      "about": "Use this directory to find a Center for Independent Living near you in Arkansas; some can help with home modification."
+    },
+    {
+      "key": "va_grants",
+      "category": "Aging and Disability",
+      "name": "Specially Adapted Housing (SAH) and Special Housing Adaptation (SHA) Grants",
+      "federal_name": "U.S. Department of Veterans Affairs",
+      "url": "https://benefits.va.gov/homeloans/adaptedhousing.asp",
+      "phone": "1-800-827-1000",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "People with disabilities",
+        "Veterans"
+      ],
+      "about": ""
+    },
+    {
+      "key": "va_grants",
+      "category": "Aging and Disability",
+      "name": "Temporary Residence Adaptation (TRA) Grant",
+      "federal_name": "U.S. Department of Veterans Affairs",
+      "url": "https://benefits.va.gov/homeloans/adaptedhousing.asp",
+      "phone": "1-800-827-1000",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "People with disabilities",
+        "Veterans"
+      ],
+      "about": ""
+    },
+    {
+      "key": "va_grants",
+      "category": "Aging and Disability",
+      "name": "Home Improvements and Structural Alterations (HISA) Grant",
+      "federal_name": "U.S. Department of Veterans Affairs",
+      "url": "https://www.prosthetics.va.gov/psas/HISA2.asp",
+      "phone": "1-800-827-1000",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "People with disabilities",
+        "Veterans"
+      ],
+      "about": ""
+    },
+    {
+      "key": "voc_rehab",
+      "category": "Aging and Disability",
+      "name": "Arkansas Rehabilitation Services",
+      "federal_name": "Vocational Rehabilitation (Rehabilitation Services Administration)",
+      "url": "https://arcareereducation.org/about/arkansas-rehabilitation-services",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Landlords",
+        "Low income",
+        "People with disabilities"
+      ],
+      "about": "Arkansas's vocational rehabilitation agency may cover home changes when they help a person with a disability work toward a job goal."
+    },
+    {
+      "key": "medicare",
+      "category": "Healthcare/Insurance",
+      "name": "Health, long-term care and life insurance",
+      "federal_name": "Medicare / Medicare Advantage; private insurance",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters"
+      ],
+      "about": ""
+    },
+    {
+      "key": "medicaid_hcbs",
+      "category": "Healthcare/Insurance",
+      "name": "Arkansas Medicaid",
+      "federal_name": "Medicaid Home and Community-Based Services (HCBS) Waivers",
+      "url": "https://medicaid.mmis.arkansas.gov",
+      "phone": "",
+      "who": [
+        "Low income",
+        "Older adults",
+        "People with disabilities"
+      ],
+      "about": "Arkansas Medicaid runs home and community-based waivers that may pay for home changes like ramps or grab bars for people who qualify. Rules and waiver names vary, so check with the agency."
+    },
+    {
+      "key": "medicaid_hcbs",
+      "category": "Healthcare/Insurance",
+      "name": "Arkansas Money Follows the Person Program",
+      "federal_name": "Money Follows the Person (Medicaid)",
+      "url": "https://humanservices.arkansas.gov/about-dhs/daabhs/aging-and-adult-services/mfp",
+      "phone": "",
+      "who": [
+        "People with disabilities"
+      ],
+      "about": "Arkansas's Money Follows the Person program helps people move from a nursing home back to the community. Help with home setup may be part of the plan."
+    },
+    {
+      "key": "other_state",
+      "category": "Healthcare/Insurance",
+      "name": "Social Security: Plan for Achieving Self-Support (PASS) and Impairment-Related Work Expenses (IRWE)",
+      "federal_name": "Social Security Administration",
+      "url": "https://www.ssa.gov/disabilityresearch/wi/pass.htm",
+      "phone": "(800) 772-1213",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Low income",
+        "People with disabilities"
+      ],
+      "about": "People on SSI or SSDI may be able to set aside money for home changes tied to work or independence without losing as much in benefits."
+    },
+    {
+      "key": "hud_cdbg",
+      "category": "Housing and Community Development",
+      "name": "CDBG Entitlement Program",
+      "federal_name": "Community Development Block Grant (HUD)",
+      "url": "https://www.hudexchange.info/programs/cdbg-entitlement/",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Landlords",
+        "Low income",
+        "Older adults",
+        "People with disabilities"
+      ],
+      "about": ""
+    },
+    {
+      "key": "hud_cdbg",
+      "category": "Housing and Community Development",
+      "name": "State CDBG Program",
+      "federal_name": "Community Development Block Grant (HUD)",
+      "url": "https://www.hudexchange.info/programs/cdbg-state/",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Landlords",
+        "Low income",
+        "Older adults",
+        "People with disabilities"
+      ],
+      "about": ""
+    },
+    {
+      "key": "hud_home",
+      "category": "Housing and Community Development",
+      "name": "HOME Program grantees",
+      "federal_name": "HOME Investment Partnerships Program (HUD)",
+      "url": "https://www.hudexchange.info/grantees/",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Low income",
+        "Older adults"
+      ],
+      "about": ""
+    },
+    {
+      "key": "nonprofit_repair",
+      "category": "Housing and Community Development",
+      "name": "Local Housing/Neighborhood Agencies (Neighborhood Housing Services)",
+      "federal_name": "NeighborWorks America",
+      "url": "http://www.neighborworks.org/Our-Network/Network-Directory",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Landlords",
+        "Low income",
+        "Older adults",
+        "People with disabilities"
+      ],
+      "about": "Local nonprofit housing groups in Arkansas, such as NeighborWorks members, may offer repair help, advice or low-cost loans. Search your city name plus \"Neighborhood Housing Services.\""
+    },
+    {
+      "key": "state_hfa",
+      "category": "Housing and Community Development",
+      "name": "Arkansas Development Finance Authority",
+      "federal_name": "State Housing Finance Agencies",
+      "url": "https://adfa.arkansas.gov/",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Landlords",
+        "Low income",
+        "Older adults",
+        "People with disabilities"
+      ],
+      "about": "Arkansas Development Finance Authority is Arkansas's housing finance agency. Agencies like this may offer low-interest or deferred loans for home repairs for low- and moderate-income households."
+    },
+    {
+      "key": "usda_504",
+      "category": "Housing and Community Development",
+      "name": "Section 504 Home Repair Loans and Grants",
+      "federal_name": "USDA Rural Development",
+      "url": "https://www.rd.usda.gov/contact-us/state-offices/ar",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Low income",
+        "Older adults"
+      ],
+      "about": "Contact the Arkansas USDA Rural Development office for 504 help in rural areas."
+    },
+    {
+      "key": "other_state",
+      "category": "Housing and Community Development",
+      "name": "Section 533 Rural Housing Preservation Grants",
+      "federal_name": "USDA Rural Development",
+      "url": "https://www.rd.usda.gov/programs-services/housing-preservation-grants",
+      "phone": "",
+      "who": [],
+      "about": "USDA gives these grants to local governments, nonprofits and Tribes, which then fix up homes of low-income people in small rural towns. Ask local groups if they have this money."
+    },
+    {
+      "key": "weatherization",
+      "category": "Housing and Community Development",
+      "name": "Arkansas Weatherization Assistance Program",
+      "federal_name": "Weatherization Assistance Program (DOE)",
+      "url": "https://www.adeq.state.ar.us/energy/incentives/wap.aspx",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Low income",
+        "Older adults",
+        "People with disabilities"
+      ],
+      "about": "Arkansas's weatherization program makes homes of low-income households more energy efficient and can fix some safety problems along the way."
+    },
+    {
+      "key": "other_state",
+      "category": "Lending",
+      "name": "FHA Title I Home Improvement Loan",
+      "federal_name": "Federal Housing Administration (HUD)",
+      "url": "https://www.hud.gov/program_offices/housing/sfh/title/title-i",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Landlords"
+      ],
+      "about": "A federally insured loan from approved local lenders that can pay for fixing up an existing home."
+    },
+    {
+      "key": "fha_203k",
+      "category": "Lending",
+      "name": "FHA 203(k) Purchase/Rehabilitation Loan",
+      "federal_name": "Federal Housing Administration (HUD)",
+      "url": "https://www.hud.gov/program_offices/housing/sfh/203k",
+      "phone": "",
+      "who": [
+        "Homeowners"
+      ],
+      "about": ""
+    },
+    {
+      "key": "other_state",
+      "category": "Lending",
+      "name": "Home Equity Line of Credit",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners"
+      ],
+      "about": "Homeowners can borrow against their home's value as needed to pay for changes. The home backs the loan, so payments must be kept up."
+    },
+    {
+      "key": "other_state",
+      "category": "Lending",
+      "name": "Home Equity Loan",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners"
+      ],
+      "about": "A second mortgage that gives a lump sum for home changes, paid back on top of the first mortgage."
+    },
+    {
+      "key": "other_state",
+      "category": "Lending",
+      "name": "Lender Unsecured/Personal Loans",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Landlords"
+      ],
+      "about": "A bank personal loan can cover smaller projects. It works for renters too, since the home is not used as security."
+    },
+    {
+      "key": "other_state",
+      "category": "Lending",
+      "name": "Mortgage Refinancing",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners"
+      ],
+      "about": "Replacing your current mortgage with a new, larger one can free up cash for home changes if you have enough equity."
+    },
+    {
+      "key": "other_state",
+      "category": "Lending",
+      "name": "Remodeler Donated Financing",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners"
+      ],
+      "about": "Some contractors donate labor, materials or an unsecured loan for part of a project. Ask your remodeler."
+    },
+    {
+      "key": "other_state",
+      "category": "Lending",
+      "name": "Remodeler Referred Financing",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Landlords"
+      ],
+      "about": "Many remodelers work with finance companies that offer project loans. Ask your contractor what they offer and compare costs."
+    },
+    {
+      "key": "reverse_mortgage",
+      "category": "Lending",
+      "name": "Reverse Equity Mortgage (HECM)",
+      "federal_name": "FHA Home Equity Conversion Mortgage (HUD)",
+      "url": "http://portal.hud.gov/hudportal/HUD?src=/program_offices/housing/sfh/hecm/hecmhome",
+      "phone": "",
+      "who": [
+        "Homeowners"
+      ],
+      "about": ""
+    },
+    {
+      "key": "other_state",
+      "category": "Lending",
+      "name": "Secured Loans Against Homeowner's Bank Accounts",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners"
+      ],
+      "about": "You may be able to borrow against a CD or savings at your bank to pay for smaller home changes."
+    },
+    {
+      "key": "other_state",
+      "category": "Lending",
+      "name": "Secured Loans Against Homeowner's Financial Investment Accounts (Margin Loan)",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners"
+      ],
+      "about": "A margin loan borrows against an investment account. It can pay for home projects, but it carries market risk."
+    },
+    {
+      "key": "nonprofit_repair",
+      "category": "Social and Vocational",
+      "name": "Civic, Advocacy, Religious, and Trade Groups",
+      "federal_name": "",
+      "url": "https://www.211.org/",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Landlords",
+        "Low income",
+        "Older adults",
+        "People with disabilities"
+      ],
+      "about": "Churches, service clubs and builder groups sometimes build ramps or raise money for home changes. Call 211 to find groups near you."
+    },
+    {
+      "key": "other_state",
+      "category": "Social and Vocational",
+      "name": "Arkansas Office for Victims of Crime",
+      "federal_name": "Crime Victims' Benefits (U.S. Department of Justice)",
+      "url": "https://ovc.ncjrs.gov/ResourceByState.aspx?state=ar",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters"
+      ],
+      "about": "Arkansas's crime victim compensation program may pay for home access changes when a crime caused an injury and other sources don't cover it."
+    },
+    {
+      "key": "other_state",
+      "category": "Social and Vocational",
+      "name": "Social Services Block Grant (Title XX)",
+      "federal_name": "Social Security Title XX Social Services (HHS)",
+      "url": "https://www.acf.hhs.gov/ocs/resource/ssbg-contacts",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Landlords",
+        "Low income",
+        "People with disabilities"
+      ],
+      "about": "State social service offices use this money to help families in a crisis, sometimes with basic items like a ramp or grab bars. It mostly serves people already on public aid."
+    },
+    {
+      "key": "other_state",
+      "category": "Social and Vocational",
+      "name": "Arkansas Workers Compensation Department",
+      "federal_name": "Workers' Compensation (U.S. Department of Labor)",
+      "url": "http://www.awcc.state.ar.us/employeebasicfacts.html",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "People with disabilities"
+      ],
+      "about": "If a work injury makes it hard to live at home, Arkansas workers' comp may pay for home changes. Ask your claims handler."
+    },
+    {
+      "key": "tax_medical",
+      "category": "Tax Sources",
+      "name": "Personal Income Tax Deduction (medical expenses)",
+      "federal_name": "Internal Revenue Service",
+      "url": "https://www.irs.gov/credits-deductions",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "People with disabilities"
+      ],
+      "about": ""
+    },
+    {
+      "key": "other_state",
+      "category": "Tax Sources",
+      "name": "Capital Gains Tax (cost basis)",
+      "federal_name": "Internal Revenue Service",
+      "url": "https://www.irs.gov/taxtopics/tc409.html",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Landlords",
+        "People with disabilities"
+      ],
+      "about": "Money spent on accessibility can raise your home's cost basis, which may lower the taxable gain when you sell."
+    },
+    {
+      "key": "other_state",
+      "category": "Tax Sources",
+      "name": "Business Tax Deduction",
+      "federal_name": "Internal Revenue Service",
+      "url": "https://www.irs.gov/businesses/small-businesses-self-employed/deducting-business-expenses",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Landlords"
+      ],
+      "about": "Owners who use property for business may be able to deduct accessibility work faster than other improvements."
+    },
+    {
+      "key": "state_tax",
+      "category": "Tax Sources",
+      "name": "State/Local Sales Tax Exemption",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Older adults",
+        "People with disabilities"
+      ],
+      "about": "Some states or counties waive sales tax on ramp materials or lift equipment. Check with Arkansas or your county tax office."
+    },
+    {
+      "key": "state_tax",
+      "category": "Tax Sources",
+      "name": "Local Property Tax Exemption",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Landlords",
+        "People with disabilities"
+      ],
+      "about": "Home changes can raise a home's assessed value. Ask your local assessor whether accessibility work is exempt."
+    }
+  ],
+  "notes": "No state-specific tax credit listed. The Arkansas PDF gives lower VA TRA grant caps than other 2026 state PDFs; use VA's own figures, not the PDF's."
+}

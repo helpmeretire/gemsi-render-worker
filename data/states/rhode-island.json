@@ -1,0 +1,463 @@
+{
+  "state": "Rhode Island",
+  "slug": "rhode-island",
+  "abbr": "RI",
+  "source_pdf": "https://hmin.homemods.org/wp-content/uploads/2026/07/Rhode-Island.homemodfunding.grid_.USC_.2026.pdf",
+  "usc_profile": "https://homemods.org/directory-state-profile/ri/",
+  "checked": "2026-10-18",
+  "programs": [
+    {
+      "key": "aaa_title3",
+      "category": "Aging and Disability",
+      "name": "Rhode Island Office of Healthy Aging (State Unit on Aging)",
+      "federal_name": "Older Americans Act Title III-B / III-E (Area Agencies on Aging)",
+      "url": "http://www.oha.ri.gov/",
+      "phone": "(800) 677-1116",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Landlords",
+        "Low income",
+        "Older adults",
+        "People with disabilities"
+      ],
+      "about": "Rhode Island's state unit on aging funds local Area Agencies on Aging. Your local Area Agency on Aging may help with a home safety check or small changes; find it through the Eldercare Locator."
+    },
+    {
+      "key": "assistive_tech",
+      "category": "Aging and Disability",
+      "name": "Rhode Island Assistive Technology Program, Assistive Technology Access Partnership",
+      "federal_name": "Assistive Technology (AT Act)",
+      "url": "http://www.atap.ri.gov/",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "People with disabilities"
+      ],
+      "about": "Rhode Island's federally funded assistive technology program; some AT programs help with home changes or link people to low-cost loans."
+    },
+    {
+      "key": "cil",
+      "category": "Aging and Disability",
+      "name": "Rhode Island Centers for Independent Living",
+      "federal_name": "Centers for Independent Living (HHS)",
+      "url": "http://www.oscil.org/",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Low income",
+        "Older adults",
+        "People with disabilities"
+      ],
+      "about": "Independent living centers in Rhode Island give advice, skills training and referrals to people with disabilities; some help pay for home changes."
+    },
+    {
+      "key": "va_grants",
+      "category": "Aging and Disability",
+      "name": "VA Specially Adapted Housing (SAH), Special Housing Adaptation (SHA), Temporary Residence Adaptation (TRA) and HISA grants",
+      "federal_name": "VA SAH / SHA / TRA / HISA grants",
+      "url": "http://benefits.va.gov/homeloans/adaptedhousing.asp",
+      "phone": "1-800-827-1000",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "People with disabilities",
+        "Veterans"
+      ],
+      "about": ""
+    },
+    {
+      "key": "voc_rehab",
+      "category": "Aging and Disability",
+      "name": "Rhode Island Office of Rehabilitation Services",
+      "federal_name": "Vocational Rehabilitation (RSA)",
+      "url": "http://www.ors.ri.gov/VR.html",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Landlords",
+        "Low income",
+        "People with disabilities"
+      ],
+      "about": "Rhode Island Office of Rehabilitation Services may pay for home changes or devices when they help a person with a disability reach a job goal."
+    },
+    {
+      "key": "medicare",
+      "category": "Healthcare/Insurance",
+      "name": "Insurance: Health (e.g., Medicare) and HMOs, Long-Term Care, Life",
+      "federal_name": "Medicare / Medicare Advantage and private insurance",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters"
+      ],
+      "about": ""
+    },
+    {
+      "key": "medicaid_hcbs",
+      "category": "Healthcare/Insurance",
+      "name": "Rhode Island Medicaid",
+      "federal_name": "Medicaid HCBS waivers (Section 1915(c))",
+      "url": "https://healthsourceri.com/medicaid/",
+      "phone": "",
+      "who": [
+        "Low income",
+        "Older adults",
+        "People with disabilities"
+      ],
+      "about": "Rhode Island Medicaid runs Rhode Island's Medicaid home and community-based waivers. Some waivers pay for home changes (often called environmental modifications) so a person with low income who needs long-term care can stay home. The USC RI state profile summarizes which waivers cover this."
+    },
+    {
+      "key": "other_state",
+      "category": "Healthcare/Insurance",
+      "name": "Rhode Island Money Follows the Person Program",
+      "federal_name": "Money Follows the Person (Medicaid)",
+      "url": "http://www.eohhs.ri.gov/Consumer/NursingHomeTransitionProgram.aspx",
+      "phone": "",
+      "who": [
+        "People with disabilities"
+      ],
+      "about": "Helps people with disabilities or chronic conditions move from a nursing home or other institution back to a home in the community. Services differ by state."
+    },
+    {
+      "key": "other_state",
+      "category": "Healthcare/Insurance",
+      "name": "Social Security: Plan for Achieving Self-Support (PASS) and Impairment-Related Work Expenses (IRWE)",
+      "federal_name": "Social Security Administration",
+      "url": "https://www.ssa.gov/disabilityresearch/wi/pass.htm",
+      "phone": "(800) 772-1213",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Low income",
+        "People with disabilities"
+      ],
+      "about": "Work rules for people on SSI or SSDI. They can set money aside or subtract disability-related work costs, which may include home changes, so their benefits drop less."
+    },
+    {
+      "key": "hud_cdbg",
+      "category": "Housing and Community Development",
+      "name": "Community Development Block Grants (CDBG): State CDBG Program and CDBG Entitlement Program",
+      "federal_name": "HUD Community Development Block Grant",
+      "url": "https://www.hudexchange.info/programs/cdbg-state/",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Landlords",
+        "Low income",
+        "Older adults",
+        "People with disabilities"
+      ],
+      "about": ""
+    },
+    {
+      "key": "hud_home",
+      "category": "Housing and Community Development",
+      "name": "HOME Program (local HOME grantees)",
+      "federal_name": "HUD HOME Investment Partnerships",
+      "url": "https://www.hudexchange.info/grantees/",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Low income",
+        "Older adults"
+      ],
+      "about": ""
+    },
+    {
+      "key": "nonprofit_repair",
+      "category": "Housing and Community Development",
+      "name": "Local Housing/Neighborhood Agencies (Neighborhood Housing Services)",
+      "federal_name": "NeighborWorks America",
+      "url": "http://www.neighborworks.org/Our-Network/Network-Directory",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Landlords",
+        "Low income",
+        "Older adults",
+        "People with disabilities"
+      ],
+      "about": "Local nonprofit housing groups, such as NeighborWorks affiliates, may give repair advice, loans or grants. Search the NeighborWorks directory or your city name plus \"Neighborhood Housing Services\" to find groups in Rhode Island."
+    },
+    {
+      "key": "state_hfa",
+      "category": "Housing and Community Development",
+      "name": "Rhode Island Housing",
+      "federal_name": "State Housing Finance Agencies (HFAs)",
+      "url": "www.rihousing.com",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Landlords",
+        "Low income",
+        "Older adults",
+        "People with disabilities"
+      ],
+      "about": "Rhode Island Housing is Rhode Island's housing finance agency. HFAs mostly fund home buying and affordable housing, and some offer low-interest or deferred repair loans. Check its site for any current repair or accessibility program."
+    },
+    {
+      "key": "usda_504",
+      "category": "Housing and Community Development",
+      "name": "Rhode Island USDA Rural Development offices (Hadley, Holden, Wareham, Windsor, Norwich and Warwick offices)",
+      "federal_name": "USDA Section 504 Home Repair loans and grants; Section 533 Housing Preservation Grants",
+      "url": "https://www.rd.usda.gov/contact-us/state-offices/ri",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Low income",
+        "Older adults"
+      ],
+      "about": "Rural Rhode Island homeowners with very low income can ask USDA Rural Development about 504 repair loans and grants. Most offices on the list are in neighboring states, since one regional office covers several New England states."
+    },
+    {
+      "key": "weatherization",
+      "category": "Housing and Community Development",
+      "name": "Rhode Island Weatherization Assistance Program",
+      "federal_name": "DOE Weatherization Assistance Program",
+      "url": "http://www.dhs.ri.gov/Programs/WAPProgramInfo.php",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Low income",
+        "Older adults",
+        "People with disabilities"
+      ],
+      "about": "Lowers energy bills for lower-income Rhode Island households and can include small health and safety repairs."
+    },
+    {
+      "key": "fha_203k",
+      "category": "Lending",
+      "name": "FHA Loan Insurance: Title I Home Improvement and 203(k) Purchase/Rehabilitation",
+      "federal_name": "FHA 203(k) / Title I (HUD)",
+      "url": "https://www.hud.gov/program_offices/housing/sfh/203k",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Landlords"
+      ],
+      "about": ""
+    },
+    {
+      "key": "other_state",
+      "category": "Lending",
+      "name": "Home Equity Line of Credit",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners"
+      ],
+      "about": "A credit line borrowed against the home's value that can be drawn on as needed for home changes. It is repaid with interest. Ask a local bank or credit union."
+    },
+    {
+      "key": "other_state",
+      "category": "Lending",
+      "name": "Home Equity Loan",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners"
+      ],
+      "about": "A second mortgage that pays out a lump sum for home changes and is repaid on top of the first mortgage. Ask a local bank."
+    },
+    {
+      "key": "other_state",
+      "category": "Lending",
+      "name": "Lender Unsecured/Personal Loans",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Landlords"
+      ],
+      "about": "A personal loan from a bank puts no lien on the home, so it can work for renters and smaller projects. Approval depends on income, debt and credit."
+    },
+    {
+      "key": "other_state",
+      "category": "Lending",
+      "name": "Mortgage Refinancing",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners"
+      ],
+      "about": "Replacing the current mortgage with a new one can free up cash for home changes when the owner has enough equity."
+    },
+    {
+      "key": "other_state",
+      "category": "Lending",
+      "name": "Remodeler Donated Financing",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners"
+      ],
+      "about": "Some remodelers donate part of the labor, materials or financing for a project. Ask your contractor."
+    },
+    {
+      "key": "other_state",
+      "category": "Lending",
+      "name": "Remodeler Referred Financing",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Landlords"
+      ],
+      "about": "Many contractors partner with finance companies that lend for remodeling jobs. Ask your contractor what they offer."
+    },
+    {
+      "key": "reverse_mortgage",
+      "category": "Lending",
+      "name": "Reverse Equity Mortgage (FHA-approved Home Equity Conversion Mortgage)",
+      "federal_name": "HUD HECM reverse mortgage",
+      "url": "http://portal.hud.gov/hudportal/HUD?src=/program_offices/housing/sfh/hecm/hecmhome",
+      "phone": "",
+      "who": [
+        "Homeowners"
+      ],
+      "about": ""
+    },
+    {
+      "key": "other_state",
+      "category": "Lending",
+      "name": "Secured Loans Against Homeowner's Bank Accounts",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners"
+      ],
+      "about": "A bank may lend against a certificate of deposit the owner already holds. This can cover smaller projects."
+    },
+    {
+      "key": "other_state",
+      "category": "Lending",
+      "name": "Secured Loans Against Homeowner's Financial Investment Accounts (Margin Loan)",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners"
+      ],
+      "about": "Some banks and brokerages let owners borrow against an investment account and use the money for home changes. Ask about the terms and risks first."
+    },
+    {
+      "key": "nonprofit_repair",
+      "category": "Social and Vocational",
+      "name": "Civic, Advocacy, Religious, and Trade Groups",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Landlords",
+        "Low income",
+        "Older adults",
+        "People with disabilities"
+      ],
+      "about": "Churches, service clubs, trade unions and builder groups sometimes run volunteer projects such as ramp builds, or raise money for home changes. Call 211 to find groups in Rhode Island."
+    },
+    {
+      "key": "other_state",
+      "category": "Social and Vocational",
+      "name": "Rhode Island Crime Victim Compensation Program",
+      "federal_name": "Crime Victims' Benefits (U.S. Department of Justice)",
+      "url": "http://treasury.ri.gov/programs/crime-victim-compensation-program/",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters"
+      ],
+      "about": "Rhode Island's crime victim compensation may help pay for home accessibility changes after an injury from a crime, when insurance or restitution does not cover it."
+    },
+    {
+      "key": "other_state",
+      "category": "Social and Vocational",
+      "name": "Social Security Title XX Social Services (Social Services Block Grant)",
+      "federal_name": "HHS Social Services Block Grant",
+      "url": "https://www.acf.hhs.gov/ocs/resource/ssbg-contacts",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Landlords",
+        "Low income",
+        "People with disabilities"
+      ],
+      "about": "State human services offices use these federal funds for emergencies. For people already on public assistance, they can sometimes cover a ramp, rails or grab bars."
+    },
+    {
+      "key": "other_state",
+      "category": "Social and Vocational",
+      "name": "Rhode Island Department of Labor & Training Workers' Compensation Division",
+      "federal_name": "Workers' Compensation (U.S. Department of Labor)",
+      "url": "http://www.dlt.ri.gov/wc/",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "People with disabilities"
+      ],
+      "about": "If a work injury makes daily life at home hard, Rhode Island workers' comp may pay for home changes or a move to a more suitable home."
+    },
+    {
+      "key": "tax_medical",
+      "category": "Tax Sources",
+      "name": "Internal Revenue Service: Personal Income Tax Deduction, Capital Gains Tax, Business Tax Deduction",
+      "federal_name": "IRS (U.S. Department of the Treasury)",
+      "url": "https://www.irs.gov/credits-deductions",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Landlords",
+        "People with disabilities"
+      ],
+      "about": ""
+    },
+    {
+      "key": "state_tax",
+      "category": "Tax Sources",
+      "name": "State/Local Taxes: Sales Tax Exemption, Property Tax Exemption and Tax Credits",
+      "federal_name": "",
+      "url": "https://www.irs.gov/help/contact-your-local-irs-office",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Landlords",
+        "Older adults",
+        "People with disabilities"
+      ],
+      "about": "Rhode Island's list includes tax credits along with sales and property tax items, and points to the RI Livable Home Modification Grant. Check with the Rhode Island Division of Taxation and your city or town assessor for current rules."
+    },
+    {
+      "key": "other_state",
+      "category": "Tax Sources",
+      "name": "RI Livable Home Modification Grant",
+      "federal_name": "",
+      "url": "http://www.gcd.ri.gov/RI%20Livable%20Home%20Modification%20Application.pdf",
+      "phone": "",
+      "who": [],
+      "about": "A Rhode Island state program that helps pay for accessibility changes so people with disabilities can stay in their homes. The listed link is the application form from the Governor's Commission on Disabilities."
+    }
+  ],
+  "notes": "State-specific: RI Livable Home Modification Grant (listed under tax sources; a state grant for accessibility changes). Source lists 'Tax Credits' under state/local taxes. Data issues: the PDF's VA section shows SAH as $125,526, unlike the $126,526 in other states (likely a typo). The USDA office list lists mostly Massachusetts and Connecticut area offices (Hadley, Holden, Wareham, Windsor, Norwich) plus Warwick, consistent with a shared regional state office."
+}

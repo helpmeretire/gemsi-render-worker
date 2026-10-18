@@ -1,0 +1,492 @@
+{
+  "state": "Maryland",
+  "slug": "maryland",
+  "abbr": "MD",
+  "source_pdf": "https://hmin.homemods.org/wp-content/uploads/2026/07/Maryland.homemodfunding.grid_.USC_.2026.pdf",
+  "usc_profile": "https://homemods.org/directory-state-profile/md/",
+  "checked": "2026-10-18",
+  "programs": [
+    {
+      "key": "aaa_title3",
+      "category": "Aging and Disability",
+      "name": "Maryland Department of Aging (State Unit on Aging)",
+      "federal_name": "Older Americans Act Title III-B and Title III-E (Area Agencies on Aging)",
+      "url": "https://aging.maryland.gov/pages/default.aspx",
+      "phone": "(800) 677-1116",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Landlords",
+        "Low income",
+        "Older adults",
+        "People with disabilities"
+      ],
+      "about": "Your local Area Agency on Aging may pay for a home safety check or small fixes like grab bars. Find yours through the Eldercare Locator at www.eldercare.gov or (800) 677-1116."
+    },
+    {
+      "key": "assistive_tech",
+      "category": "Aging and Disability",
+      "name": "Maryland Technology Assistance Program",
+      "federal_name": "Assistive Technology (AT Act)",
+      "url": "http://www.mdtap.org/",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "People with disabilities"
+      ],
+      "about": ""
+    },
+    {
+      "key": "cil",
+      "category": "Aging and Disability",
+      "name": "Maryland Centers for Independent Living",
+      "federal_name": "Centers for Independent Living",
+      "url": "https://aging.maryland.gov/accesspoint/Pages/Centers-for-Independent-Living.aspx",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Low income",
+        "Older adults",
+        "People with disabilities"
+      ],
+      "about": ""
+    },
+    {
+      "key": "va_grants",
+      "category": "Aging and Disability",
+      "name": "VA Specially Adapted Housing (SAH), Special Housing Adaptation (SHA), Temporary Residence Adaptation (TRA) and HISA grants",
+      "federal_name": "U.S. Department of Veterans Affairs housing grants",
+      "url": "http://benefits.va.gov/homeloans/adaptedhousing.asp",
+      "phone": "1-800-827-1000",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "People with disabilities",
+        "Veterans"
+      ],
+      "about": "HISA details are at http://www.prosthetics.va.gov/psas/HISA2.asp; SAH staff can be reached at (877) 827-3702."
+    },
+    {
+      "key": "voc_rehab",
+      "category": "Aging and Disability",
+      "name": "Maryland State Department of Education, Division of Rehabilitation Services",
+      "federal_name": "Vocational Rehabilitation (Rehabilitation Services Administration)",
+      "url": "https://dors.maryland.gov/Pages/default.aspx",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Landlords",
+        "Low income",
+        "People with disabilities"
+      ],
+      "about": ""
+    },
+    {
+      "key": "medicare",
+      "category": "Healthcare/Insurance",
+      "name": "Health insurance (incl. Medicare Advantage), long-term care insurance and life insurance",
+      "federal_name": "Medicare / private insurance",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters"
+      ],
+      "about": ""
+    },
+    {
+      "key": "medicaid_hcbs",
+      "category": "Healthcare/Insurance",
+      "name": "Maryland Medicaid",
+      "federal_name": "Medicaid Home and Community-Based Services (HCBS) Waivers",
+      "url": "https://mmcp.health.maryland.gov/longtermcare/Pages/Community-First-Choice.aspx",
+      "phone": "",
+      "who": [
+        "Low income",
+        "Older adults"
+      ],
+      "about": "Maryland Medicaid runs waiver programs that can pay for home changes like ramps or bathroom updates so a person can stay out of a nursing home. They are for people with low income who are older or who have long-term health conditions. Ask the state Medicaid office which waiver fits."
+    },
+    {
+      "key": "medicaid_hcbs",
+      "category": "Healthcare/Insurance",
+      "name": "Maryland Money Follows the Person Program",
+      "federal_name": "Money Follows the Person (Medicaid)",
+      "url": "https://mmcp.health.maryland.gov/longtermcare/Pages/Maryland-Money-Follows-the-Person.aspx",
+      "phone": "",
+      "who": [
+        "People with disabilities"
+      ],
+      "about": "This Medicaid program helps people move from a nursing home back to a home in the community. Help can include getting the new home ready, and services differ by state."
+    },
+    {
+      "key": "other_state",
+      "category": "Healthcare/Insurance",
+      "name": "Social Security Plan for Achieving Self-Support (PASS) and Impairment-Related Work Expenses (IRWE)",
+      "federal_name": "Social Security Administration",
+      "url": "https://www.ssa.gov/disabilityresearch/wi/pass.htm",
+      "phone": "(800) 772-1213",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Low income",
+        "People with disabilities"
+      ],
+      "about": "People on SSI or SSDI who work may be able to set aside money or count work-related costs, including some home changes, without losing as much of their benefit. TTY 1-800-325-0778."
+    },
+    {
+      "key": "hud_cdbg",
+      "category": "Housing and Community Development",
+      "name": "Community Development Block Grants (CDBG) - Maryland grantees",
+      "federal_name": "HUD Community Development Block Grant (CDBG)",
+      "url": "https://www.hudexchange.info/programs/cdbg-state/",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Landlords",
+        "Low income",
+        "Older adults",
+        "People with disabilities"
+      ],
+      "about": "Many cities and counties use CDBG money for home repair programs; ask your local housing or community development office."
+    },
+    {
+      "key": "hud_home",
+      "category": "Housing and Community Development",
+      "name": "HOME Program - Maryland grantees",
+      "federal_name": "HUD HOME Investment Partnerships Program",
+      "url": "https://www.hudexchange.info/grantees/",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Low income",
+        "Older adults"
+      ],
+      "about": "Search the HUD Exchange grantee list by state to see which local governments offer HOME-funded repair help."
+    },
+    {
+      "key": "nonprofit_repair",
+      "category": "Housing and Community Development",
+      "name": "Local Housing/Neighborhood Agencies (Neighborhood Housing Services)",
+      "federal_name": "NeighborWorks America network",
+      "url": "http://www.neighborworks.org/Our-Network/Network-Directory",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Landlords",
+        "Low income",
+        "Older adults",
+        "People with disabilities"
+      ],
+      "about": "Local nonprofit housing groups, such as NeighborWorks members, may give repair advice, low-cost loans or small grants. Search your city name plus \"Neighborhood Housing Services\" or use the NeighborWorks directory."
+    },
+    {
+      "key": "state_hfa",
+      "category": "Housing and Community Development",
+      "name": "Maryland Department of Housing and Community Development",
+      "federal_name": "State Housing Finance Agencies (HFAs)",
+      "url": "www.dhcd.maryland.gov",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Landlords",
+        "Low income",
+        "Older adults",
+        "People with disabilities"
+      ],
+      "about": "The state housing finance agency may offer low-interest or deferred loans for home repairs, and it funds housing for older adults and people with disabilities. Check its site for current repair or accessibility programs."
+    },
+    {
+      "key": "usda_504",
+      "category": "Housing and Community Development",
+      "name": "USDA Rural Development - Maryland offices",
+      "federal_name": "USDA Section 504 Home Repair loans and grants (and Section 533 Housing Preservation Grants)",
+      "url": "https://www.rd.usda.gov/contact-us/state-offices/md",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Low income",
+        "Older adults"
+      ],
+      "about": "Maryland has a USDA Rural Development area office in Hagerstown and satellite offices in La Plata and Upper Marlboro."
+    },
+    {
+      "key": "weatherization",
+      "category": "Housing and Community Development",
+      "name": "Maryland Weatherization Assistance Program",
+      "federal_name": "DOE Weatherization Assistance Program",
+      "url": "https://dhcd.maryland.gov/Residents/Pages/wap/default.aspx",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Low income",
+        "Older adults",
+        "People with disabilities"
+      ],
+      "about": "In Maryland this program is run by the Department of Housing and Community Development."
+    },
+    {
+      "key": "fha_203k",
+      "category": "Lending",
+      "name": "FHA Title I Home Improvement and 203(k) Rehabilitation loans",
+      "federal_name": "FHA loan insurance (HUD)",
+      "url": "https://www.hud.gov/program_offices/housing/sfh/203k",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Landlords"
+      ],
+      "about": "Find a lender that offers Title I or 203(k) loans at https://www.hud.gov/program_offices/housing/sfh/lender/lenderlist."
+    },
+    {
+      "key": "other_state",
+      "category": "Lending",
+      "name": "Home Equity Line of Credit",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners"
+      ],
+      "about": "A homeowner can borrow against the home's value as needed to pay for changes. The loan must be paid back with interest, and the home is the collateral. Ask a local bank or credit union."
+    },
+    {
+      "key": "other_state",
+      "category": "Lending",
+      "name": "Home Equity Loan",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners"
+      ],
+      "about": "This is a second loan on the home, paid back on top of the first mortgage. It can cover a larger project in one lump sum. Ask a local bank."
+    },
+    {
+      "key": "other_state",
+      "category": "Lending",
+      "name": "Lender Unsecured/Personal Loans",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Landlords"
+      ],
+      "about": "A personal loan can pay for smaller jobs and does not put a lien on the home, so renters can use it too. Approval depends on income, debt and credit."
+    },
+    {
+      "key": "other_state",
+      "category": "Lending",
+      "name": "Mortgage Refinancing",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners"
+      ],
+      "about": "Replacing the current mortgage with a new, larger one can free up cash for home changes if the home has enough equity. Ask a local lender."
+    },
+    {
+      "key": "other_state",
+      "category": "Lending",
+      "name": "Remodeler Donated Financing",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners"
+      ],
+      "about": "Some contractors donate part of a job, their labor or materials, often as community giving. Ask your remodeler if they do this."
+    },
+    {
+      "key": "other_state",
+      "category": "Lending",
+      "name": "Remodeler Referred Financing",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Landlords"
+      ],
+      "about": "Many contractors work with finance companies and can set up a loan for the project. It can be quick, but compare the rate with a bank."
+    },
+    {
+      "key": "reverse_mortgage",
+      "category": "Lending",
+      "name": "Reverse Equity Mortgage (HECM)",
+      "federal_name": "HUD Home Equity Conversion Mortgage (HECM)",
+      "url": "http://portal.hud.gov/hudportal/HUD?src=/program_offices/housing/sfh/hecm/hecmhome",
+      "phone": "",
+      "who": [
+        "Homeowners"
+      ],
+      "about": "Talk with a HUD-approved counselor first; see also http://www.reversemortgage.org and https://www.ncoa.org/economic-security/home-equity/reverse-mortgages/reverse-mortgage-counseling/."
+    },
+    {
+      "key": "other_state",
+      "category": "Lending",
+      "name": "Secured Loans Against Homeowner's Bank Accounts",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners"
+      ],
+      "about": "A bank may lend against a certificate of deposit (CD) you hold there, usually up to part of its value. This can work for smaller projects. Ask your bank."
+    },
+    {
+      "key": "other_state",
+      "category": "Lending",
+      "name": "Secured Loans Against Homeowner's Financial Investment Accounts (Margin Loan)",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners"
+      ],
+      "about": "Some investment firms let you borrow against the stocks or funds in your account. The money can sometimes go to home projects, but the loan carries market risk. Ask your bank or broker."
+    },
+    {
+      "key": "nonprofit_repair",
+      "category": "Social and Vocational",
+      "name": "Civic, Advocacy, Religious, and Trade Groups",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Landlords",
+        "Low income",
+        "Older adults",
+        "People with disabilities"
+      ],
+      "about": "Churches, service clubs, scout troops and builder groups sometimes build ramps or raise money for home changes. Call 211 to find groups near you."
+    },
+    {
+      "key": "other_state",
+      "category": "Social and Vocational",
+      "name": "Maryland Victims of Crime Fund",
+      "federal_name": "Crime Victims' Benefits (U.S. Department of Justice)",
+      "url": "http://goccp.maryland.gov/grants/programs/mvoc/",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters"
+      ],
+      "about": "If a crime left someone hurt or disabled, the state victim compensation program may help pay for home access changes. It pays only what insurance or the offender does not."
+    },
+    {
+      "key": "other_state",
+      "category": "Social and Vocational",
+      "name": "Social Security Title XX Social Services Block Grant (SSBG)",
+      "federal_name": "Social Services Block Grant (HHS)",
+      "url": "https://www.acf.hhs.gov/ocs/resource/ssbg-contacts",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Landlords",
+        "Low income",
+        "People with disabilities"
+      ],
+      "about": "States use this block grant for local social services, which can include basic changes like a ramp or grab bars. It mostly helps households already on public assistance; ask your local social services office."
+    },
+    {
+      "key": "other_state",
+      "category": "Social and Vocational",
+      "name": "Maryland Workers' Compensation Commission",
+      "federal_name": "Workers' Compensation",
+      "url": "http://www.wcc.state.md.us/",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "People with disabilities"
+      ],
+      "about": "If a job injury makes daily life at home hard, workers' comp may pay for home changes or help with a more suitable home. File through the employer's insurance claim."
+    },
+    {
+      "key": "tax_medical",
+      "category": "Tax Sources",
+      "name": "Internal Revenue Service - medical expense deduction, capital gains basis and business deduction",
+      "federal_name": "IRS (U.S. Department of the Treasury)",
+      "url": "https://www.irs.gov/credits-deductions",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Landlords",
+        "People with disabilities"
+      ],
+      "about": ""
+    },
+    {
+      "key": "state_tax",
+      "category": "Tax Sources",
+      "name": "State/Local Taxes - sales tax and property tax exemptions",
+      "federal_name": "",
+      "url": "",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Renters",
+        "Landlords",
+        "Older adults",
+        "People with disabilities"
+      ],
+      "about": "Some states or counties waive sales tax on ramp materials or lift equipment, or keep accessibility work from raising property taxes. Check with the Maryland revenue department and your county tax office."
+    },
+    {
+      "key": "state_tax",
+      "category": "Tax Sources",
+      "name": "Independent Living Tax Credit",
+      "federal_name": "",
+      "url": "https://taxes.marylandtaxes.gov/Individual_Taxes/General_Information/Tax_Credits_and_Deductions/Independent_Living_Tax_Credit.shtml",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "Landlords",
+        "People with disabilities"
+      ],
+      "about": "Maryland taxpayers who make a home more accessible can get a state tax credit of up to half the cost, capped at $5,000. The home can be your own, a relative's, or a rental. The state housing department runs it."
+    },
+    {
+      "key": "state_tax",
+      "category": "Tax Sources",
+      "name": "Howard County Senior Tax Credit and Aging in Place Tax Credit",
+      "federal_name": "",
+      "url": "https://www.howardcountymd.gov/Departments/Finance/Billing-and-Payments/Real-Property-Taxes/Tax-Credits/Explore-All-Tax-Credits",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "People with disabilities"
+      ],
+      "about": "Howard County offers property tax credits for older homeowners, including one tied to aging in place. Check the county tax credit page for current rules."
+    },
+    {
+      "key": "state_tax",
+      "category": "Tax Sources",
+      "name": "Montgomery County Design for Life Tax Incentive",
+      "federal_name": "",
+      "url": "https://www.montgomerycountymd.gov/design/about.html",
+      "phone": "",
+      "who": [
+        "Homeowners",
+        "People with disabilities"
+      ],
+      "about": "Montgomery County offers a property tax incentive for homes with accessible design features. See the county page for current rules."
+    }
+  ],
+  "notes": "Maryland has a state Independent Living Tax Credit (up to 50% of cost, max $5,000) plus county property tax incentives in Howard and Montgomery counties."
+}
