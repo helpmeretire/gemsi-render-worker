@@ -15,7 +15,7 @@ r = await get("/llms.txt"); const t = await r.text();
 ok(/text\/plain/.test(r.headers.get("content-type")) && t.includes(B + "/company") && t.includes("/sample") && t.includes("$0.02"), "/llms.txt");
 r = await get("/company");
 const pr = JSON.parse(Buffer.from(r.headers.get("PAYMENT-REQUIRED"), "base64").toString());
-ok(r.status === 402 && pr.resource.description.includes("/sample") && pr.extensions.bazaar.info.output.example.ticker === "AAPL", "402 has description with sample + worked example");
+ok(r.status === 402 && pr.resource.description.includes("/sample") && pr.resource.description.length <= 500 && pr.extensions.bazaar.info.output.example.ticker === "AAPL", "402 has description (<=500 chars, for CDP Bazaar) with sample + worked example");
 const oa = await (await get("/openapi.json")).json();
 ok(oa.paths["/company"].post.requestBody.content["application/json"].example.ticker && oa.paths["/company"].post.responses[200].content["application/json"].example, "openapi has request/response examples");
 console.log(fails ? `${fails} FAILED` : "ALL PASS"); process.exit(fails ? 1 : 0);

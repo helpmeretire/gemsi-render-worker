@@ -14,6 +14,9 @@ const CDP_URL = "https://api.cdp.coinbase.com/platform/v2/x402";
 const PAYAI_URL = "https://facilitator.payai.network";
 const SERVICE = "SEC Company Snapshot";
 const UA = "GEMSI SEC Company Snapshot/1.0 (+https://sec-company-snapshot.mick8511.workers.dev)";
+// Short description for the x402 402 challenge (resource.description); CDP Bazaar rejects >500 chars.
+const PAY_DESCRIPTION =
+  "US public company fundamentals from SEC EDGAR filings. Send a stock ticker (e.g. AAPL); get name, CIK, latest annual and quarterly revenue, net income and diluted EPS, balance sheet (cash, assets, liabilities, equity, long-term debt), shares outstanding and recent 10-K/10-Q/8-K links, every figure cited to SEC EDGAR (XBRL). Factual data only: no opinions or buy/sell ratings.";
 const DESCRIPTION =
   "Factual fundamentals for a US-listed company from its SEC filings. Send a stock ticker (e.g. AAPL); get company name and CIK, latest fiscal-year and latest-quarter revenue, net income and diluted EPS, balance sheet (cash, total assets, liabilities, equity, long-term debt), shares outstanding, and links to recent 10-K/10-Q/8-K filings, all cited to SEC EDGAR. No opinions or buy/sell ratings.";
 const DISCLAIMER = "Figures are as reported in SEC XBRL filings and may be restated later. Companies tag line items differently, so some fields can be missing. Factual data only; not investment advice.";
