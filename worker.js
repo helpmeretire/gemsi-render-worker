@@ -3,6 +3,27 @@
 const WALLET = "0x6f762720b8515b7091e6aa69e8361f7b9909233f";
 const USDC = "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913";
 const BASE = (n) => `https://${n}.mick8511.workers.dev`;
+// Our own test-buyer wallet (Bazaar indexing / keep-alive payments). Shown as "test", never as agent revenue.
+const TEST_WALLETS = ["0x40834c089e7e62d9e827e366d2be28ec4f769faf"];
+// Coinbase Bazaar listings for the wallet: fetched only by the cron (1 subrequest per run) and stored in the
+// existing cron-written KV value, so viewers read it for free. A Bazaar listing is created only by a payment
+// settled through the Coinbase (CDP) facilitator, so a listed route proves Coinbase processes its payments.
+const BAZAAR_URL = `https://api.cdp.coinbase.com/platform/v2/x402/discovery/merchant?payTo=${WALLET}&limit=100`;
+async function fetchBazaar() {
+  const r = await timed(BAZAAR_URL);
+  const j = r.ok && r.status === 200 ? tryJson(r.text) : null;
+  if (!j || !Array.isArray(j.resources)) return null;
+  const by = {};
+  for (const x of j.resources) {
+    const u = typeof x.resource === "string" ? x.resource : x.resource && x.resource.url;
+    const m = /^https:\/\/([a-z0-9-]+)\.mick8511\.workers\.dev(\/[^?#]*)/.exec(u || "");
+    if (!m) continue;
+    (by[m[1]] = by[m[1]] || []).push({ path: m[2], last: (x.quality && x.quality.lastCalledAt) || x.lastUpdated || null });
+  }
+  for (const k of Object.keys(by)) by[k].sort((a, b) => (a.path < b.path ? -1 : 1));
+  return { checked_at: new Date().toISOString(), total: (j.pagination && j.pagination.total) || j.resources.length, by };
+}
+const bazaarKey = (b) => (b ? JSON.stringify(Object.keys(b.by).sort().map((k) => [k, b.by[k].map((x) => x.path)])) : "");
 const SERVICES = [
   { id: "florida-sirs-check", name: "Florida Condo SIRS Check", what: "Has a Florida condo filed its structural reserve study?", route: "/sirs", price: "$0.01", probe: "/" },
   { id: "nojunk-token-check", name: "NoJunk Token Check", what: "Is this crypto token junk? Honeypot, taxes, owner powers, holders.", route: "/check", price: "$0.01", probe: "/health/data", demo: "/health/data", demoLabel: "Data sources" },
@@ -110,6 +131,7 @@ async function wallet(env, { scan = false } = {}) {
       out.ok = true; out.scanned_to_block = saved && saved.cursor ? saved.cursor : null;
       out.usdc_payments = items.slice(0, 10); out.payments_count = items.length;
       out.last_any_transfer = items[0] ? { when: items[0].when, token: "USDC" } : null;
+      out.bazaar = saved && saved.bazaar ? saved.bazaar : null;
       return out;
     }
     const latest = Number(BigInt(await rpc("eth_blockNumber", [])));
@@ -132,7 +154,11 @@ async function wallet(env, { scan = false } = {}) {
     items = items.filter((x, i, a) => a.findIndex((y) => y.tx === x.tx) === i).sort((a, b) => b.block - a.block).slice(0, 200);
     const prevLen = saved && Array.isArray(saved.items) ? saved.items.length : -1;
     const moved = !saved || !saved.cursor || cursor - saved.cursor >= CURSOR_WRITE_EVERY;
-    if (env.STATUS && (prevLen !== items.length || moved)) await env.STATUS.put("payments", JSON.stringify({ cursor, items }));
+    const fresh = await fetchBazaar().catch(() => null);
+    const bazaar = fresh || (saved && saved.bazaar) || null;
+    const bzChanged = !!fresh && bazaarKey(fresh) !== bazaarKey(saved && saved.bazaar);
+    if (env.STATUS && (prevLen !== items.length || moved || bzChanged)) await env.STATUS.put("payments", JSON.stringify({ cursor, items, bazaar }));
+    out.bazaar = bazaar;
     out.ok = true; out.scanned_to_block = cursor; out.usdc_payments = items.slice(0, 10); out.payments_count = items.length;
     out.last_any_transfer = items[0] ? { when: items[0].when, token: "USDC" } : null;
   } catch (e) { out.note = (out.note ? out.note + "; " : "") + "scan: " + e.message; }
@@ -146,7 +172,15 @@ async function status(env) {
     wallet(env, { scan: false }),
     env.STATUS ? env.STATUS.get("buildlog").then((v) => tryJson(v || "[]") || []) : Promise.resolve([]),
   ]);
-  return { checked_at: new Date().toISOString(), services, site: { ...SITE, up: site.ok && site.status === 200, ms: site.ms }, wallet: w, buildlog: log.slice(-60).reverse() };
+  const bz = w && w.bazaar;
+  for (const s of services) {
+    const routes = bz && bz.by ? bz.by[s.id] || [] : null;
+    s.bazaar = routes === null ? { known: false } : { known: true, listed: routes.length > 0, routes: routes.length, paths: routes.map((x) => x.path), last_paid: routes.reduce((m, x) => (x.last && (!m || x.last > m) ? x.last : m), null) };
+    s.facilitator = routes && routes.length ? "Coinbase" : routes === null ? "unknown" : "not confirmed";
+  }
+  for (const p of (w && w.usdc_payments) || []) p.test = TEST_WALLETS.includes(String(p.from).toLowerCase());
+  return { checked_at: new Date().toISOString(), services, site: { ...SITE, up: site.ok && site.status === 200, ms: site.ms }, wallet: w,
+    bazaar: bz ? { checked_at: bz.checked_at, total_listed: bz.total, services_listed: services.filter((s) => s.bazaar.listed).length } : null, buildlog: log.slice(-60).reverse() };
 }
 
 // Status is computed at most once per STATUS_TTL_S per isolate (and shared via caches.default on the
@@ -221,7 +255,7 @@ h2{font-stretch:74%;font-weight:850;font-size:26px;margin:26px 0 10px}
 .muted{color:var(--ink2);font-size:13px}
 </style></head><body><div class="wrap">
 <header><div class="brand"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#13213C"/><path d="M9 16.5l4.5 4.5L23 11" stroke="#FFD23F" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>NoJunk Build Floor</div><div class="live"><span class="dot"></span><span id="upd">checking…</span></div></header>
-<div class="tiles"><div class="tile"><b id="n-up">–</b><span>services up</span></div><div class="tile"><b id="n-pay">–</b><span>paywalls live, paying your wallet</span></div><div class="tile"><b id="n-usdc">–</b><span>USDC received from agents</span></div><div class="tile"><b id="n-bal">–</b><span>USDC in wallet</span></div><div class="tile"><b id="n-ms">–</b><span>avg response (ms)</span></div></div>
+<div class="tiles"><div class="tile"><b id="n-up">–</b><span>services up</span></div><div class="tile"><b id="n-pay">–</b><span>paywalls live, paying your wallet</span></div><div class="tile"><b id="n-usdc">–</b><span>USDC received from agents</span></div><div class="tile"><b id="n-bal">–</b><span>USDC in wallet</span></div><div class="tile"><b id="n-ms">–</b><span>avg response (ms)</span></div><div class="tile"><b id="n-bz">–</b><span>listed in Coinbase Bazaar</span></div></div>
 <div class="grid">
 <section><h2>Build floor <span class="muted">(what I'm doing, newest first)</span></h2><div class="log" id="log"></div>
 <h2>Money</h2><div class="tile pay"><div class="big" id="usdc">$0.000</div><div id="pays" class="muted">No agent payments yet.</div></div></section>
@@ -239,11 +273,12 @@ async function tick(){ lastTick=Date.now();
   var up=j.services.filter(function(s){return s.up}).length, pay=j.services.filter(function(s){return s.paywall_ok}).length;
   var ms=Math.round(j.services.reduce(function(a,s){return a+s.ms},0)/j.services.length);
   document.getElementById('n-up').textContent=up+'/'+j.services.length; document.getElementById('n-pay').textContent=pay+'/'+j.services.length;
-  document.getElementById('n-usdc').textContent='$'+j.wallet.usdc_payments.reduce(function(a,p){return a+p.usd},0).toFixed(3); document.getElementById('n-bal').textContent='$'+j.wallet.usdc_balance.toFixed(2); document.getElementById('n-ms').textContent=ms;
-  document.getElementById('usdc').textContent='$'+j.wallet.usdc_payments.reduce(function(a,p){return a+p.usd},0).toFixed(3);
-  document.getElementById('pays').innerHTML=j.wallet.usdc_payments.length?j.wallet.usdc_payments.map(function(p){return '<div>'+esc(fmtT(p.when))+' · $'+p.usd.toFixed(4)+' from '+esc(p.from.slice(0,10))+'…</div>'}).join(''):'No agent payments yet. Watching the Base blockchain for USDC sent to your wallet (scanned to block '+(j.wallet.scanned_to_block||'?')+').'+(j.wallet.note?' Note: '+esc(j.wallet.note):'');
+  document.getElementById('n-usdc').textContent='$'+j.wallet.usdc_payments.reduce(function(a,p){return a+(p.test?0:p.usd)},0).toFixed(3); document.getElementById('n-bal').textContent='$'+j.wallet.usdc_balance.toFixed(2); document.getElementById('n-ms').textContent=ms;
+  document.getElementById('n-bz').textContent=j.bazaar?j.bazaar.services_listed+'/'+j.services.length:'–';
+  document.getElementById('usdc').textContent='$'+j.wallet.usdc_payments.reduce(function(a,p){return a+(p.test?0:p.usd)},0).toFixed(3);
+  document.getElementById('pays').innerHTML=j.wallet.usdc_payments.length?j.wallet.usdc_payments.map(function(p){return '<div>'+esc(fmtT(p.when))+' · $'+p.usd.toFixed(4)+' from '+esc(p.from.slice(0,10))+'…'+(p.test?' (our test wallet, not revenue)':'')+'</div>'}).join(''):'No agent payments yet. Watching the Base blockchain for USDC sent to your wallet (scanned to block '+(j.wallet.scanned_to_block||'?')+').'+(j.wallet.note?' Note: '+esc(j.wallet.note):'');
   document.getElementById('log').innerHTML=j.buildlog.map(function(e){return '<div><span class="t">'+esc(fmtT(e.t))+'</span><span class="k-'+esc(e.kind||'build')+'">'+esc(e.text)+'</span></div>'}).join('')||'<div>No entries yet.</div>';
-  document.getElementById('svcs').innerHTML=j.services.map(function(s){return '<div class="svc"><span class="st '+(s.up?'up':'down')+'"></span><span class="nm"><a href="'+esc(s.url)+'" style="color:inherit;text-decoration:none">'+esc(s.name)+'</a></span><span class="pr">'+esc(s.price)+'</span><span class="what">'+esc(s.what)+'</span><span class="meta"><span class="'+(s.up?'ok':'bad')+'">'+(s.up?'UP':'DOWN')+' · '+s.ms+' ms</span><span class="'+(s.paywall_ok?'ok':'bad')+'">paywall '+esc(s.paywall)+'</span></span>'+(s.demo?'<span class="demo '+(s.demo.ok?'':'bad')+'">'+esc(s.demo.label)+': '+esc(s.demo.text||(s.demo.ok?'ok':'unavailable'))+'</span>':'')+'</div>'}).join('');
+  document.getElementById('svcs').innerHTML=j.services.map(function(s){return '<div class="svc"><span class="st '+(s.up?'up':'down')+'"></span><span class="nm"><a href="'+esc(s.url)+'" style="color:inherit;text-decoration:none">'+esc(s.name)+'</a></span><span class="pr">'+esc(s.price)+'</span><span class="what">'+esc(s.what)+'</span><span class="meta"><span class="'+(s.up?'ok':'bad')+'">'+(s.up?'UP':'DOWN')+' · '+s.ms+' ms</span><span class="'+(s.paywall_ok?'ok':'bad')+'">paywall '+esc(s.paywall)+'</span><span class="'+(s.facilitator==='Coinbase'?'ok':'')+'">payments: '+esc(s.facilitator==='Coinbase'?'Coinbase':'Coinbase '+(s.facilitator||'unknown'))+'</span><span class="'+(s.bazaar&&s.bazaar.listed?'ok':'bad')+'">Bazaar: '+(!s.bazaar||!s.bazaar.known?'unknown':s.bazaar.listed?'listed ('+s.bazaar.routes+' route'+(s.bazaar.routes>1?'s':'')+')':'not listed')+'</span></span>'+(s.demo?'<span class="demo '+(s.demo.ok?'':'bad')+'">'+esc(s.demo.label)+': '+esc(s.demo.text||(s.demo.ok?'ok':'unavailable'))+'</span>':'')+'</div>'}).join('');
   document.getElementById('site').textContent='Free site '+j.site.name+': '+(j.site.up?'up':'down')+' ('+j.site.ms+' ms). Last check '+new Date(j.checked_at).toLocaleTimeString()+'.';
   document.getElementById('upd').textContent='live · updated '+new Date().toLocaleTimeString();
  }catch(e){document.getElementById('upd').textContent='check failed, retrying';}
