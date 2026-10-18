@@ -334,7 +334,7 @@ function paymentRequired(env, url, error) {
   return {
     x402Version: 2,
     error,
-    resource: { url: `${url.origin}/check`, description: `${DESCRIPTION} Free sample (no payment): ${url.origin}/sample. Docs: ${url.origin}/llms.txt.`, mimeType: "application/json" },
+    resource: { url: `${url.origin}/check`, description: `${PAY_DESCRIPTION} Free sample: ${url.origin}/sample`, mimeType: "application/json" },
     accepts: [requirements(env)],
     extensions: {
       bazaar: {

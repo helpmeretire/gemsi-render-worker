@@ -22,13 +22,13 @@ ok(j.version === 1 && j.resources[0] === B + "/check", "/.well-known/x402 lists 
 r = await get("/llms.txt"); let t = await r.text();
 ok(/text\/plain/.test(r.headers.get("content-type")) && t.includes(B + "/check") && t.includes("/sample") && t.includes("$0.01"), "service /llms.txt");
 r = await get("/llms.txt", "https://nojunkcrypto.com"); t = await r.text();
-ok(t.includes("nojunk-address-check") && t.includes("sec-company-snapshot") && !t.includes("nojunk-llm"), "site /llms.txt is the catalog (no generic services)");
+ok(t.includes("nojunk-address-check") && t.includes("sec-company-snapshot") && t.includes("nojunk-llm") && (t.match(/^- \[/gm) || []).length === 20 && t.indexOf("## Main services") < t.indexOf("nojunk-llm"), "site /llms.txt is the full 20-service catalog, hero services first");
 r = await get("/services", "https://nojunkcrypto.com"); t = await r.text();
-ok(r.status === 200 && t.includes("SEC Company Snapshot") && t.includes("free sample"), "/services index page");
+ok(r.status === 200 && t.includes("SEC Company Snapshot") && t.includes("free sample") && (t.match(/<li><strong>/g) || []).length === 20 && t.includes("nojunk-chain.mick8511.workers.dev/balance"), "/services index page lists all 20 services with endpoints");
 r = await get("/sitemap.xml", "https://nojunkcrypto.com"); ok((await r.text()).includes("/services"), "sitemap lists /services");
 r = await get("/check");
 const pr = JSON.parse(Buffer.from(r.headers.get("PAYMENT-REQUIRED"), "base64").toString());
-ok(r.status === 402 && pr.resource.description.includes("/sample") && pr.extensions.bazaar.info.output.example.grade, "402 has description with sample + worked example");
+ok(r.status === 402 && pr.resource.description.includes("/sample") && pr.resource.description.length <= 500 && pr.extensions.bazaar.info.output.example.grade, "402 has description (<=500 chars, for CDP Bazaar) with sample + worked example");
 const oa = await (await get("/openapi.json")).json();
 ok(oa.paths["/check"].post.requestBody.content["application/json"].example.tokenAddress && oa.paths["/check"].post.responses[200].content["application/json"].example, "openapi has request/response examples");
 console.log(fails ? `${fails} FAILED` : "ALL PASS"); process.exit(fails ? 1 : 0);

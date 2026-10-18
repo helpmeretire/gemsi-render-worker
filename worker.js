@@ -13,6 +13,9 @@ const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const CDP_URL = "https://api.cdp.coinbase.com/platform/v2/x402";
 const PAYAI_URL = "https://facilitator.payai.network";
 const SERVICE = "NoJunk Token Check";
+// Short description for the x402 402 challenge (resource.description); CDP Bazaar rejects >500 chars.
+const PAY_DESCRIPTION =
+  "Crypto token rug-pull and junk-risk check for Base, Ethereum, BNB Chain, Arbitrum, Polygon, Optimism, Avalanche and Solana. Send a token contract address or Solana mint; get a grade (JUNK, RISKY, CAUTION, CLEAN), a 0-100 risk score and red flags: honeypot, sell tax, mint/freeze authority, owner powers, holder concentration, liquidity, pool age. Not financial advice.";
 const DESCRIPTION =
   "Crypto token junk/rug-risk check for Base, Ethereum, BNB Chain, Arbitrum, Polygon, Optimism, Avalanche and Solana tokens. Send a token contract address (0x... with chain, defaults to Base; or a Solana mint); get a grade (JUNK, RISKY, CAUTION, CLEAN), a 0-100 risk score, specific red and green flags (honeypot, sell tax, mint/freeze authority, owner powers, holder concentration, liquidity, pool age) and market stats. Not financial advice.";
 const GP_EVM = "https://api.gopluslabs.io/api/v1/token_security/";
@@ -456,7 +459,7 @@ function paymentRequired(env, url, error) {
   return {
     x402Version: 2,
     error,
-    resource: { url: `${url.origin}/check`, description: `${DESCRIPTION} Free sample (no payment): ${url.origin}/sample. Docs: ${url.origin}/llms.txt.`, mimeType: "application/json" },
+    resource: { url: `${url.origin}/check`, description: `${PAY_DESCRIPTION} Free sample: ${url.origin}/sample`, mimeType: "application/json" },
     accepts: [requirements(env)],
     extensions: {
       bazaar: {
@@ -1416,42 +1419,58 @@ function siteRoute(request, url, env) {
 // ---------- NoJunk catalog (shared by /services and /llms.txt on nojunkcrypto.com) ----------
 const NJ = (n) => `https://${n}.mick8511.workers.dev`;
 const NOJUNK_CATALOG = [
-  { name: "NoJunk Token Check", base: NJ("nojunk-token-check"), path: "/check", price: "$0.01", hero: true, what: "Junk/rug-risk grade (JUNK, RISKY, CAUTION, CLEAN), 0-100 risk score, honeypot, taxes, owner powers, holder concentration, liquidity. Base, Ethereum, BNB, Arbitrum, Polygon, Optimism, Avalanche, Solana.", example: 'POST /check {"tokenAddress":"0x532f27101965dd16442E59d40670FaF5eBB142E4","chain":"base"}' },
-  { name: "NoJunk Address Check", base: NJ("nojunk-address-check"), path: "/check", price: "$0.01", hero: true, what: "Before sending funds or approving a spender: is this wallet or contract reported for phishing, theft, scams, sanctions or mixers? Contract risks too.", example: 'POST /check {"address":"0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD","chain":"ethereum"}' },
-  { name: "SEC Company Snapshot", base: NJ("sec-company-snapshot"), path: "/company", price: "$0.02", hero: true, what: "Revenue, net income, EPS, balance sheet and recent filings for any US-listed company, straight from SEC EDGAR with citations.", example: 'POST /company {"ticker":"AAPL"}' },
-  { name: "NoJunk Crypto Price", base: NJ("nojunk-crypto-price"), path: "/price", price: "$0.001", what: "USD price and market data for major coins or any on-chain token." },
-  { name: "NoJunk Chain", base: NJ("nojunk-chain"), path: "/balance", price: "$0.002", what: "Wallet balances, gas, transactions and blocks on 9 chains." },
-  { name: "NoJunk Stocks", base: NJ("nojunk-stocks"), path: "/quote", price: "$0.001", what: "Stock, ETF, index, FX and commodity quotes, history and stats." },
-  { name: "NoJunk Domain Intel", base: NJ("nojunk-domain-intel"), path: "/domain", price: "$0.003", what: "Domain age, registrar, DNS, email security and a risk score." },
-  { name: "NoJunk Email Check", base: NJ("nojunk-email-check"), path: "/verify", price: "$0.001", what: "Is this email real? Syntax, mail server, disposable, typos." },
-  { name: "Florida Condo SIRS Check", base: NJ("florida-sirs-check"), path: "/sirs", price: "$0.01", what: "Has a Florida condo association filed its structural integrity reserve study?" },
+  { name: "NoJunk Token Check", base: NJ("nojunk-token-check"), path: "/check", price: "$0.01", hero: true, routes: [{ path: "/check", methods: "GET, POST", price: "$0.01" }], free: ["/sample"], what: "Junk/rug-risk grade (JUNK, RISKY, CAUTION, CLEAN), 0-100 risk score, honeypot, taxes, owner powers, holder concentration, liquidity. Base, Ethereum, BNB, Arbitrum, Polygon, Optimism, Avalanche, Solana.", example: 'POST /check {"tokenAddress":"0x532f27101965dd16442E59d40670FaF5eBB142E4","chain":"base"}' },
+  { name: "NoJunk Address Check", base: NJ("nojunk-address-check"), path: "/check", price: "$0.01", hero: true, routes: [{ path: "/check", methods: "GET, POST", price: "$0.01" }], free: ["/sample"], what: "Before sending funds or approving a spender: is this wallet or contract reported for phishing, theft, scams, sanctions or mixers? Contract risks too.", example: 'POST /check {"address":"0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD","chain":"ethereum"}' },
+  { name: "SEC Company Snapshot", base: NJ("sec-company-snapshot"), path: "/company", price: "$0.02", hero: true, routes: [{ path: "/company", methods: "GET, POST", price: "$0.02" }], free: ["/sample"], what: "Revenue, net income, EPS, balance sheet and recent filings for any US-listed company, straight from SEC EDGAR with citations.", example: 'POST /company {"ticker":"AAPL"}' },
+  { name: "NoJunk Crypto Price", base: NJ("nojunk-crypto-price"), path: "/price", price: "$0.001", routes: [{ path: "/price", methods: "GET, POST", price: "$0.001" }], free: [], what: "USD price, market cap, 24h volume and change for up to 10 coins by symbol, or any on-chain token by contract address." },
+  { name: "NoJunk Chain", base: NJ("nojunk-chain"), path: "/balance", price: "$0.001", routes: [{ path: "/balance", methods: "GET, POST", price: "$0.002" }, { path: "/gas", methods: "GET, POST", price: "$0.001" }, { path: "/tx", methods: "GET, POST", price: "$0.002" }, { path: "/block", methods: "GET, POST", price: "$0.001" }], free: [], what: "Wallet balances, gas prices, transaction and block lookups on 7 EVM chains, Solana and Bitcoin." },
+  { name: "NoJunk Stocks", base: NJ("nojunk-stocks"), path: "/quote", price: "$0.001", routes: [{ path: "/quote", methods: "GET, POST", price: "$0.001" }, { path: "/quotes", methods: "GET, POST", price: "$0.003" }, { path: "/history", methods: "GET, POST", price: "$0.002" }, { path: "/stats", methods: "GET, POST", price: "$0.002" }], free: [], what: "Stock, ETF, index, FX and commodity quotes, OHLCV history and computed stats (returns, volatility, drawdown, RSI, moving averages)." },
+  { name: "NoJunk Domain Intel", base: NJ("nojunk-domain-intel"), path: "/domain", price: "$0.003", routes: [{ path: "/domain", methods: "GET, POST", price: "$0.003" }], free: [], what: "Domain registration (RDAP), DNS records, HTTPS probe, email security (SPF/DMARC) and a 0-100 risk score." },
+  { name: "NoJunk Email Check", base: NJ("nojunk-email-check"), path: "/verify", price: "$0.001", routes: [{ path: "/verify", methods: "GET, POST", price: "$0.001" }], free: [], what: "Is this email real? Syntax, MX records, disposable, role and free-mail flags, typo suggestions and a risk score; up to 20 per call." },
+  { name: "Florida Condo SIRS Check", base: NJ("florida-sirs-check"), path: "/sirs", price: "$0.01", routes: [{ path: "/sirs", methods: "GET, POST", price: "$0.01" }], free: [], what: "Has a Florida condo association reported its Structural Integrity Reserve Study (SIRS) to the state (DBPR)? Search by building or association name." },
+  { name: "FX Reference Rates", base: NJ("fx-reference-rates"), path: "/rate", price: "$0.003", routes: [{ path: "/rate", methods: "GET, POST", price: "$0.003" }], free: [], what: "Currency conversion from official ECB euro reference rates, today or any date in the last 90 days; up to 30 target currencies." },
+  { name: "NoJunk Web Read", base: NJ("nojunk-web-read"), path: "/read", price: "$0.002", routes: [{ path: "/read", methods: "GET, POST", price: "$0.002" }], free: [], what: "Any public web page as clean JSON: title, metadata, readable text, Markdown and links." },
+  { name: "NoJunk Web Search", base: NJ("nojunk-web-search"), path: "/search", price: "$0.002", routes: [{ path: "/search", methods: "GET, POST", price: "$0.002" }], free: [], what: "Up to 10 live web results for any query as JSON (rank, title, url, domain, snippet)." },
+  { name: "NoJunk Geo", base: NJ("nojunk-geo"), path: "/geocode", price: "$0.002", routes: [{ path: "/geocode", methods: "GET, POST", price: "$0.002" }, { path: "/reverse", methods: "GET, POST", price: "$0.002" }, { path: "/weather", methods: "GET, POST", price: "$0.002" }], free: [], what: "Geocoding, reverse geocoding, and current weather plus 7-day forecast for any place." },
+  { name: "NoJunk AI Text", base: NJ("nojunk-ai-text"), path: "/summarize", price: "$0.002", routes: [{ path: "/summarize", methods: "POST", price: "$0.005" }, { path: "/extract", methods: "POST", price: "$0.005" }, { path: "/classify", methods: "POST", price: "$0.002" }], free: [], what: "Summarize text, extract named fields into strict JSON, or classify text into your own labels (70B model)." },
+  { name: "NoJunk LLM", base: NJ("nojunk-llm"), path: "/v1/chat/completions", price: "$0.001", routes: [{ path: "/v1/chat/completions", methods: "POST", price: "$0.005" }, { path: "/v1/embeddings", methods: "POST", price: "$0.001" }], free: ["/v1/models"], what: "OpenAI-compatible chat completions (Llama 3.3 70B, Qwen 2.5 Coder 32B) and BGE-M3 embeddings." },
+  { name: "NoJunk Moderate", base: NJ("nojunk-moderate"), path: "/sentiment", price: "$0.001", routes: [{ path: "/sentiment", methods: "GET, POST", price: "$0.001" }, { path: "/safety", methods: "GET, POST", price: "$0.002" }, { path: "/rerank", methods: "GET, POST", price: "$0.002" }, { path: "/pii", methods: "GET, POST", price: "$0.003" }, { path: "/language", methods: "GET, POST", price: "$0.001" }], free: [], what: "Sentiment, safety classification (Llama Guard 3), semantic reranking, PII detection/redaction and language ID." },
+  { name: "NoJunk Speech", base: NJ("nojunk-speech"), path: "/transcribe", price: "$0.002", routes: [{ path: "/transcribe", methods: "POST", price: "$0.02" }, { path: "/speak", methods: "POST", price: "$0.01" }, { path: "/translate", methods: "POST", price: "$0.002" }], free: [], what: "Transcribe audio with timestamps, text to MP3 speech, and translation between 100 languages." },
+  { name: "NoJunk Image", base: NJ("nojunk-image"), path: "/generate", price: "$0.005", routes: [{ path: "/generate", methods: "POST", price: "$0.01" }, { path: "/describe", methods: "POST", price: "$0.005" }], free: [], what: "Generate an image from a text prompt (FLUX.1 schnell) or describe/answer questions about an image (LLaVA)." },
+  { name: "NoJunk Document", base: NJ("nojunk-document"), path: "/convert", price: "$0.01", routes: [{ path: "/convert", methods: "POST", price: "$0.01" }], free: [], what: "PDF, Word, Excel, OpenDocument, CSV, HTML or image file (URL or base64) converted to clean Markdown." },
+  { name: "NoJunk QR", base: NJ("nojunk-qr"), path: "/qr", price: "$0.001", routes: [{ path: "/qr", methods: "GET, POST", price: "$0.001" }, { path: "/qr/batch", methods: "GET, POST", price: "$0.005" }], free: ["/sample.svg"], what: "QR codes as SVG, PNG or JSON matrix from any text, URL, Wi-Fi or payment URI; batch up to 25." },
 ];
+const priceLabel = (s) => (new Set(s.routes.map((r) => r.price)).size > 1 ? "From " + s.price : s.price);
+const routeLine = (s) => s.routes.map((r) => `${r.methods} ${s.base}${r.path} (${r.price})`).join("; ");
+const freeLinks = (s) => s.free.map((f) => s.base + f);
 function catalogLlms() {
   const hero = NOJUNK_CATALOG.filter((s) => s.hero), more = NOJUNK_CATALOG.filter((s) => !s.hero);
   return `# NoJunk APIs
 
-> Pay-per-call APIs for AI agents. No signup, no API key: call the endpoint, get an HTTP 402 with x402 payment requirements, pay in USDC on Base, retry with the PAYMENT-SIGNATURE header. Invalid input and upstream failures are rejected before payment is settled.
+> ${NOJUNK_CATALOG.length} pay-per-call APIs for AI agents. No signup, no API key: call the endpoint, get an HTTP 402 with x402 payment requirements, pay in USDC on Base, retry with the PAYMENT-SIGNATURE header. Invalid input and upstream failures are rejected before payment is settled.
 
 ## Main services
-${hero.map((s) => `- [${s.name}](${s.base}${s.path}): ${s.what} ${s.price} per call. Example: \`${s.example}\`. Free sample: ${s.base}/sample. Docs: ${s.base}/llms.txt. OpenAPI: ${s.base}/openapi.json`).join("\n")}
+${hero.map((s) => `- [${s.name}](${s.base}${s.path}): ${s.what} ${s.price} per call. Endpoints: ${routeLine(s)}. Example: \`${s.example}\`. Free sample: ${s.base}/sample. Docs: ${s.base}/llms.txt. OpenAPI: ${s.base}/openapi.json`).join("\n")}
 
 ## More services
-${more.map((s) => `- [${s.name}](${s.base}${s.path}): ${s.what} ${s.price} per call. OpenAPI: ${s.base}/openapi.json`).join("\n")}
+${more.map((s) => `- [${s.name}](${s.base}${s.path}): ${s.what} ${priceLabel(s)} per call. Endpoints: ${routeLine(s)}.${s.free.length ? ` Free: ${freeLinks(s).join(", ")}.` : ""} OpenAPI: ${s.base}/openapi.json`).join("\n")}
 
 ## Humans
 - Free token checker: https://nojunkcrypto.com/
 - Free wallet checker: https://nojunkcrypto.com/wallet
+- Service status: https://status.nojunkcrypto.com/
 `;
 }
 function servicesPage() {
-  const card = (s) => `<li><strong><a href="${esc(s.base)}/">${esc(s.name)}</a></strong> · <code>${esc(s.price)}</code> per call<br>${esc(s.what)}<br><small>Endpoint <code>${esc(s.base + s.path)}</code>${s.hero ? ` · <a href="${esc(s.base)}/sample">free sample</a> · <a href="${esc(s.base)}/llms.txt">llms.txt</a>` : ""} · <a href="${esc(s.base)}/openapi.json">OpenAPI</a></small></li>`;
+  const routes = (s) => s.routes.map((r) => `<code>${esc(r.methods)} ${esc(s.base + r.path)}</code> ${esc(r.price)}`).join("<br>");
+  const card = (s) => `<li><strong><a href="${esc(s.base)}/">${esc(s.name)}</a></strong> · <code>${esc(priceLabel(s))}</code> per call<br>${esc(s.what)}<br><small>${routes(s)}<br>${s.hero ? `<a href="${esc(s.base)}/sample">free sample</a> · <a href="${esc(s.base)}/llms.txt">llms.txt</a> · ` : ""}${s.free.filter((f) => !(s.hero && f === "/sample")).map((f) => `<a href="${esc(s.base + f)}">free ${esc(f)}</a> · `).join("")}<a href="${esc(s.base)}/openapi.json">OpenAPI</a></small></li>`;
   return shell({
     title: "APIs for AI agents",
-    description: "NoJunk pay-per-call APIs for AI agents: token risk, wallet safety, SEC fundamentals and more. x402, USDC on Base, no signup.",
+    description: `NoJunk pay-per-call APIs for AI agents: ${NOJUNK_CATALOG.length} services including token risk, wallet safety and SEC fundamentals. x402, USDC on Base, no signup.`,
     path: "/services",
     body: `<section class="hero plain"><div class="wrap"><p class="kick">For developers and AI agents</p><h1>NoJunk APIs</h1></div></section>
 <main class="wrap"><article class="prose">
-<p>Every service is pay-per-call over <a href="https://www.x402.org/">x402</a>: call the endpoint, get an HTTP 402 with the price, pay in USDC on Base, retry. No signup, no API key. Bad input and upstream failures are rejected before payment is settled. Machine-readable list: <a href="/llms.txt">/llms.txt</a>.</p>
+<p>All ${NOJUNK_CATALOG.length} services are pay-per-call over <a href="https://www.x402.org/">x402</a>: call the endpoint, get an HTTP 402 with the price, pay in USDC on Base, retry. No signup, no API key. Bad input and upstream failures are rejected before payment is settled. Machine-readable list: <a href="/llms.txt">/llms.txt</a>. Live status: <a href="https://status.nojunkcrypto.com/">status.nojunkcrypto.com</a>.</p>
 <h2>Main services</h2><ul>${NOJUNK_CATALOG.filter((s) => s.hero).map(card).join("")}</ul>
 <h2>More services</h2><ul>${NOJUNK_CATALOG.filter((s) => !s.hero).map(card).join("")}</ul>
 </article></main>`,

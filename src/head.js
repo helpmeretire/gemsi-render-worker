@@ -13,6 +13,9 @@ const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const CDP_URL = "https://api.cdp.coinbase.com/platform/v2/x402";
 const PAYAI_URL = "https://facilitator.payai.network";
 const SERVICE = "NoJunk Token Check";
+// Short description for the x402 402 challenge (resource.description); CDP Bazaar rejects >500 chars.
+const PAY_DESCRIPTION =
+  "Crypto token rug-pull and junk-risk check for Base, Ethereum, BNB Chain, Arbitrum, Polygon, Optimism, Avalanche and Solana. Send a token contract address or Solana mint; get a grade (JUNK, RISKY, CAUTION, CLEAN), a 0-100 risk score and red flags: honeypot, sell tax, mint/freeze authority, owner powers, holder concentration, liquidity, pool age. Not financial advice.";
 const DESCRIPTION =
   "Crypto token junk/rug-risk check for Base, Ethereum, BNB Chain, Arbitrum, Polygon, Optimism, Avalanche and Solana tokens. Send a token contract address (0x... with chain, defaults to Base; or a Solana mint); get a grade (JUNK, RISKY, CAUTION, CLEAN), a 0-100 risk score, specific red and green flags (honeypot, sell tax, mint/freeze authority, owner powers, holder concentration, liquidity, pool age) and market stats. Not financial advice.";
 const GP_EVM = "https://api.gopluslabs.io/api/v1/token_security/";
