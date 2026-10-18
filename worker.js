@@ -250,7 +250,8 @@ export default {
     const st = (u.searchParams.get("state") || "").trim();
     if (!st) return new Response("state required", { status: 400, headers: CORS });
     const slug = st === "District of Columbia" ? "DOC" : st.replace(/ /g, "-");
-    const url = "https://hmin.homemods.org/wp-content/uploads/2026/07/" + slug + ".homemodfunding.grid_.USC_.2026.pdf";
+    const file = (u.searchParams.get("file") || "").replace(/[^A-Za-z0-9._-]/g, "");
+    const url = "https://hmin.homemods.org/wp-content/uploads/2026/07/" + (file ? file + ".pdf" : slug + ".homemodfunding.grid_.USC_.2026.pdf");
     const r = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0 (compatible; AgingInPlaceGrants research; +https://aginginplacegrants.com)" } });
     if (!r.ok) return new Response("upstream " + r.status + " " + url, { status: 502, headers: CORS });
     const buf = new Uint8Array(await r.arrayBuffer());
