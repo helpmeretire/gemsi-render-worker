@@ -469,19 +469,20 @@ function requirements(env) {
   };
 }
 
-const EXAMPLE_INPUT = { url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" };
+const EXAMPLE_URL = "https://pdfobject.com/pdf/sample.pdf"; // fetchable from Workers (verified Oct 18, 2026; the old w3.org dummy.pdf returns 403 to Workers)
+const EXAMPLE_INPUT = { url: EXAMPLE_URL };
 const EXAMPLE_OUTPUT = {
-  name: "dummy.pdf",
+  name: "sample.pdf",
   mime_type: "application/pdf",
-  bytes: 13264,
-  markdown: "Dummy PDF file",
+  bytes: 18810,
+  markdown: "# sample.pdf\n## Metadata\n- PDFFormatVersion=1.3\n- IsLinearized=false\n- IsAcroFormPresent=false\n- Title=sample\n- Author=Philip Hutchison\n## Contents\n### Page 1\nSample PDF\nThis is a simple PDF file. Fun fun fun.\nLorem ipsum dolor sit amet, consectetuer adipiscing elit. ...",
   truncated: false,
-  total_chars: 14,
-  tokens: 4,
-  word_count: 3,
-  pages_hint: null,
-  source_url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-  converted_at: "2026-10-15T12:00:00.000Z",
+  total_chars: 3100,
+  tokens: 780,
+  word_count: 430,
+  pages_hint: 1,
+  source_url: EXAMPLE_URL,
+  converted_at: "2026-10-18T17:49:53.000Z",
 };
 const BODY_PROPS = {
   url: { type: "string", description: `Public http/https URL of the document (${SUPPORTED_LIST}; max ${MAX_FILE_BYTES} bytes). Use this OR file_base64.` },
@@ -583,9 +584,9 @@ function openapi(origin) {
           summary: "Convert a document (PDF, Office, spreadsheet, HTML, image) to Markdown",
           tags: ["Documents", "PDF", "Markdown", "Extraction"],
           "x-payment-info": { price: { mode: "fixed", currency: "USD", amount: PRICE_USD }, protocols: [{ x402: {} }] },
-          requestBody: { required: true, content: { "application/json": { schema: convertBody } } },
+          requestBody: { required: true, content: { "application/json": { schema: convertBody, example: EXAMPLE_INPUT } } },
           responses: {
-            200: { description: "The document as Markdown", headers: { "PAYMENT-RESPONSE": hdr("Base64 x402 settlement receipt") }, content: { "application/json": { schema: convertOut } } },
+            200: { description: "The document as Markdown", headers: { "PAYMENT-RESPONSE": hdr("Base64 x402 settlement receipt") }, content: { "application/json": { schema: convertOut, example: EXAMPLE_OUTPUT } } },
             400: { description: "Invalid input: missing url/file_base64, bad URL, private or internal host, bad base64, bad max_chars (no charge)" },
             402: { description: "Payment Required: the PAYMENT-REQUIRED header carries the base64 x402 requirements; also returned when payment verification or settlement fails (no charge)" },
             413: { description: `Request body larger than ${MAX_REQUEST_BYTES} bytes, or file larger than ${MAX_FILE_BYTES} bytes (no charge)` },
