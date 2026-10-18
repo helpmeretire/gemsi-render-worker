@@ -12,6 +12,9 @@ const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const CDP_URL = "https://api.cdp.coinbase.com/platform/v2/x402";
 const PAYAI_URL = "https://facilitator.payai.network";
 const SERVICE = "NoJunk Address Check";
+// Short description for the x402 402 challenge (resource.description); CDP Bazaar rejects >500 chars.
+const PAY_DESCRIPTION =
+  "Wallet and contract safety check before you send funds or approve a spender. Send an EVM address (Base, Ethereum, BNB Chain, Arbitrum, Polygon, Optimism, Avalanche); get a verdict (DANGER, SUSPICIOUS, NO KNOWN ISSUES), scam flags (phishing, theft, scam-token creator, sanctions, mixer, money laundering) and contract checks (source verification, proxy, age, owner privileges, reported malicious behavior).";
 const DESCRIPTION =
   "Wallet and contract safety check before you send funds, approve a spender or interact. Send an EVM address (Base, Ethereum, BNB Chain, Arbitrum, Polygon, Optimism, Avalanche); get a verdict (DANGER, SUSPICIOUS, NO KNOWN ISSUES), flags from security databases (phishing, theft, scam-token creator, sanctions, mixer, money laundering) and, for contracts, verification, proxy/upgradeability, age, owner privileges and reported malicious behavior.";
 const CHAINS = {
