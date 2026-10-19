@@ -566,6 +566,9 @@ def build():
     files["/robots.txt"] = ("text/plain; charset=utf-8", f"User-agent: *\nAllow: /\n\nSitemap: {SITE}/sitemap.xml\n")
     files["/ads.txt"] = ("text/plain; charset=utf-8", "google.com, pub-1345805765863065, DIRECT, f08c47fec0942fa0\n")
     files["/favicon.svg"] = ("image/svg+xml", FAVICON)
+    _bing = os.path.join(os.path.dirname(os.path.abspath(__file__)), "BingSiteAuth.xml")
+    if os.path.exists(_bing):
+        with open(_bing, encoding="utf-8") as f: files["/BingSiteAuth.xml"] = ("application/xml; charset=utf-8", f.read())
     llms = f"# {NAME}\n\n> Plain-English, sourced help for older adults and families paying for home modifications (grab bars, ramps, walk-in showers, stair lifts): programs in every U.S. state, guides to each type of help, and 2026 cost ranges.\n\n## Sections\n- [Programs by state]({SITE}/states/)\n- [Ways to pay]({SITE}/programs/)\n- [What changes cost]({SITE}/costs/)\n- [Guides]({SITE}/guides/)\n"
     files["/llms.txt"] = ("text/plain; charset=utf-8", llms)
     og = og_png()
