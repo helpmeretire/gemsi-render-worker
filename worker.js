@@ -1,4 +1,4 @@
-// NoJunk Web Read — a paid (x402) web page reader for AI agents.
+// Web Page Reader — a paid (x402) web page reader for AI agents.
 // Fetches one public web page and returns its title, metadata, clean readable text,
 // Markdown and links as JSON. No API keys, no rate limits: agents pay per call.
 // Settings (Cloudflare Worker > Settings > Variables and Secrets):
@@ -13,7 +13,7 @@ const NETWORK = "eip155:8453"; // Base mainnet
 const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const CDP_URL = "https://api.cdp.coinbase.com/platform/v2/x402";
 const PAYAI_URL = "https://facilitator.payai.network";
-const SERVICE = "NoJunk Web Read";
+const SERVICE = "Web Page Reader";
 const DESCRIPTION =
   "Read any public web page as clean JSON: title, description, site name, publish date, language, readable text (boilerplate removed), Markdown and the page's links. Give it a URL, get the content back in one call. HTML, plain text, JSON and XML pages supported.";
 

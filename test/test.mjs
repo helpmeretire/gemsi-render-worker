@@ -117,7 +117,7 @@ const ART = "https://nojunkcrypto.com/blog/bitcoin-fees";
 
 // ---- unpaid ----
 let r = await W.fetch(new Request(base + "/"), env); let j = await r.json();
-ok(r.status === 200 && j.service === "NoJunk Web Read" && j.facilitator === "payai" && j.price.includes("$0.002") && j.endpoint.includes("/read?url="), "info page");
+ok(r.status === 200 && j.service === "Web Page Reader" && j.facilitator === "payai" && j.price.includes("$0.002") && j.endpoint.includes("/read?url="), "info page");
 r = await W.fetch(new Request(base + "/read?url=" + encodeURIComponent(ART)), {}); ok(r.status === 402 && dec(r.headers.get("PAYMENT-REQUIRED")).accepts[0].payTo === "0x6f762720b8515b7091e6aa69e8361f7b9909233f", "default wallet used");
 upstream = []; calls = [];
 r = await W.fetch(new Request(base + "/read"), env); ok(r.status === 402 && upstream.length === 0, "missing url unpaid -> 402 first");
@@ -329,7 +329,7 @@ ok(j.text === "" && j.markdown === "" && j.word_count === 0 && j.title === null 
 // ---- openapi + probes ----
 r = await W.fetch(new Request(base + "/openapi.json"), env); const o = await r.json();
 const g = o.paths["/read"].get, p = o.paths["/read"].post;
-ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "NoJunk Web Read" && /read(ing)? .*page.*cheap/i.test(o.info["x-guidance"]) && o.info["x-guidance"].includes("$0.002") && g["x-payment-info"].price.amount === "0.002000" && g["x-payment-info"].price.mode === "fixed" && p["x-payment-info"].protocols[0].x402 && p.requestBody.content["application/json"].schema.required.join() === "url" && g.parameters.map((x) => x.name).join() === "url" && g.parameters[0].required === true && g.responses["402"] && p.responses["402"] && g.responses["415"] && g.responses["502"] && g.responses["200"].content["application/json"].schema.properties.markdown, "openapi.json valid with x-guidance");
+ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "Web Page Reader" && /read(ing)? .*page.*cheap/i.test(o.info["x-guidance"]) && o.info["x-guidance"].includes("$0.002") && g["x-payment-info"].price.amount === "0.002000" && g["x-payment-info"].price.mode === "fixed" && p["x-payment-info"].protocols[0].x402 && p.requestBody.content["application/json"].schema.required.join() === "url" && g.parameters.map((x) => x.name).join() === "url" && g.parameters[0].required === true && g.responses["402"] && p.responses["402"] && g.responses["415"] && g.responses["502"] && g.responses["200"].content["application/json"].schema.properties.markdown, "openapi.json valid with x-guidance");
 ok(o.servers[0].url === base, "openapi servers url");
 r = await W.fetch(new Request(base + "/read", { method: "POST" }), env); ok(r.status === 402 && r.headers.get("PAYMENT-REQUIRED"), "POST probe without payment -> 402");
 r = await W.fetch(new Request(base + "/nope"), env); ok(r.status === 404, "unknown path -> 404");
