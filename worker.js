@@ -1,4 +1,4 @@
-// NoJunk Web Search — a paid (x402) web search API for AI agents.
+// Web Search — a paid (x402) web search API for AI agents.
 // Runs one web search (DuckDuckGo lite HTML, parsed in-worker, no libs) and returns up to
 // 10 results {rank, title, url, domain, snippet} as JSON. No API keys, no rate limits: agents pay per call.
 // Settings (Cloudflare Worker > Settings > Variables and Secrets):
@@ -13,7 +13,7 @@ const NETWORK = "eip155:8453"; // Base mainnet
 const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const CDP_URL = "https://api.cdp.coinbase.com/platform/v2/x402";
 const PAYAI_URL = "https://facilitator.payai.network";
-const SERVICE = "NoJunk Web Search";
+const SERVICE = "Web Search";
 const DESCRIPTION =
   "Cheap web search for AI agents: give it a query, get up to 10 live web results back as JSON (rank, title, url, domain, snippet). Optional region (e.g. us-en) and safe-search level. Sources tried in order: DuckDuckGo, Bing, Yahoo. Results link to the live web; pair with a /read service to fetch the pages.";
 
@@ -556,7 +556,7 @@ function openapi(origin) {
       title: SERVICE,
       version: "1.0.0",
       description: DESCRIPTION,
-      "x-guidance": "Cheap web search for AI agents. GET /search?q=your+query (or POST /search with JSON body {\"q\": \"...\", \"count\": 10, \"region\": \"us-en\", \"safe\": \"moderate\"}) returns up to 10 live web results as JSON: for each result its rank, title, url, domain and snippet. Costs $0.002 USDC on Base per request via x402; you are only charged when at least one result is returned (no charge on 400/404/502). Results link to the live web: use a /read service (such as NoJunk Web Read) to fetch and read the pages you pick. Optional region (DuckDuckGo code like us-en, uk-en, de-de) biases results by country/language; safe is moderate by default and can be off or strict. Results come from DuckDuckGo's HTML interface, falling back to Bing and then Yahoo when a source is blocked or empty (the source field says which one answered); upstream pages are cached for 2 minutes per identical query. region/safe apply to DuckDuckGo; fallbacks use English/US defaults. Best for: finding sources, looking up current facts, discovering URLs to read, checking what exists on a topic before answering.",
+      "x-guidance": "Cheap web search for AI agents. GET /search?q=your+query (or POST /search with JSON body {\"q\": \"...\", \"count\": 10, \"region\": \"us-en\", \"safe\": \"moderate\"}) returns up to 10 live web results as JSON: for each result its rank, title, url, domain and snippet. Costs $0.002 USDC on Base per request via x402; you are only charged when at least one result is returned (no charge on 400/404/502). Results link to the live web: use a /read service (such as Web Page Reader) to fetch and read the pages you pick. Optional region (DuckDuckGo code like us-en, uk-en, de-de) biases results by country/language; safe is moderate by default and can be off or strict. Results come from DuckDuckGo's HTML interface, falling back to Bing and then Yahoo when a source is blocked or empty (the source field says which one answered); upstream pages are cached for 2 minutes per identical query. region/safe apply to DuckDuckGo; fallbacks use English/US defaults. Best for: finding sources, looking up current facts, discovering URLs to read, checking what exists on a topic before answering.",
     },
     servers: [{ url: origin }],
     paths: { "/search": { get: op("get"), post: op("post") } },

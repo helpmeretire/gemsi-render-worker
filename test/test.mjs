@@ -169,7 +169,7 @@ const flush = async () => { await Promise.all(ctx.pending); ctx.pending = []; };
 
 // ---- unpaid ----
 let r = await W.fetch(new Request(base + "/"), env, ctx); let j = await r.json();
-ok(r.status === 200 && j.service === "NoJunk Web Search" && j.facilitator === "payai" && j.price.includes("$0.002") && j.endpoint.includes("/search?q=") && j.health.endsWith("/health/search"), "info page");
+ok(r.status === 200 && j.service === "Web Search" && j.facilitator === "payai" && j.price.includes("$0.002") && j.endpoint.includes("/search?q=") && j.health.endsWith("/health/search"), "info page");
 r = await W.fetch(new Request(base + "/search?q=test"), {}, ctx); ok(r.status === 402 && dec(r.headers.get("PAYMENT-REQUIRED")).accepts[0].payTo === "0x6f762720b8515b7091e6aa69e8361f7b9909233f", "default wallet used");
 upstream = []; calls = [];
 r = await W.fetch(new Request(base + "/search"), env, ctx); ok(r.status === 402 && upstream.length === 0, "missing q unpaid -> 402 first");
@@ -431,7 +431,7 @@ r = await W.fetch(new Request(base + "/health/search", { method: "POST" }), env,
 // ---- openapi + probes ----
 r = await W.fetch(new Request(base + "/openapi.json"), env, ctx); const o = await r.json();
 const g = o.paths["/search"].get, p = o.paths["/search"].post;
-ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "NoJunk Web Search" && /cheap web search/i.test(o.info["x-guidance"]) && /live web/i.test(o.info["x-guidance"]) && /\/read/.test(o.info["x-guidance"]) && o.info["x-guidance"].includes("$0.002") && g["x-payment-info"].price.amount === "0.002000" && g["x-payment-info"].price.mode === "fixed" && g["x-payment-info"].price.currency === "USD" && p["x-payment-info"].protocols[0].x402 && p.requestBody.content["application/json"].schema.required.join() === "q" && g.parameters.map((x) => x.name).join() === "q,count,region,safe" && g.parameters[0].required === true && g.parameters[1].required === false && g.responses["402"] && p.responses["402"] && g.responses["404"] && g.responses["502"] && g.responses["200"].content["application/json"].schema.properties.results.items.properties.snippet, "openapi.json valid with x-guidance, x-payment-info, params, 402");
+ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "Web Search" && /cheap web search/i.test(o.info["x-guidance"]) && /live web/i.test(o.info["x-guidance"]) && /\/read/.test(o.info["x-guidance"]) && o.info["x-guidance"].includes("$0.002") && g["x-payment-info"].price.amount === "0.002000" && g["x-payment-info"].price.mode === "fixed" && g["x-payment-info"].price.currency === "USD" && p["x-payment-info"].protocols[0].x402 && p.requestBody.content["application/json"].schema.required.join() === "q" && g.parameters.map((x) => x.name).join() === "q,count,region,safe" && g.parameters[0].required === true && g.parameters[1].required === false && g.responses["402"] && p.responses["402"] && g.responses["404"] && g.responses["502"] && g.responses["200"].content["application/json"].schema.properties.results.items.properties.snippet, "openapi.json valid with x-guidance, x-payment-info, params, 402");
 ok(o.servers[0].url === base, "openapi servers url");
 r = await W.fetch(new Request(base + "/.well-known/openapi.json"), env, ctx); ok(r.status === 200 && (await r.json()).openapi === "3.1.0", "well-known openapi alias");
 r = await W.fetch(new Request(base + "/search", { method: "POST" }), env, ctx); ok(r.status === 402 && r.headers.get("PAYMENT-REQUIRED"), "POST probe without payment -> 402");
