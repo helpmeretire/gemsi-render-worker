@@ -1,5 +1,7 @@
 // x402 Services Status (nojunk-status Worker) — live build floor + service monitor for Mick's x402 services.
-// Bindings: KV namespace "STATUS" (key "buildlog" = JSON array of {t, kind, text, service?}).
+// Bindings: KV namespace "STATUS" (key "buildlog" = JSON array of {t, kind, text, service?}, written by hand;
+// key "payments" = cron state {cursor, items, bazaar, autolog}; autolog = entries the cron adds itself when new
+// outside payments arrive or the Bazaar listing count changes, merged into the build floor on read).
 const WALLET = "0x6f762720b8515b7091e6aa69e8361f7b9909233f";
 const USDC = "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913";
 const BASE = (n) => `https://${n}.mick8511.workers.dev`;
@@ -22,6 +24,28 @@ async function fetchBazaar() {
   }
   for (const k of Object.keys(by)) by[k].sort((a, b) => (a.path < b.path ? -1 : 1));
   return { checked_at: new Date().toISOString(), total: (j.pagination && j.pagination.total) || j.resources.length, by };
+}
+const short = (a) => (a ? String(a).slice(0, 6) + "…" + String(a).slice(-4) : "?");
+const isTest = (a) => TEST_WALLETS.includes(String(a).toLowerCase());
+const AUTOLOG_MAX = 60;
+// Build-floor entries for what the cron just saw. Only called when the cron already writes KV (new payment or
+// listing change), so this adds no KV writes. Test-wallet payments are not logged as money.
+function autoEntries(saved, items, fresh) {
+  const out = [];
+  if (!saved) return out; // first run ever: no baseline, nothing is "new"
+  const seen = new Set((Array.isArray(saved.items) ? saved.items : []).map((x) => x.tx));
+  const fresh_pays = items.filter((x) => !seen.has(x.tx) && !isTest(x.from));
+  if (fresh_pays.length) {
+    const total = fresh_pays.reduce((a, x) => a + x.usd, 0);
+    const payers = [...new Set(fresh_pays.map((x) => String(x.from).toLowerCase()))];
+    const t = fresh_pays.reduce((m, x) => (x.when > m ? x.when : m), fresh_pays[0].when);
+    out.push({ t, kind: "money", auto: true, text: `${fresh_pays.length} new payment${fresh_pays.length > 1 ? "s" : ""}, $${total.toFixed(3)} USDC, from ${payers.slice(0, 3).map(short).join(", ")}${payers.length > 3 ? ` and ${payers.length - 3} more wallets` : ""}.` });
+  }
+  const prevTotal = saved.bazaar && saved.bazaar.total;
+  if (fresh && typeof prevTotal === "number" && fresh.total !== prevTotal) {
+    out.push({ t: fresh.checked_at, kind: "milestone", auto: true, text: `Coinbase Bazaar now lists ${fresh.total} paid routes (was ${prevTotal}).` });
+  }
+  return out;
 }
 const bazaarKey = (b) => (b ? JSON.stringify(Object.keys(b.by).sort().map((k) => [k, b.by[k].map((x) => x.path)])) : "");
 const SERVICES = [
@@ -117,6 +141,14 @@ const hex = (n) => "0x" + n.toString(16);
 // only when a new payment appears or the cursor moved >= CURSOR_WRITE_EVERY blocks (~15 min on Base).
 // Page viewers (scan=false) do one KV read and never write.
 const CURSOR_WRITE_EVERY = 450;
+const SHOW_PAYMENTS = 25;
+// Revenue over every stored payment (not just the ones shown); test-wallet payments counted separately.
+function totals(items) {
+  const rev = items.filter((x) => !isTest(x.from)), test = items.filter((x) => isTest(x.from));
+  const r6 = (n) => Math.round(n * 1e6) / 1e6;
+  return { revenue_usd: r6(rev.reduce((a, x) => a + x.usd, 0)), revenue_count: rev.length, payers: new Set(rev.map((x) => String(x.from).toLowerCase())).size,
+    test_usd: r6(test.reduce((a, x) => a + x.usd, 0)), test_count: test.length };
+}
 async function wallet(env, { scan = false } = {}) {
   const out = { ok: false, usdc_balance: 0, usdc_payments: [], payments_count: 0, last_any_transfer: null, scanned_to_block: null, note: null };
   try {
@@ -129,9 +161,11 @@ async function wallet(env, { scan = false } = {}) {
     if (!scan) {
       const items = saved && Array.isArray(saved.items) ? saved.items : [];
       out.ok = true; out.scanned_to_block = saved && saved.cursor ? saved.cursor : null;
-      out.usdc_payments = items.slice(0, 10); out.payments_count = items.length;
+      out.usdc_payments = items.slice(0, SHOW_PAYMENTS); out.payments_count = items.length;
       out.last_any_transfer = items[0] ? { when: items[0].when, token: "USDC" } : null;
       out.bazaar = saved && saved.bazaar ? saved.bazaar : null;
+      out.autolog = saved && Array.isArray(saved.autolog) ? saved.autolog : [];
+      out.totals = totals(items);
       return out;
     }
     const latest = Number(BigInt(await rpc("eth_blockNumber", [])));
@@ -139,15 +173,26 @@ async function wallet(env, { scan = false } = {}) {
     // The public node only serves recent blocks, so the cursor stays near the head; a 5-minute cron keeps it moving.
     const MAX_BEHIND = 900, CHUNK = 450;
     let cursor = saved && saved.cursor ? saved.cursor : latest - MAX_BEHIND;
-    let items = saved && Array.isArray(saved.items) ? saved.items : [];
+    // Copy: pushing into saved.items would also grow the baseline used to detect new payments below.
+    let items = saved && Array.isArray(saved.items) ? [...saved.items] : [];
     if (cursor < latest - MAX_BEHIND) { out.note = `gap: blocks ${cursor + 1}-${latest - MAX_BEHIND} not scanned`; cursor = latest - MAX_BEHIND; }
+    // Block timestamps: one RPC per distinct block, at most TS_RPC_MAX per run; past that (a burst of payments), derive
+    // from a fetched block using Base's fixed 2 s block time, so a burst can't push the cron over 50 subrequests.
+    const TS_RPC_MAX = 12, tsCache = new Map(); let ref = null;
+    const blockTime = async (bn) => {
+      const b = Number(BigInt(bn));
+      if (tsCache.has(b)) return tsCache.get(b);
+      let ts;
+      if (tsCache.size < TS_RPC_MAX || !ref) { ts = Number(BigInt((await rpc("eth_getBlockByNumber", [bn, false])).timestamp)); ref = { b, ts }; }
+      else ts = ref.ts + (b - ref.b) * 2;
+      tsCache.set(b, ts); return ts;
+    };
     let steps = 0;
     while (cursor < latest && steps < 2) {
       const to = Math.min(cursor + CHUNK, latest);
       const logs = await rpc("eth_getLogs", [{ address: USDC, fromBlock: hex(cursor + 1), toBlock: hex(to), topics: [TRANSFER_TOPIC, null, "0x" + WALLET.slice(2).padStart(64, "0")] }]);
       for (const l of logs) {
-        const blk = await rpc("eth_getBlockByNumber", [l.blockNumber, false]);
-        items.push({ when: new Date(Number(BigInt(blk.timestamp)) * 1000).toISOString(), usd: Number(BigInt(l.data)) / 1e6, from: "0x" + l.topics[1].slice(26), tx: l.transactionHash, block: Number(BigInt(l.blockNumber)) });
+        items.push({ when: new Date((await blockTime(l.blockNumber)) * 1000).toISOString(), usd: Number(BigInt(l.data)) / 1e6, from: "0x" + l.topics[1].slice(26), tx: l.transactionHash, block: Number(BigInt(l.blockNumber)) });
       }
       cursor = to; steps++;
     }
@@ -156,10 +201,13 @@ async function wallet(env, { scan = false } = {}) {
     const moved = !saved || !saved.cursor || cursor - saved.cursor >= CURSOR_WRITE_EVERY;
     const fresh = await fetchBazaar().catch(() => null);
     const bazaar = fresh || (saved && saved.bazaar) || null;
-    const bzChanged = !!fresh && bazaarKey(fresh) !== bazaarKey(saved && saved.bazaar);
-    if (env.STATUS && (prevLen !== items.length || moved || bzChanged)) await env.STATUS.put("payments", JSON.stringify({ cursor, items, bazaar }));
+    const bzChanged = !!fresh && (bazaarKey(fresh) !== bazaarKey(saved && saved.bazaar) || fresh.total !== (saved && saved.bazaar && saved.bazaar.total));
+    const added = autoEntries(saved, items, fresh);
+    const autolog = [...(saved && Array.isArray(saved.autolog) ? saved.autolog : []), ...added].slice(-AUTOLOG_MAX);
+    if (env.STATUS && (prevLen !== items.length || moved || bzChanged || added.length)) await env.STATUS.put("payments", JSON.stringify({ cursor, items, bazaar, autolog }));
     out.bazaar = bazaar;
-    out.ok = true; out.scanned_to_block = cursor; out.usdc_payments = items.slice(0, 10); out.payments_count = items.length;
+    out.autolog = autolog; out.totals = totals(items);
+    out.ok = true; out.scanned_to_block = cursor; out.usdc_payments = items.slice(0, SHOW_PAYMENTS); out.payments_count = items.length;
     out.last_any_transfer = items[0] ? { when: items[0].when, token: "USDC" } : null;
   } catch (e) { out.note = (out.note ? out.note + "; " : "") + "scan: " + e.message; }
   return out;
@@ -178,9 +226,11 @@ async function status(env) {
     s.bazaar = routes === null ? { known: false } : { known: true, listed: routes.length > 0, routes: routes.length, paths: routes.map((x) => x.path), last_paid: routes.reduce((m, x) => (x.last && (!m || x.last > m) ? x.last : m), null) };
     s.facilitator = routes && routes.length ? "Coinbase" : routes === null ? "unknown" : "not confirmed";
   }
-  for (const p of (w && w.usdc_payments) || []) p.test = TEST_WALLETS.includes(String(p.from).toLowerCase());
+  for (const p of (w && w.usdc_payments) || []) p.test = isTest(p.from);
+  const merged = [...(Array.isArray(log) ? log : []), ...((w && w.autolog) || [])].filter((e) => e && e.t).sort((a, b) => (a.t < b.t ? -1 : a.t > b.t ? 1 : 0));
+  if (w) delete w.autolog;
   return { checked_at: new Date().toISOString(), services, site: { ...SITE, up: site.ok && site.status === 200, ms: site.ms }, wallet: w,
-    bazaar: bz ? { checked_at: bz.checked_at, total_listed: bz.total, services_listed: services.filter((s) => s.bazaar.listed).length } : null, buildlog: log.slice(-60).reverse() };
+    bazaar: bz ? { checked_at: bz.checked_at, total_listed: bz.total, services_listed: services.filter((s) => s.bazaar.listed).length } : null, buildlog: merged.slice(-80).reverse() };
 }
 
 // Status is computed at most once per STATUS_TTL_S per isolate (and shared via caches.default on the
@@ -253,12 +303,16 @@ h2{font-stretch:74%;font-weight:850;font-size:26px;margin:26px 0 10px}
 .pay{font-family:'JetBrains Mono',monospace;font-size:13px}
 .pay .big{font-size:34px;font-weight:700;color:var(--coin)}
 .muted{color:var(--ink2);font-size:13px}
+.pays{margin-top:8px}.p{padding:8px 0;border-top:1px solid var(--line);color:var(--ink)}
+.p .amt{font-weight:700;color:var(--coin)}.p .tag{display:inline-block;font-size:11px;padding:1px 6px;border-radius:4px;margin-left:6px;background:var(--greenbg);color:var(--green)}.p .tag.test{background:#ECEEF2;color:var(--ink2)}
+.p a{color:var(--ink);overflow-wrap:anywhere;word-break:break-all}.p .addr{display:block;margin-top:2px}.p .tx{font-size:12px;color:var(--ink2)}
+@media(max-width:520px){body{padding:0 10px 32px}.log .t{width:92px;font-size:12px}.log{font-size:12px;padding:12px}.pay .big{font-size:28px}}
 </style></head><body><div class="wrap">
 <header><div class="brand"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#13213C"/><path d="M9 16.5l4.5 4.5L23 11" stroke="#FFD23F" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>x402 Services Status</div><div class="live"><span class="dot"></span><span id="upd">checking…</span></div></header>
 <div class="tiles"><div class="tile"><b id="n-up">–</b><span>services up</span></div><div class="tile"><b id="n-pay">–</b><span>paywalls live, paying your wallet</span></div><div class="tile"><b id="n-usdc">–</b><span>USDC received from agents</span></div><div class="tile"><b id="n-bal">–</b><span>USDC in wallet</span></div><div class="tile"><b id="n-ms">–</b><span>avg response (ms)</span></div><div class="tile"><b id="n-bz">–</b><span>listed in Coinbase Bazaar</span></div></div>
 <div class="grid">
 <section><h2>Build floor <span class="muted">(what I'm doing, newest first)</span></h2><div class="log" id="log"></div>
-<h2>Money</h2><div class="tile pay"><div class="big" id="usdc">$0.000</div><div id="pays" class="muted">No agent payments yet.</div></div></section>
+<h2>Money</h2><div class="tile pay"><div class="big" id="usdc">$0.000</div><div id="paysum" class="muted"></div><div id="pays" class="pays muted">No agent payments yet.</div></div></section>
 <section><h2>Services running <span class="muted">(checked from Cloudflare every 5 min)</span></h2><div id="svcs"></div></section>
 </div>
 <p class="muted" id="site"></p>
@@ -273,10 +327,12 @@ async function tick(){ lastTick=Date.now();
   var up=j.services.filter(function(s){return s.up}).length, pay=j.services.filter(function(s){return s.paywall_ok}).length;
   var ms=Math.round(j.services.reduce(function(a,s){return a+s.ms},0)/j.services.length);
   document.getElementById('n-up').textContent=up+'/'+j.services.length; document.getElementById('n-pay').textContent=pay+'/'+j.services.length;
-  document.getElementById('n-usdc').textContent='$'+j.wallet.usdc_payments.reduce(function(a,p){return a+(p.test?0:p.usd)},0).toFixed(3); document.getElementById('n-bal').textContent='$'+j.wallet.usdc_balance.toFixed(2); document.getElementById('n-ms').textContent=ms;
+  var tot=j.wallet.totals||{revenue_usd:j.wallet.usdc_payments.reduce(function(a,p){return a+(p.test?0:p.usd)},0),revenue_count:0,payers:0,test_usd:0,test_count:0};
+  document.getElementById('n-usdc').textContent='$'+tot.revenue_usd.toFixed(3); document.getElementById('n-bal').textContent='$'+j.wallet.usdc_balance.toFixed(2); document.getElementById('n-ms').textContent=ms;
   document.getElementById('n-bz').textContent=j.bazaar?j.bazaar.services_listed+'/'+j.services.length:'–';
-  document.getElementById('usdc').textContent='$'+j.wallet.usdc_payments.reduce(function(a,p){return a+(p.test?0:p.usd)},0).toFixed(3);
-  document.getElementById('pays').innerHTML=j.wallet.usdc_payments.length?j.wallet.usdc_payments.map(function(p){return '<div>'+esc(fmtT(p.when))+' · $'+p.usd.toFixed(4)+' from '+esc(p.from.slice(0,10))+'…'+(p.test?' (our test wallet, not revenue)':'')+'</div>'}).join(''):'No agent payments yet. Watching the Base blockchain for USDC sent to your wallet (scanned to block '+(j.wallet.scanned_to_block||'?')+').'+(j.wallet.note?' Note: '+esc(j.wallet.note):'');
+  document.getElementById('usdc').textContent='$'+tot.revenue_usd.toFixed(3);
+  document.getElementById('paysum').textContent=j.wallet.totals?(tot.revenue_count+' payment'+(tot.revenue_count==1?'':'s')+' from '+tot.payers+' outside wallet'+(tot.payers==1?'':'s')+' (revenue). Our test wallet: '+tot.test_count+' payments, $'+tot.test_usd.toFixed(3)+' (not revenue). Latest '+j.wallet.usdc_payments.length+' of '+j.wallet.payments_count+' shown below.'):'';
+  document.getElementById('pays').innerHTML=j.wallet.usdc_payments.length?j.wallet.usdc_payments.map(function(p){var a=String(p.from),h=String(p.tx);return '<div class="p">'+esc(fmtT(p.when))+' · <span class="amt">$'+p.usd.toFixed(4)+'</span>'+(p.test?'<span class="tag test">test wallet, not revenue</span>':'<span class="tag">revenue</span>')+'<span class="addr">from <a href="https://basescan.org/address/'+encodeURIComponent(a)+'" target="_blank" rel="noopener">'+esc(a)+'</a></span><span class="tx">tx <a href="https://basescan.org/tx/'+encodeURIComponent(h)+'" target="_blank" rel="noopener">'+esc(h.slice(0,10)+'…'+h.slice(-8))+'</a></span></div>'}).join(''):'No agent payments yet. Watching the Base blockchain for USDC sent to your wallet (scanned to block '+(j.wallet.scanned_to_block||'?')+').'+(j.wallet.note?' Note: '+esc(j.wallet.note):'');
   document.getElementById('log').innerHTML=j.buildlog.map(function(e){return '<div><span class="t">'+esc(fmtT(e.t))+'</span><span class="k-'+esc(e.kind||'build')+'">'+esc(e.text)+'</span></div>'}).join('')||'<div>No entries yet.</div>';
   document.getElementById('svcs').innerHTML=j.services.map(function(s){return '<div class="svc"><span class="st '+(s.up?'up':'down')+'"></span><span class="nm"><a href="'+esc(s.url)+'" style="color:inherit;text-decoration:none">'+esc(s.name)+'</a></span><span class="pr">'+esc(s.price)+'</span><span class="what">'+esc(s.what)+'</span><span class="meta"><span class="'+(s.up?'ok':'bad')+'">'+(s.up?'UP':'DOWN')+' · '+s.ms+' ms</span><span class="'+(s.paywall_ok?'ok':'bad')+'">paywall '+esc(s.paywall)+'</span><span class="'+(s.facilitator==='Coinbase'?'ok':'')+'">payments: '+esc(s.facilitator==='Coinbase'?'Coinbase':'Coinbase '+(s.facilitator||'unknown'))+'</span><span class="'+(s.bazaar&&s.bazaar.listed?'ok':'bad')+'">Bazaar: '+(!s.bazaar||!s.bazaar.known?'unknown':s.bazaar.listed?'listed ('+s.bazaar.routes+' route'+(s.bazaar.routes>1?'s':'')+')':'not listed')+'</span></span>'+(s.demo?'<span class="demo '+(s.demo.ok?'':'bad')+'">'+esc(s.demo.label)+': '+esc(s.demo.text||(s.demo.ok?'ok':'unavailable'))+'</span>':'')+'</div>'}).join('');
   document.getElementById('site').textContent='Free site '+j.site.name+': '+(j.site.up?'up':'down')+' ('+j.site.ms+' ms). Last check '+new Date(j.checked_at).toLocaleTimeString()+'.';
