@@ -60,7 +60,7 @@ const BRETT = "0x532f27101965dd16442e59d40670faf5ebb142e4";
 
 // ---- info / unpaid ----
 let r = await W.fetch(new Request(base + "/"), env); let j = await r.json();
-ok(r.status === 200 && j.service === "NoJunk Crypto Price" && j.facilitator === "payai" && j.supported_symbols.includes("BTC") && j.supported_chains.includes("solana") && j.attribution.includes("CoinGecko") && j.price.includes("$0.001"), "info page");
+ok(r.status === 200 && j.service === "Crypto Price" && j.facilitator === "payai" && j.supported_symbols.includes("BTC") && j.supported_chains.includes("solana") && j.attribution.includes("CoinGecko") && j.price.includes("$0.001"), "info page");
 ok(j.supported_symbols.length >= 150, `symbol table has ${j.supported_symbols.length} tickers (>= 150)`);
 r = await W.fetch(new Request(base + "/price?symbol=BTC"), {}); ok(r.status === 402 && dec(r.headers.get("PAYMENT-REQUIRED")).accepts[0].payTo === "0x6f762720b8515b7091e6aa69e8361f7b9909233f", "default wallet used");
 r = await W.fetch(new Request(base + "/price"), env); ok(r.status === 402, "missing params unpaid -> 402 first");
@@ -210,7 +210,7 @@ delete globalThis.caches;
 // ---- openapi + POST probe ----
 r = await W.fetch(new Request(base + "/openapi.json"), env); const o = await r.json();
 const g = o.paths["/price"].get, p = o.paths["/price"].post;
-ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "NoJunk Crypto Price" && o.info["x-guidance"].includes("$0.001") && /attribution|Powered by CoinGecko/.test(o.info["x-guidance"]) && g["x-payment-info"].price.amount === "0.001000" && g["x-payment-info"].price.mode === "fixed" && p["x-payment-info"].protocols[0].x402 && p.requestBody.content["application/json"].schema.properties.symbol && g.parameters.map((x) => x.name).join() === "symbol,address,chain" && g.responses["402"] && p.responses["402"] && g.responses["404"] && g.responses["502"], "openapi.json valid (x-guidance mentions attribution)");
+ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "Crypto Price" && o.info["x-guidance"].includes("$0.001") && /attribution|Powered by CoinGecko/.test(o.info["x-guidance"]) && g["x-payment-info"].price.amount === "0.001000" && g["x-payment-info"].price.mode === "fixed" && p["x-payment-info"].protocols[0].x402 && p.requestBody.content["application/json"].schema.properties.symbol && g.parameters.map((x) => x.name).join() === "symbol,address,chain" && g.responses["402"] && p.responses["402"] && g.responses["404"] && g.responses["502"], "openapi.json valid (x-guidance mentions attribution)");
 r = await W.fetch(new Request(base + "/.well-known/openapi.json"), env); ok(r.status === 200, "well-known openapi alias");
 r = await W.fetch(new Request(base + "/price", { method: "POST" }), env); ok(r.status === 402 && r.headers.get("PAYMENT-REQUIRED"), "POST probe without payment -> 402");
 r = await W.fetch(new Request(base + "/price", { method: "PUT" }), env); ok(r.status === 405, "PUT -> 405");

@@ -1,4 +1,4 @@
-// NoJunk Crypto Price — a paid (x402) USD crypto price lookup for AI agents.
+// Crypto Price — a paid (x402) USD crypto price lookup for AI agents.
 // Data: CoinGecko (simple/price for listed coins, on-chain token API for contract addresses).
 // Settings (Cloudflare Worker > Settings > Variables and Secrets):
 //   PAY_TO              (optional) Base wallet address that receives USDC (defaults to DEFAULT_PAY_TO)
@@ -14,7 +14,7 @@ const NETWORK = "eip155:8453"; // Base mainnet
 const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const CDP_URL = "https://api.cdp.coinbase.com/platform/v2/x402";
 const PAYAI_URL = "https://facilitator.payai.network";
-const SERVICE = "NoJunk Crypto Price";
+const SERVICE = "Crypto Price";
 const DESCRIPTION =
   "Current USD price, market cap, 24h volume and 24h change for up to 10 cryptocurrencies by ticker symbol (BTC, ETH, SOL, ...) or for any on-chain token by contract address and chain (ethereum, base, bsc, arbitrum, polygon, optimism, avalanche, solana). Data from CoinGecko.";
 
