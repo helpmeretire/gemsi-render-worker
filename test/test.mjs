@@ -137,7 +137,7 @@ const NOTICE_RE = /informational use only, not investment advice/;
 
 // ---- unpaid / info ----
 let r = await W.fetch(new Request(base + "/"), env, ctx); let j = await r.json();
-ok(r.status === 200 && j.service === "NoJunk Stocks" && j.facilitator === "payai" && Object.keys(j.endpoints).join() === ROUTES.join() && j.price["/quote"].includes("$0.001") && j.price["/quotes"].includes("$0.003") && j.price["/history"].includes("$0.002") && j.price["/stats"].includes("$0.002") && j.health.endsWith("/health/data") && j.source === "Yahoo Finance" && NOTICE_RE.test(j.notice) && j.description.startsWith("Stock, ETF, index, FX and commodity quotes"), "info page lists 4 routes, per-route prices, health, source, notice");
+ok(r.status === 200 && j.service === "Stock Quotes" && j.facilitator === "payai" && Object.keys(j.endpoints).join() === ROUTES.join() && j.price["/quote"].includes("$0.001") && j.price["/quotes"].includes("$0.003") && j.price["/history"].includes("$0.002") && j.price["/stats"].includes("$0.002") && j.health.endsWith("/health/data") && j.source === "Yahoo Finance" && NOTICE_RE.test(j.notice) && j.description.startsWith("Stock, ETF, index, FX and commodity quotes"), "info page lists 4 routes, per-route prices, health, source, notice");
 r = await W.fetch(new Request(base + "/quote?symbol=AAPL"), {}, ctx); ok(r.status === 402 && dec(r.headers.get("PAYMENT-REQUIRED")).accepts[0].payTo === "0x6f762720b8515b7091e6aa69e8361f7b9909233f", "default wallet used");
 r = await W.fetch(new Request(base + "/nope"), env, ctx); ok(r.status === 404, "unknown path -> 404");
 r = await W.fetch(new Request(base + "/quote", { method: "PUT" }), env, ctx); ok(r.status === 405, "PUT -> 405");
@@ -404,7 +404,7 @@ r = await W.fetch(new Request(base + "/health/data", { method: "POST" }), env, c
 
 // ---- openapi ----
 r = await W.fetch(new Request(base + "/openapi.json"), env, ctx); const o = await r.json();
-ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "NoJunk Stocks" && o.info["x-guidance"].includes("$0.001") && o.info["x-guidance"].includes("$0.003") && o.info["x-guidance"].includes("$0.002") && o.info["x-guidance"].includes("not investment advice") && o.servers[0].url === base && Object.keys(o.paths).join() === ROUTES.join() && o.info.description.startsWith("Stock, ETF, index, FX and commodity quotes") && o.info.description.includes("No API key"), "openapi.json: 3.1.0, x-guidance with prices, 4 paths, agent description");
+ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "Stock Quotes" && o.info["x-guidance"].includes("$0.001") && o.info["x-guidance"].includes("$0.003") && o.info["x-guidance"].includes("$0.002") && o.info["x-guidance"].includes("not investment advice") && o.servers[0].url === base && Object.keys(o.paths).join() === ROUTES.join() && o.info.description.startsWith("Stock, ETF, index, FX and commodity quotes") && o.info.description.includes("No API key"), "openapi.json: 3.1.0, x-guidance with prices, 4 paths, agent description");
 const USD = { "/quote": "0.001000", "/quotes": "0.003000", "/history": "0.002000", "/stats": "0.002000" };
 for (const route of ROUTES) {
   const g = o.paths[route].get, p = o.paths[route].post;

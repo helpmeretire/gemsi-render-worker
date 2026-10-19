@@ -1,4 +1,4 @@
-// NoJunk Stocks — paid (x402) market data for AI agents: quotes, OHLCV history and computed statistics.
+// Stock Quotes — paid (x402) market data for AI agents: quotes, OHLCV history and computed statistics.
 // Four routes, each priced separately in USDC on Base per successful call:
 //   /quote   $0.001  one symbol -> latest price, change, day range, volume, 52-week range
 //   /quotes  $0.003  up to 20 symbols in one call (fetched in parallel)
@@ -17,7 +17,7 @@ const NETWORK = "eip155:8453"; // Base mainnet
 const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const CDP_URL = "https://api.cdp.coinbase.com/platform/v2/x402";
 const PAYAI_URL = "https://facilitator.payai.network";
-const SERVICE = "NoJunk Stocks";
+const SERVICE = "Stock Quotes";
 const DESCRIPTION =
   "Stock, ETF, index, FX and commodity quotes, OHLCV history and computed statistics (returns, volatility, drawdown, RSI, moving averages). Pay per call with USDC on Base (x402). No API key.";
 
