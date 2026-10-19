@@ -56,7 +56,7 @@ const post = (path, body, extra = {}) => W.fetch(new Request(base + path, { meth
 
 // ---- info / discovery ----
 let r = await W.fetch(new Request(base + "/"), env); let j = await r.json();
-ok(r.status === 200 && j.service === "NoJunk Image" && j.facilitator === "payai" && j.configured === true && Object.keys(j.endpoints).join() === "/generate,/describe" && j.endpoints["/generate"].price.startsWith("$0.01 ") && j.endpoints["/describe"].price.startsWith("$0.005 ") && j.models.generate === FLUX && j.models.describe === LLAVA, "info page lists 2 routes with prices + models");
+ok(r.status === 200 && j.service === "Image" && j.facilitator === "payai" && j.configured === true && Object.keys(j.endpoints).join() === "/generate,/describe" && j.endpoints["/generate"].price.startsWith("$0.01 ") && j.endpoints["/describe"].price.startsWith("$0.005 ") && j.models.generate === FLUX && j.models.describe === LLAVA, "info page lists 2 routes with prices + models");
 r = await W.fetch(new Request(base + "/generate", { method: "POST" }), { AI }); ok(r.status === 402 && dec(r.headers.get("PAYMENT-REQUIRED")).accepts[0].payTo === "0x6f762720b8515b7091e6aa69e8361f7b9909233f", "default wallet used");
 r = await W.fetch(new Request(base + "/generate", { method: "POST", body: "not json" }), env); ok(r.status === 402, "bad input unpaid -> 402 first");
 r = await W.fetch(new Request(base + "/generate"), env); ok(r.status === 402 && r.headers.get("PAYMENT-REQUIRED"), "GET probe /generate without payment -> 402");
@@ -336,7 +336,7 @@ reset(); mode = "badverify"; r = await paid("/describe", { image_url: IMG }); ok
 
 // ---- openapi ----
 reset(); r = await W.fetch(new Request(base + "/openapi.json"), env); const o = await r.json();
-ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "NoJunk Image" && typeof o.info["x-guidance"] === "string" && o.info["x-guidance"].includes("$0.01") && o.info["x-guidance"].includes("$0.005") && o.info["x-guidance"].includes("image/png") && o.servers[0].url === base, "openapi header + x-guidance");
+ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "Image" && typeof o.info["x-guidance"] === "string" && o.info["x-guidance"].includes("$0.01") && o.info["x-guidance"].includes("$0.005") && o.info["x-guidance"].includes("image/png") && o.servers[0].url === base, "openapi header + x-guidance");
 ok(Object.keys(o.paths).join() === "/generate,/describe" && Object.keys(o.paths["/generate"]).join() === "post" && Object.keys(o.paths["/describe"]).join() === "post", "openapi paths: 2 POST routes");
 for (const [route, amt] of [["/generate", "0.010000"], ["/describe", "0.005000"]]) {
   const p = o.paths[route].post;

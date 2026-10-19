@@ -1,4 +1,4 @@
-// NoJunk Image — paid (x402) image generation and image description for AI agents.
+// Image — paid (x402) image generation and image description for AI agents.
 // Runs on Cloudflare Workers AI (FLUX.1 [schnell] for generation; LLaVA 1.5 7B with a uform-gen2 fallback
 // for description). No API keys, no rate limits: agents pay per call in USDC on Base and are only charged
 // when a valid result is returned.
@@ -14,7 +14,7 @@ const NETWORK = "eip155:8453"; // Base mainnet
 const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const CDP_URL = "https://api.cdp.coinbase.com/platform/v2/x402";
 const PAYAI_URL = "https://facilitator.payai.network";
-const SERVICE = "NoJunk Image";
+const SERVICE = "Image";
 const DESCRIPTION =
   "Pay-per-call image intelligence for agents: generate an image from a text prompt (FLUX.1 schnell, PNG bytes or base64 JSON), or describe any image you point at by URL or base64 (LLaVA 1.5 7B, answers your own question about the picture). You are only charged when a valid result is returned.";
 const USER_AGENT = "NoJunk Image/1.0 (+https://nojunkcrypto.com)";
