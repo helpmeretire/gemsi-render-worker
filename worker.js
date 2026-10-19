@@ -1,4 +1,4 @@
-// NoJunk Email Check — a paid (x402) email address verification service for AI agents.
+// Email Check — a paid (x402) email address verification service for AI agents.
 // Checks: RFC 5322 syntax subset, MX/A records via DNS-over-HTTPS, disposable domains, role
 // addresses, free-mail providers, typo suggestions, normalization and a risk score.
 // Settings (Cloudflare Worker > Settings > Variables and Secrets):
@@ -13,7 +13,7 @@ const NETWORK = "eip155:8453"; // Base mainnet
 const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const CDP_URL = "https://api.cdp.coinbase.com/platform/v2/x402";
 const PAYAI_URL = "https://facilitator.payai.network";
-const SERVICE = "NoJunk Email Check";
+const SERVICE = "Email Check";
 const DESCRIPTION =
   "Email address verification for AI agents: RFC 5322 syntax check, live MX/A DNS lookup, disposable-domain detection, role-address and free-mail-provider flags, typo suggestions (gmial.com -> gmail.com), normalized form and a low/medium/high risk score. One address or up to 20 per request, same price. No mailbox probing.";
 

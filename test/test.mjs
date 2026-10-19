@@ -48,7 +48,7 @@ const env = { PAY_TO: PAY };
 const base = "https://emailcheck.example.workers.dev";
 
 let r = await W.fetch(new Request(base + "/"), env); let j = await r.json();
-ok(r.status === 200 && j.service === "NoJunk Email Check" && j.facilitator === "payai" && /0\.001/.test(j.price), "info page");
+ok(r.status === 200 && j.service === "Email Check" && j.facilitator === "payai" && /0\.001/.test(j.price), "info page");
 r = await W.fetch(new Request(base + "/verify?email=a@b.co"), {}); ok(r.status === 402 && dec(r.headers.get("PAYMENT-REQUIRED")).accepts[0].payTo === "0x6f762720b8515b7091e6aa69e8361f7b9909233f", "default wallet used");
 r = await W.fetch(new Request(base + "/verify"), env); ok(r.status === 402, "missing params unpaid -> 402 first");
 r = await W.fetch(new Request(base + "/verify?email=not-an-email"), env); ok(r.status === 402, "bad email unpaid -> 402 first");
@@ -193,7 +193,7 @@ delete globalThis.caches;
 // openapi + POST probe
 r = await W.fetch(new Request(base + "/openapi.json"), env); const o = await r.json();
 const g = o.paths["/verify"].get, p = o.paths["/verify"].post;
-ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "NoJunk Email Check" && o.info["x-guidance"].includes("$0.001") && g["x-payment-info"].price.amount === "0.001000" && g["x-payment-info"].price.mode === "fixed" && p["x-payment-info"].protocols[0].x402 && p.requestBody.content["application/json"].schema.properties.emails.maxItems === 20 && g.parameters.map((x) => x.name).join() === "email,emails" && g.responses["402"] && p.responses["402"] && g.responses["502"], "openapi.json valid");
+ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "Email Check" && o.info["x-guidance"].includes("$0.001") && g["x-payment-info"].price.amount === "0.001000" && g["x-payment-info"].price.mode === "fixed" && p["x-payment-info"].protocols[0].x402 && p.requestBody.content["application/json"].schema.properties.emails.maxItems === 20 && g.parameters.map((x) => x.name).join() === "email,emails" && g.responses["402"] && p.responses["402"] && g.responses["502"], "openapi.json valid");
 r = await W.fetch(new Request(base + "/verify", { method: "POST" }), env); ok(r.status === 402 && r.headers.get("PAYMENT-REQUIRED"), "POST probe without payment -> 402");
 r = await W.fetch(new Request(base + "/nope"), env); ok(r.status === 404, "unknown path -> 404");
 r = await W.fetch(new Request(base + "/verify", { method: "PUT" }), env); ok(r.status === 405, "PUT -> 405");
