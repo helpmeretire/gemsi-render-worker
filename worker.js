@@ -1,4 +1,4 @@
-// NoJunk AI Text — paid (x402) text summarization, extraction and classification for AI agents.
+// AI Text Tools — paid (x402) text summarization, extraction and classification for AI agents.
 // Runs on Cloudflare Workers AI (Llama 3.3 70B, Qwen 2.5 32B fallback). No API keys, no rate limits:
 // agents pay per call in USDC on Base and are only charged when a valid result is returned.
 // Settings (Cloudflare Worker > Settings > Variables and Secrets / Bindings):
@@ -13,7 +13,7 @@ const NETWORK = "eip155:8453"; // Base mainnet
 const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const CDP_URL = "https://api.cdp.coinbase.com/platform/v2/x402";
 const PAYAI_URL = "https://facilitator.payai.network";
-const SERVICE = "NoJunk AI Text";
+const SERVICE = "AI Text Tools";
 const DESCRIPTION =
   "Pay-per-call text intelligence for agents: summarize any text (paragraph, bullets or TL;DR, in any language), extract named fields into strict JSON (null for anything not in the text, nothing invented), or classify text into your own labels. Up to 24,000 characters per call. You are only charged when a valid result is returned.";
 

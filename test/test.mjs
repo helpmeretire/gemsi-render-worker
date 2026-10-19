@@ -43,7 +43,7 @@ const post = (path, body, extra = {}) => W.fetch(new Request(base + path, { meth
 
 // ---- info / discovery ----
 let r = await W.fetch(new Request(base + "/"), env); let j = await r.json();
-ok(r.status === 200 && j.service === "NoJunk AI Text" && j.facilitator === "payai" && j.configured === true && Object.keys(j.endpoints).join() === "/summarize,/extract,/classify" && j.endpoints["/classify"].price.startsWith("$0.002") && j.endpoints["/summarize"].price.startsWith("$0.005"), "info page lists 3 routes with prices");
+ok(r.status === 200 && j.service === "AI Text Tools" && j.facilitator === "payai" && j.configured === true && Object.keys(j.endpoints).join() === "/summarize,/extract,/classify" && j.endpoints["/classify"].price.startsWith("$0.002") && j.endpoints["/summarize"].price.startsWith("$0.005"), "info page lists 3 routes with prices");
 r = await W.fetch(new Request(base + "/summarize", { method: "POST" }), { AI }); ok(r.status === 402 && dec(r.headers.get("PAYMENT-REQUIRED")).accepts[0].payTo === "0x6f762720b8515b7091e6aa69e8361f7b9909233f", "default wallet used");
 r = await W.fetch(new Request(base + "/summarize", { method: "POST", body: "not json" }), env); ok(r.status === 402, "bad input unpaid -> 402 first");
 r = await W.fetch(new Request(base + "/summarize"), env); ok(r.status === 402 && r.headers.get("PAYMENT-REQUIRED"), "GET probe without payment -> 402");
@@ -238,7 +238,7 @@ reset(); ai.replies = ['{"label": "earnings", "confidence": "high"}']; r = await
 
 // ---- openapi ----
 reset(); r = await W.fetch(new Request(base + "/openapi.json"), env); const o = await r.json();
-ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "NoJunk AI Text" && typeof o.info["x-guidance"] === "string" && o.info["x-guidance"].includes("$0.005") && o.info["x-guidance"].includes("$0.002") && o.servers[0].url === base, "openapi header + x-guidance");
+ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "AI Text Tools" && typeof o.info["x-guidance"] === "string" && o.info["x-guidance"].includes("$0.005") && o.info["x-guidance"].includes("$0.002") && o.servers[0].url === base, "openapi header + x-guidance");
 ok(Object.keys(o.paths).join() === "/summarize,/extract,/classify" && Object.keys(o.paths["/summarize"]).join() === "post", "openapi paths: 3 POST routes");
 for (const [route, amt] of [["/summarize", "0.005000"], ["/extract", "0.005000"], ["/classify", "0.002000"]]) {
   const p = o.paths[route].post;
