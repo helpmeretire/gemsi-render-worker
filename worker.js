@@ -1,4 +1,4 @@
-// NoJunk Address Check — a paid (x402) wallet & contract safety check for AI agents.
+// Address Check — a paid (x402) wallet & contract safety check for AI agents.
 // Data: GoPlus Security (malicious address + contract approval security APIs).
 // Settings (Cloudflare Worker > Settings > Variables and Secrets):
 //   PAY_TO              (optional) Base wallet that receives USDC (defaults to Mick's wallet)
@@ -11,7 +11,7 @@ const NETWORK = "eip155:8453"; // Base mainnet
 const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const CDP_URL = "https://api.cdp.coinbase.com/platform/v2/x402";
 const PAYAI_URL = "https://facilitator.payai.network";
-const SERVICE = "NoJunk Address Check";
+const SERVICE = "Address Check";
 // Short description for the x402 402 challenge (resource.description); CDP Bazaar rejects >500 chars.
 const PAY_DESCRIPTION =
   "Wallet and contract safety check before you send funds or approve a spender. Send an EVM address (Base, Ethereum, BNB Chain, Arbitrum, Polygon, Optimism, Avalanche); get a verdict (DANGER, SUSPICIOUS, NO KNOWN ISSUES), scam flags (phishing, theft, scam-token creator, sanctions, mixer, money laundering) and contract checks (source verification, proxy, age, owner privileges, reported malicious behavior).";
@@ -426,7 +426,7 @@ function sampleResponse(body) {
 }
 const NOJUNK_INDEX = "https://nojunkcrypto.com/services";
 function wellKnownX402(origin, paths) {
-  return json({ version: 1, resources: paths.map((p) => origin + p), instructions: `${SERVICE}: ${DESCRIPTION} Pay per call in USDC on Base via x402. Free sample: ${origin}/sample. Docs: ${origin}/llms.txt. All NoJunk services: ${NOJUNK_INDEX}` }, 200, { "Cache-Control": "public, max-age=3600" });
+  return json({ version: 1, resources: paths.map((p) => origin + p), instructions: `${SERVICE}: ${DESCRIPTION} Pay per call in USDC on Base via x402. Free sample: ${origin}/sample. Docs: ${origin}/llms.txt. All services: ${NOJUNK_INDEX}` }, 200, { "Cache-Control": "public, max-age=3600" });
 }
 function textResponse(t) {
   return new Response(t, { headers: { "Content-Type": "text/plain; charset=utf-8", "Access-Control-Allow-Origin": "*", "Cache-Control": "public, max-age=3600" } });
@@ -458,8 +458,8 @@ Request: POST ${origin}/check {"address":"${SAMPLES.sample.address}","chain":"et
 Response (abridged): ${JSON.stringify({ verdict: EXAMPLE_OUT.verdict, summary: EXAMPLE_OUT.summary, red_flags: EXAMPLE_OUT.red_flags, green_flags: EXAMPLE_OUT.green_flags })}
 
 ## Related
-- NoJunk Token Check (token rug/junk risk): https://nojunk-token-check.mick8511.workers.dev/llms.txt
-- All NoJunk services: ${NOJUNK_INDEX}
+- Token Check (token rug/junk risk): https://nojunk-token-check.mick8511.workers.dev/llms.txt
+- All services: ${NOJUNK_INDEX}
 `;
 }
 

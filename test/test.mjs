@@ -47,7 +47,7 @@ globalThis.fetch = async (u, init) => {
 };
 const base = "https://addr.example.workers.dev";
 let r = await W.fetch(new Request(base + "/"), {}); let j = await r.json();
-ok(r.status === 200 && j.service === "NoJunk Address Check" && j.chains.length === 7, "info page");
+ok(r.status === 200 && j.service === "Address Check" && j.chains.length === 7, "info page");
 r = await W.fetch(new Request(base + "/check", { method: "POST" }), {}); ok(r.status === 402, "POST probe -> 402");
 const pr = dec(r.headers.get("PAYMENT-REQUIRED"));
 ok(pr.accepts[0].amount === "10000" && pr.accepts[0].payTo === PAY && pr.resource.url === base + "/check", "402 requirements correct");

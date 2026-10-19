@@ -304,7 +304,7 @@ function sampleResponse(body) {
 }
 const NOJUNK_INDEX = "https://nojunkcrypto.com/services";
 function wellKnownX402(origin, paths) {
-  return json({ version: 1, resources: paths.map((p) => origin + p), instructions: `${SERVICE}: ${DESCRIPTION} Pay per call in USDC on Base via x402. Free sample: ${origin}/sample. Docs: ${origin}/llms.txt. All NoJunk services: ${NOJUNK_INDEX}` }, 200, { "Cache-Control": "public, max-age=3600" });
+  return json({ version: 1, resources: paths.map((p) => origin + p), instructions: `${SERVICE}: ${DESCRIPTION} Pay per call in USDC on Base via x402. Free sample: ${origin}/sample. Docs: ${origin}/llms.txt. All services: ${NOJUNK_INDEX}` }, 200, { "Cache-Control": "public, max-age=3600" });
 }
 function textResponse(t) {
   return new Response(t, { headers: { "Content-Type": "text/plain; charset=utf-8", "Access-Control-Allow-Origin": "*", "Cache-Control": "public, max-age=3600" } });
@@ -336,8 +336,8 @@ Request: POST ${origin}/check {"address":"${SAMPLES.sample.address}","chain":"et
 Response (abridged): ${JSON.stringify({ verdict: EXAMPLE_OUT.verdict, summary: EXAMPLE_OUT.summary, red_flags: EXAMPLE_OUT.red_flags, green_flags: EXAMPLE_OUT.green_flags })}
 
 ## Related
-- NoJunk Token Check (token rug/junk risk): https://nojunk-token-check.mick8511.workers.dev/llms.txt
-- All NoJunk services: ${NOJUNK_INDEX}
+- Token Check (token rug/junk risk): https://nojunk-token-check.mick8511.workers.dev/llms.txt
+- All services: ${NOJUNK_INDEX}
 `;
 }
 
