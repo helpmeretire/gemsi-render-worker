@@ -1,4 +1,4 @@
-// NoJunk Status — live build floor + service monitor for Mick's x402 services.
+// x402 Services Status (nojunk-status Worker) — live build floor + service monitor for Mick's x402 services.
 // Bindings: KV namespace "STATUS" (key "buildlog" = JSON array of {t, kind, text, service?}).
 const WALLET = "0x6f762720b8515b7091e6aa69e8361f7b9909233f";
 const USDC = "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913";
@@ -26,25 +26,25 @@ async function fetchBazaar() {
 const bazaarKey = (b) => (b ? JSON.stringify(Object.keys(b.by).sort().map((k) => [k, b.by[k].map((x) => x.path)])) : "");
 const SERVICES = [
   { id: "florida-sirs-check", name: "Florida Condo SIRS Check", what: "Has a Florida condo filed its structural reserve study?", route: "/sirs", price: "$0.01", probe: "/" },
-  { id: "nojunk-token-check", name: "NoJunk Token Check", what: "Is this crypto token junk? Honeypot, taxes, owner powers, holders.", route: "/check", price: "$0.01", probe: "/health/data", demo: "/health/data", demoLabel: "Data sources" },
-  { id: "nojunk-address-check", name: "NoJunk Address Check", what: "Has this wallet been reported for phishing, theft or scams?", route: "/check", price: "$0.01", probe: "/" },
+  { id: "nojunk-token-check", name: "Token Check", what: "Is this crypto token junk? Honeypot, taxes, owner powers, holders.", route: "/check", price: "$0.01", probe: "/health/data", demo: "/health/data", demoLabel: "Data sources" },
+  { id: "nojunk-address-check", name: "Address Check", what: "Has this wallet been reported for phishing, theft or scams?", route: "/check", price: "$0.01", probe: "/" },
   { id: "fx-reference-rates", name: "FX Reference Rates", what: "Currency conversion from ECB reference rates.", route: "/rate", price: "$0.003", probe: "/" },
   { id: "sec-company-snapshot", name: "SEC Company Snapshot", what: "Revenue, income, balance sheet for any US-listed company.", route: "/company", price: "$0.02", probe: "/", demo: "/sample", demoLabel: "Live sample (AAPL)" },
-  { id: "nojunk-web-read", name: "NoJunk Web Read", what: "Any web page turned into clean text and markdown.", route: "/read", price: "$0.002", probe: "/" },
-  { id: "nojunk-email-check", name: "NoJunk Email Check", what: "Is this email real? Syntax, mail server, disposable, typos.", route: "/verify", price: "$0.001", probe: "/" },
-  { id: "nojunk-crypto-price", name: "NoJunk Crypto Price", what: "USD price and market data for 270+ coins or any on-chain token.", route: "/price", price: "$0.001", probe: "/health/data", demo: "/health/data", demoLabel: "Data source" },
-  { id: "nojunk-domain-intel", name: "NoJunk Domain Intel", what: "Domain age, registrar, DNS, email security, risk score.", route: "/domain", price: "$0.003", probe: "/" },
-  { id: "nojunk-ai-text", name: "NoJunk AI Text", what: "Summarize, extract facts, classify text with a 70B model.", route: "/summarize", price: "$0.005", probe: "/" },
-  { id: "nojunk-speech", name: "NoJunk Speech", what: "Transcribe audio, speak text, translate 100 languages.", route: "/transcribe", price: "$0.02", probe: "/" },
-  { id: "nojunk-image", name: "NoJunk Image", what: "Generate a picture from text; describe any image.", route: "/generate", price: "$0.01", probe: "/" },
-  { id: "nojunk-document", name: "NoJunk Document", what: "PDF, Word, Excel or image file turned into text.", route: "/convert", price: "$0.01", probe: "/" },
-  { id: "nojunk-web-search", name: "NoJunk Web Search", what: "Ten live web results for any query.", route: "/search", price: "$0.002", probe: "/health/search", demo: "/health/search", demoLabel: "Live search check" },
-  { id: "nojunk-geo", name: "NoJunk Geo", what: "Address to coordinates and back; 7-day weather for any place.", route: "/geocode", price: "$0.002", probe: "/health/data", demo: "/health/data", demoLabel: "Data sources" },
-  { id: "nojunk-qr", name: "NoJunk QR", what: "QR codes as SVG, PNG or data; single or batch of 25.", route: "/qr", price: "$0.001", probe: "/", demo: "/sample.svg", demoLabel: "Sample QR" },
-  { id: "nojunk-llm", name: "NoJunk LLM", what: "OpenAI-compatible 70B chat model and embeddings.", route: "/v1/chat/completions", price: "$0.005", probe: "/v1/models", demo: "/v1/models", demoLabel: "Models offered" },
-  { id: "nojunk-stocks", name: "NoJunk Stocks", what: "Stock, ETF, index, FX and commodity quotes, history and stats.", route: "/quote", price: "$0.001", probe: "/" },
-  { id: "nojunk-moderate", name: "NoJunk Moderate", what: "Sentiment, safety, rerank, PII detection and language ID.", route: "/sentiment", price: "$0.001", probe: "/" },
-  { id: "nojunk-chain", name: "NoJunk Chain", what: "Wallet balances, gas, transactions and blocks on 9 chains.", route: "/balance", price: "$0.002", probe: "/" },
+  { id: "nojunk-web-read", name: "Web Page Reader", what: "Any web page turned into clean text and markdown.", route: "/read", price: "$0.002", probe: "/" },
+  { id: "nojunk-email-check", name: "Email Check", what: "Is this email real? Syntax, mail server, disposable, typos.", route: "/verify", price: "$0.001", probe: "/" },
+  { id: "nojunk-crypto-price", name: "Crypto Price", what: "USD price and market data for 270+ coins or any on-chain token.", route: "/price", price: "$0.001", probe: "/health/data", demo: "/health/data", demoLabel: "Data source" },
+  { id: "nojunk-domain-intel", name: "Domain Intel", what: "Domain age, registrar, DNS, email security, risk score.", route: "/domain", price: "$0.003", probe: "/" },
+  { id: "nojunk-ai-text", name: "AI Text Tools", what: "Summarize, extract facts, classify text with a 70B model.", route: "/summarize", price: "$0.005", probe: "/" },
+  { id: "nojunk-speech", name: "Speech", what: "Transcribe audio, speak text, translate 100 languages.", route: "/transcribe", price: "$0.02", probe: "/" },
+  { id: "nojunk-image", name: "Image", what: "Generate a picture from text; describe any image.", route: "/generate", price: "$0.01", probe: "/" },
+  { id: "nojunk-document", name: "Document Converter", what: "PDF, Word, Excel or image file turned into text.", route: "/convert", price: "$0.01", probe: "/" },
+  { id: "nojunk-web-search", name: "Web Search", what: "Ten live web results for any query.", route: "/search", price: "$0.002", probe: "/health/search", demo: "/health/search", demoLabel: "Live search check" },
+  { id: "nojunk-geo", name: "Geocoding & Weather", what: "Address to coordinates and back; 7-day weather for any place.", route: "/geocode", price: "$0.002", probe: "/health/data", demo: "/health/data", demoLabel: "Data sources" },
+  { id: "nojunk-qr", name: "QR Code Generator", what: "QR codes as SVG, PNG or data; single or batch of 25.", route: "/qr", price: "$0.001", probe: "/", demo: "/sample.svg", demoLabel: "Sample QR" },
+  { id: "nojunk-llm", name: "AI Chat (LLM)", what: "OpenAI-compatible 70B chat model and embeddings.", route: "/v1/chat/completions", price: "$0.005", probe: "/v1/models", demo: "/v1/models", demoLabel: "Models offered" },
+  { id: "nojunk-stocks", name: "Stock Quotes", what: "Stock, ETF, index, FX and commodity quotes, history and stats.", route: "/quote", price: "$0.001", probe: "/" },
+  { id: "nojunk-moderate", name: "Text Moderation", what: "Sentiment, safety, rerank, PII detection and language ID.", route: "/sentiment", price: "$0.001", probe: "/" },
+  { id: "nojunk-chain", name: "Blockchain Data", what: "Wallet balances, gas, transactions and blocks on 9 chains.", route: "/balance", price: "$0.002", probe: "/" },
 ];
 const SITE = { id: "nojunkcrypto.com", name: "nojunkcrypto.com (free checkers)", url: "https://nojunkcrypto.com/" };
 
@@ -216,7 +216,7 @@ async function cachedStatus(env, ctx) {
 
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
-const PAGE = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>NoJunk Build Floor</title>
+const PAGE = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>x402 Services Status</title>
 <meta name="robots" content="noindex">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2313213C'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11' stroke='%23FFD23F' stroke-width='3.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -254,7 +254,7 @@ h2{font-stretch:74%;font-weight:850;font-size:26px;margin:26px 0 10px}
 .pay .big{font-size:34px;font-weight:700;color:var(--coin)}
 .muted{color:var(--ink2);font-size:13px}
 </style></head><body><div class="wrap">
-<header><div class="brand"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#13213C"/><path d="M9 16.5l4.5 4.5L23 11" stroke="#FFD23F" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>NoJunk Build Floor</div><div class="live"><span class="dot"></span><span id="upd">checking…</span></div></header>
+<header><div class="brand"><svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#13213C"/><path d="M9 16.5l4.5 4.5L23 11" stroke="#FFD23F" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>x402 Services Status</div><div class="live"><span class="dot"></span><span id="upd">checking…</span></div></header>
 <div class="tiles"><div class="tile"><b id="n-up">–</b><span>services up</span></div><div class="tile"><b id="n-pay">–</b><span>paywalls live, paying your wallet</span></div><div class="tile"><b id="n-usdc">–</b><span>USDC received from agents</span></div><div class="tile"><b id="n-bal">–</b><span>USDC in wallet</span></div><div class="tile"><b id="n-ms">–</b><span>avg response (ms)</span></div><div class="tile"><b id="n-bz">–</b><span>listed in Coinbase Bazaar</span></div></div>
 <div class="grid">
 <section><h2>Build floor <span class="muted">(what I'm doing, newest first)</span></h2><div class="log" id="log"></div>
