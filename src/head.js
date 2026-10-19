@@ -1,4 +1,4 @@
-// NoJunk Domain Intel — a paid (x402) domain registration / DNS / web-reachability check for AI agents.
+// Domain Intel — a paid (x402) domain registration / DNS / web-reachability check for AI agents.
 // Data: RDAP (via rdap.org bootstrap), DNS over HTTPS (Cloudflare 1.1.1.1), and a live HTTPS probe.
 // Settings (Cloudflare Worker > Settings > Variables and Secrets):
 //   PAY_TO              (optional) Base wallet address that receives USDC (defaults to DEFAULT_PAY_TO)
@@ -12,7 +12,7 @@ const NETWORK = "eip155:8453"; // Base mainnet
 const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const CDP_URL = "https://api.cdp.coinbase.com/platform/v2/x402";
 const PAYAI_URL = "https://facilitator.payai.network";
-const SERVICE = "NoJunk Domain Intel";
+const SERVICE = "Domain Intel";
 const DESCRIPTION =
   "Domain intelligence in one call: RDAP registration (registrar, created, expires, age, status, nameservers), DNS records (A, AAAA, MX, NS, TXT, CNAME, SPF, DMARC), a live HTTPS probe (reachable, status, server, redirect target, HSTS), plus risk flags and a 0-100 risk score for new, parked, unreachable or badly configured domains.";
 

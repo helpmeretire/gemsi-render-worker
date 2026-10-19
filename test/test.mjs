@@ -111,7 +111,7 @@ const env = { PAY_TO: PAY };
 const base = "https://domain.example.workers.dev";
 
 let r = await W.fetch(new Request(base + "/"), env); let j = await r.json();
-ok(r.status === 200 && j.service === "NoJunk Domain Intel" && j.facilitator === "payai" && j.endpoint.includes("/domain?domain="), "info page");
+ok(r.status === 200 && j.service === "Domain Intel" && j.facilitator === "payai" && j.endpoint.includes("/domain?domain="), "info page");
 r = await W.fetch(new Request(base + "/domain?domain=example.com"), {}); ok(r.status === 402 && dec(r.headers.get("PAYMENT-REQUIRED")).accepts[0].payTo === "0x6f762720b8515b7091e6aa69e8361f7b9909233f", "default wallet used");
 up = []; r = await W.fetch(new Request(base + "/domain"), env); ok(r.status === 402 && up.length === 0, "missing params unpaid -> 402 first");
 r = await W.fetch(new Request(base + "/domain?domain=127.0.0.1"), env); ok(r.status === 402 && up.length === 0, "bad input unpaid -> 402 first");
@@ -214,7 +214,7 @@ mode = "good";
 // openapi + POST probe
 r = await W.fetch(new Request(base + "/openapi.json"), env); const o = await r.json();
 const g = o.paths["/domain"].get, p = o.paths["/domain"].post;
-ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "NoJunk Domain Intel" && o.info["x-guidance"].includes("$0.003") && g["x-payment-info"].price.amount === "0.003000" && g["x-payment-info"].price.mode === "fixed" && p["x-payment-info"].protocols[0].x402 && p.requestBody.content["application/json"].schema.required.join() === "domain" && g.parameters.map((x) => x.name).join() === "domain" && g.responses["402"] && p.responses["402"] && g.responses["502"], "openapi.json valid");
+ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "Domain Intel" && o.info["x-guidance"].includes("$0.003") && g["x-payment-info"].price.amount === "0.003000" && g["x-payment-info"].price.mode === "fixed" && p["x-payment-info"].protocols[0].x402 && p.requestBody.content["application/json"].schema.required.join() === "domain" && g.parameters.map((x) => x.name).join() === "domain" && g.responses["402"] && p.responses["402"] && g.responses["502"], "openapi.json valid");
 r = await W.fetch(new Request(base + "/domain", { method: "POST" }), env); ok(r.status === 402 && r.headers.get("PAYMENT-REQUIRED"), "POST probe without payment -> 402");
 r = await W.fetch(new Request(base + "/nope"), env); ok(r.status === 404, "unknown path -> 404");
 r = await W.fetch(new Request(base + "/domain", { method: "OPTIONS" }), env); ok(r.status === 200 && r.headers.get("Access-Control-Allow-Headers").includes("PAYMENT-SIGNATURE"), "OPTIONS preflight");
