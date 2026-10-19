@@ -43,11 +43,11 @@ console.log(fails ? fails + " FAILED" : "ALL PASS");
   let r = await W.fetch(new Request("https://nojunkcrypto.com/"), {}); let t = await r.text();
   ok(r.status === 200 && t.includes("Is this token junk?") && t.includes('<link rel="canonical" href="https://nojunkcrypto.com/">') && t.includes('content="https://nojunkcrypto.com/"') && !t.includes("__CANONICAL__") && t.includes('href="https://nojunkcrypto.com/"'), "public domain root serves checker with canonical");
   r = await W.fetch(new Request("https://nojunkcrypto.com/api"), {}); let j = await r.json();
-  ok(r.status === 200 && j.service === "NoJunk Token Check", "/api serves the API info on public domain");
+  ok(r.status === 200 && j.service === "Token Check", "/api serves the API info on public domain");
   r = await W.fetch(new Request("https://nojunkcrypto.com/check", { method: "POST" }), {});
   ok(r.status === 402, "paid endpoint still answers on public domain");
   r = await W.fetch(new Request("https://tok.example.workers.dev/"), {}); j = await r.json();
-  ok(j.service === "NoJunk Token Check", "workers.dev root unchanged");
+  ok(j.service === "Token Check", "workers.dev root unchanged");
   console.log(fails ? fails + " FAILED" : "ALL PASS");
 }
 {

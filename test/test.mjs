@@ -63,7 +63,7 @@ globalThis.fetch = async (u, init) => {
 const env = {};
 const base = "https://tok.example.workers.dev";
 let r = await W.fetch(new Request(base + "/"), env); let j = await r.json();
-ok(r.status === 200 && j.service === "NoJunk Token Check" && j.facilitator === "payai", "info page");
+ok(r.status === 200 && j.service === "Token Check" && j.facilitator === "payai", "info page");
 r = await W.fetch(new Request(base + "/check", { method: "POST" }), env);
 ok(r.status === 402, "POST probe without payment -> 402");
 const pr = dec(r.headers.get("PAYMENT-REQUIRED"));

@@ -475,7 +475,7 @@ function sampleResponse(body) {
 }
 const NOJUNK_INDEX = "https://nojunkcrypto.com/services";
 function wellKnownX402(origin, paths) {
-  return json({ version: 1, resources: paths.map((p) => origin + p), instructions: `${SERVICE}: ${DESCRIPTION} Pay per call in USDC on Base via x402. Free sample: ${origin}/sample. Docs: ${origin}/llms.txt. All NoJunk services: ${NOJUNK_INDEX}` }, 200, { "Cache-Control": "public, max-age=3600" });
+  return json({ version: 1, resources: paths.map((p) => origin + p), instructions: `${SERVICE}: ${DESCRIPTION} Pay per call in USDC on Base via x402. Free sample: ${origin}/sample. Docs: ${origin}/llms.txt. All services: ${NOJUNK_INDEX}` }, 200, { "Cache-Control": "public, max-age=3600" });
 }
 function textResponse(t) {
   return new Response(t, { headers: { "Content-Type": "text/plain; charset=utf-8", "Access-Control-Allow-Origin": "*", "Cache-Control": "public, max-age=3600" } });
@@ -501,7 +501,7 @@ Response (abridged): ${JSON.stringify({ grade: EXAMPLE_OUT.grade, risk_score: EX
 
 ## Related
 - NoJunk Address Check (wallet/contract safety before you send or approve): https://nojunk-address-check.mick8511.workers.dev/llms.txt
-- All NoJunk services: ${NOJUNK_INDEX}
+- All services: ${NOJUNK_INDEX}
 `;
 }
 

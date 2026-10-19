@@ -195,7 +195,7 @@ function render(r){
  var FM=__FLAGMAP__;var flags=(r.red_flags||[]).map(function(x){var s=FM[x.flag];return'<li><span class="sev s-'+esc(x.severity)+'">'+SEV[x.severity]+'</span><span>'+esc(x.detail)+(s?' <a class="flaglink" href="/learn/'+s+'">What this means</a>':'')+'</span></li>'}).join('');
  var good=(r.green_flags||[]).map(function(x){return'<li><span class="sev s-good">Good</span><span>'+esc(x)+'</span></li>'}).join('');
  var tag=t.symbol?'$'+String(t.symbol).replace(/[^A-Za-z0-9]/g,''):'this token';
- var share='I ran '+tag+' through the NoJunk token checker: '+g+'.\n\nCheck any token free before you buy:';
+ var share='I ran '+tag+' through the NoJunkCrypto token checker: '+g+'.\n\nCheck any token free before you buy:';
  var link=location.origin+location.pathname+'?a='+encodeURIComponent(t.address)+'&c='+encodeURIComponent(t.chain);
  var xurl='https://x.com/intent/post?text='+encodeURIComponent(share)+'&url='+encodeURIComponent(link);
  out.innerHTML='<article class="card">'+

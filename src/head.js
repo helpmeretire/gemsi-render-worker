@@ -1,4 +1,4 @@
-// NoJunk Token Check — a paid (x402) crypto token risk grader for AI agents.
+// Token Check — a paid (x402) crypto token risk grader for AI agents.
 // Security data: GoPlus Security API. Market data: GeckoTerminal (Powered by CoinGecko).
 // Settings (Cloudflare Worker > Settings > Variables and Secrets):
 //   PAY_TO              (optional) Base wallet that receives USDC (defaults to Mick's wallet)
@@ -12,7 +12,7 @@ const NETWORK = "eip155:8453"; // Base mainnet
 const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const CDP_URL = "https://api.cdp.coinbase.com/platform/v2/x402";
 const PAYAI_URL = "https://facilitator.payai.network";
-const SERVICE = "NoJunk Token Check";
+const SERVICE = "Token Check";
 // Short description for the x402 402 challenge (resource.description); CDP Bazaar rejects >500 chars.
 const PAY_DESCRIPTION =
   "Crypto token rug-pull and junk-risk check for Base, Ethereum, BNB Chain, Arbitrum, Polygon, Optimism, Avalanche and Solana. Send a token contract address or Solana mint; get a grade (JUNK, RISKY, CAUTION, CLEAN), a 0-100 risk score and red flags: honeypot, sell tax, mint/freeze authority, owner powers, holder concentration, liquidity, pool age. Not financial advice.";
