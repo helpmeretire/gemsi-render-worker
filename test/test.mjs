@@ -34,7 +34,7 @@ const get = (path, extra = {}) => W.fetch(new Request(base + path, { method: "GE
 
 // ---- info / discovery ----
 let r = await W.fetch(new Request(base + "/"), env); let j = await r.json();
-ok(r.status === 200 && j.service === "NoJunk QR" && j.facilitator === "payai" && j.configured === true && Object.keys(j.endpoints).join() === "/qr,/qr/batch" && j.endpoints["/qr"].price.startsWith("$0.001 ") && j.endpoints["/qr/batch"].price.startsWith("$0.005 ") && j.sample === base + "/sample.svg", "info page lists 2 routes with prices + sample link");
+ok(r.status === 200 && j.service === "QR Code Generator" && j.facilitator === "payai" && j.configured === true && Object.keys(j.endpoints).join() === "/qr,/qr/batch" && j.endpoints["/qr"].price.startsWith("$0.001 ") && j.endpoints["/qr/batch"].price.startsWith("$0.005 ") && j.sample === base + "/sample.svg", "info page lists 2 routes with prices + sample link");
 r = await W.fetch(new Request(base + "/qr", { method: "POST" }), {}); ok(r.status === 402 && dec(r.headers.get("PAYMENT-REQUIRED")).accepts[0].payTo === "0x6f762720b8515b7091e6aa69e8361f7b9909233f", "default wallet used");
 r = await W.fetch(new Request(base + "/qr", { method: "POST", body: "not json" }), env); ok(r.status === 402, "bad input unpaid -> 402 first");
 r = await get("/qr"); ok(r.status === 402 && r.headers.get("PAYMENT-REQUIRED"), "GET probe /qr without payment -> 402");
@@ -477,7 +477,7 @@ const T = {
 
 // ---- openapi ----
 reset(); r = await W.fetch(new Request(base + "/openapi.json"), env); const o = await r.json();
-ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "NoJunk QR" && typeof o.info["x-guidance"] === "string" && o.info["x-guidance"].includes("$0.001") && o.info["x-guidance"].includes("$0.005") && o.info["x-guidance"].includes("image/svg+xml") && o.info["x-guidance"].includes("image/png") && o.servers[0].url === base, "openapi header + x-guidance");
+ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "QR Code Generator" && typeof o.info["x-guidance"] === "string" && o.info["x-guidance"].includes("$0.001") && o.info["x-guidance"].includes("$0.005") && o.info["x-guidance"].includes("image/svg+xml") && o.info["x-guidance"].includes("image/png") && o.servers[0].url === base, "openapi header + x-guidance");
 ok(Object.keys(o.paths).join() === "/qr,/qr/batch,/sample.svg" && Object.keys(o.paths["/qr"]).join() === "post,get" && Object.keys(o.paths["/qr/batch"]).join() === "post,get", "openapi paths: 2 paid routes with POST + GET, free sample");
 for (const [route, amt] of [["/qr", "0.001000"], ["/qr/batch", "0.005000"]]) {
   for (const method of ["post", "get"]) {

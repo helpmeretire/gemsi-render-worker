@@ -1,4 +1,4 @@
-// NoJunk QR — paid (x402) QR Code generation for AI agents.
+// QR Code Generator — paid (x402) QR Code generation for AI agents.
 // A complete ISO/IEC 18004 QR Code encoder (versions 1-40, ECC L/M/Q/H, numeric/alphanumeric/byte modes,
 // Reed-Solomon over GF(256), all 8 masks with the 4 penalty rules) plus SVG and PNG writers, all computed inside
 // the Worker: no upstream services, no AI binding, no API keys. Agents pay per call in USDC on Base and are only
@@ -14,7 +14,7 @@ const NETWORK = "eip155:8453"; // Base mainnet
 const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const CDP_URL = "https://api.cdp.coinbase.com/platform/v2/x402";
 const PAYAI_URL = "https://facilitator.payai.network";
-const SERVICE = "NoJunk QR";
+const SERVICE = "QR Code Generator";
 const DESCRIPTION =
   "Pay-per-call QR Code generation for agents: turn any text, URL, Wi-Fi string or payment URI (up to 1500 characters) into a standards-compliant QR Code as crisp SVG, real PNG or a JSON module matrix; batch up to 25 codes in one call. Full ISO/IEC 18004 encoder (versions 1-40, ECC L/M/Q/H) computed in the Worker, no upstream services. You are only charged when a valid QR code is returned.";
 const USER_AGENT = "NoJunk QR/1.0 (+https://nojunkcrypto.com)";
