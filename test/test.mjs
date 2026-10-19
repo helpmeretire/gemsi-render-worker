@@ -62,7 +62,7 @@ const serveAudio = (u = AUDIO_URL, opts = {}) => { audioHosts[u] = { status: 200
 
 // ---- info / discovery ----
 let r = await W.fetch(new Request(base + "/"), env); let j = await r.json();
-ok(r.status === 200 && j.service === "NoJunk Speech" && j.facilitator === "payai" && j.configured === true && Object.keys(j.endpoints).join() === "/transcribe,/speak,/translate" && j.endpoints["/transcribe"].price.startsWith("$0.02 ") && j.endpoints["/speak"].price.startsWith("$0.01 ") && j.endpoints["/translate"].price.startsWith("$0.002 ") && j.limits.translate.languages.length === 100, "info page lists 3 routes with prices + 100 languages");
+ok(r.status === 200 && j.service === "Speech" && j.facilitator === "payai" && j.configured === true && Object.keys(j.endpoints).join() === "/transcribe,/speak,/translate" && j.endpoints["/transcribe"].price.startsWith("$0.02 ") && j.endpoints["/speak"].price.startsWith("$0.01 ") && j.endpoints["/translate"].price.startsWith("$0.002 ") && j.limits.translate.languages.length === 100, "info page lists 3 routes with prices + 100 languages");
 r = await W.fetch(new Request(base + "/transcribe", { method: "POST" }), { AI }); ok(r.status === 402 && dec(r.headers.get("PAYMENT-REQUIRED")).accepts[0].payTo === "0x6f762720b8515b7091e6aa69e8361f7b9909233f", "default wallet used");
 r = await W.fetch(new Request(base + "/speak", { method: "POST", body: "not json" }), env); ok(r.status === 402, "bad input unpaid -> 402 first");
 for (const route of ["/transcribe", "/speak", "/translate"]) { r = await W.fetch(new Request(base + route), env); ok(r.status === 402 && r.headers.get("PAYMENT-REQUIRED") && dec(r.headers.get("PAYMENT-REQUIRED")).resource.url === base + route, `GET ${route} probe without payment -> 402`); }
@@ -282,7 +282,7 @@ reset(); mode = "badsettle"; r = await paid("/translate", { text: TEXT, target_l
 
 // ---- openapi ----
 reset(); r = await W.fetch(new Request(base + "/openapi.json"), env); const o = await r.json();
-ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "NoJunk Speech" && typeof o.info["x-guidance"] === "string" && o.info["x-guidance"].includes("$0.02") && o.info["x-guidance"].includes("$0.01") && o.info["x-guidance"].includes("$0.002") && o.servers[0].url === base, "openapi header + x-guidance");
+ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "Speech" && typeof o.info["x-guidance"] === "string" && o.info["x-guidance"].includes("$0.02") && o.info["x-guidance"].includes("$0.01") && o.info["x-guidance"].includes("$0.002") && o.servers[0].url === base, "openapi header + x-guidance");
 ok(Object.keys(o.paths).join() === "/transcribe,/speak,/translate" && Object.keys(o.paths["/speak"]).join() === "post", "openapi paths: 3 POST routes");
 for (const [route, amt] of [["/transcribe", "0.020000"], ["/speak", "0.010000"], ["/translate", "0.002000"]]) {
   const p = o.paths[route].post;

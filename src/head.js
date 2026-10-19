@@ -1,4 +1,4 @@
-// NoJunk Speech — paid (x402) speech-to-text, text-to-speech and translation for AI agents.
+// Speech — paid (x402) speech-to-text, text-to-speech and translation for AI agents.
 // Runs on Cloudflare Workers AI (Whisper large-v3-turbo, Deepgram Aura-1, Meta M2M100 1.2B). No API keys,
 // no rate limits: agents pay per call in USDC on Base and are only charged when a valid result is returned.
 // Settings (Cloudflare Worker > Settings > Variables and Secrets / Bindings):
@@ -13,7 +13,7 @@ const NETWORK = "eip155:8453"; // Base mainnet
 const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const CDP_URL = "https://api.cdp.coinbase.com/platform/v2/x402";
 const PAYAI_URL = "https://facilitator.payai.network";
-const SERVICE = "NoJunk Speech";
+const SERVICE = "Speech";
 const DESCRIPTION =
   "Pay-per-call speech and language tools for agents: transcribe audio (URL or base64, up to 20 MB / about 10 minutes) to text with timestamps and detected language, turn text into natural MP3 speech, or translate text between 100 languages. USDC on Base via x402; you are only charged when a valid result is returned.";
 const USER_AGENT = "NoJunk Speech/1.0 (+https://nojunkcrypto.com)";

@@ -38,7 +38,7 @@ function looksLikeText(bytes) {
   return h.startsWith("<!doctype") || h.startsWith("<html") || h.startsWith("<?xml") || h.startsWith("{\"") || h.startsWith("[{");
 }
 
-// ---------- SSRF guard (same rules as NoJunk Web Read) ----------
+// ---------- SSRF guard (same rules as Web Page Reader) ----------
 const BLOCKED_SUFFIXES = [".localhost", ".internal", ".local", ".localdomain", ".home.arpa", ".intranet", ".corp", ".lan"];
 const BLOCKED_HOSTS = new Set(["localhost", "0.0.0.0", "broadcasthost", "ip6-localhost", "ip6-loopback", "metadata.google.internal", "metadata"]);
 function privateV4(ip) {
