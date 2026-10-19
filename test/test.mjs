@@ -58,7 +58,7 @@ const blobBytes = async (doc) => Buffer.from(await doc.blob.arrayBuffer());
 
 // ---- info / discovery ----
 let r = await W.fetch(new Request(base + "/"), env); let j = await r.json();
-ok(r.status === 200 && j.service === "NoJunk Document" && j.facilitator === "payai" && j.configured === true && Object.keys(j.endpoints).join() === "/convert" && j.endpoints["/convert"].price.startsWith("$0.01 ") && j.endpoints["/convert"].max_request_bytes === 28 * MB && j.supported_types.includes("pdf") && j.supported_types.includes("docx") && j.supported_types.includes("xlsx") && j.limits.max_file_bytes === 20 * MB, "info page lists /convert with price, caps, supported types");
+ok(r.status === 200 && j.service === "Document Converter" && j.facilitator === "payai" && j.configured === true && Object.keys(j.endpoints).join() === "/convert" && j.endpoints["/convert"].price.startsWith("$0.01 ") && j.endpoints["/convert"].max_request_bytes === 28 * MB && j.supported_types.includes("pdf") && j.supported_types.includes("docx") && j.supported_types.includes("xlsx") && j.limits.max_file_bytes === 20 * MB, "info page lists /convert with price, caps, supported types");
 r = await W.fetch(new Request(base + "/convert", { method: "POST" }), { AI }); ok(r.status === 402 && dec(r.headers.get("PAYMENT-REQUIRED")).accepts[0].payTo === "0x6f762720b8515b7091e6aa69e8361f7b9909233f", "default wallet used");
 r = await W.fetch(new Request(base + "/convert", { method: "POST", body: "not json" }), env); ok(r.status === 402, "bad input unpaid -> 402 first");
 r = await W.fetch(new Request(base + "/convert"), env); ok(r.status === 402 && r.headers.get("PAYMENT-REQUIRED"), "GET probe /convert without payment -> 402");
@@ -329,7 +329,7 @@ reset(); r = await paid({ url: DOC, max_chars: 1000 }); j = await r.json(); ok(r
 
 // ---- openapi ----
 reset(); r = await W.fetch(new Request(base + "/openapi.json"), env); const o = await r.json();
-ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "NoJunk Document" && typeof o.info["x-guidance"] === "string" && o.info["x-guidance"].includes("$0.01") && /PDF/.test(o.info["x-guidance"]) && /Office|Word|Excel/.test(o.info["x-guidance"]) && /image/i.test(o.info["x-guidance"]) && /url/.test(o.info["x-guidance"]) && o.servers[0].url === base, "openapi header + x-guidance (PDFs/Office/images by url for a cent)");
+ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "Document Converter" && typeof o.info["x-guidance"] === "string" && o.info["x-guidance"].includes("$0.01") && /PDF/.test(o.info["x-guidance"]) && /Office|Word|Excel/.test(o.info["x-guidance"]) && /image/i.test(o.info["x-guidance"]) && /url/.test(o.info["x-guidance"]) && o.servers[0].url === base, "openapi header + x-guidance (PDFs/Office/images by url for a cent)");
 ok(Object.keys(o.paths).join() === "/convert" && Object.keys(o.paths["/convert"]).join() === "post", "openapi paths: 1 POST route");
 const p = o.paths["/convert"].post;
 ok(p["x-payment-info"].price.amount === "0.010000" && p["x-payment-info"].price.mode === "fixed" && p["x-payment-info"].price.currency === "USD" && p["x-payment-info"].protocols[0].x402 && p.responses["402"] && p.responses["200"] && p.responses["400"] && p.responses["413"] && p.responses["415"] && p.responses["422"] && p.responses["502"] && p.requestBody.required === true && p.operationId === "convertDocument", "openapi /convert x-payment-info 0.010000 + 402/413/415/422/502");

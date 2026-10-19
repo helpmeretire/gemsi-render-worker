@@ -1,4 +1,4 @@
-// NoJunk Document — paid (x402) document-to-Markdown conversion for AI agents.
+// Document Converter — paid (x402) document-to-Markdown conversion for AI agents.
 // Point it at a PDF, Office file, spreadsheet, image or web page (by URL or base64) and get clean Markdown back.
 // Runs on Cloudflare Workers AI toMarkdown. No API keys, no rate limits: agents pay per call in USDC on Base
 // and are only charged when a valid conversion is returned.
@@ -14,7 +14,7 @@ const NETWORK = "eip155:8453"; // Base mainnet
 const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const CDP_URL = "https://api.cdp.coinbase.com/platform/v2/x402";
 const PAYAI_URL = "https://facilitator.payai.network";
-const SERVICE = "NoJunk Document";
+const SERVICE = "Document Converter";
 const DESCRIPTION =
   "Pay-per-call document reading for agents: convert a PDF, Word, Excel, OpenDocument, CSV, Apple Numbers, HTML, XML or image file (by public URL or base64) into clean Markdown you can reason over. One cent per document; you are only charged when a conversion is returned.";
 const USER_AGENT = "NoJunk Document/1.0 (+https://nojunkcrypto.com)";
