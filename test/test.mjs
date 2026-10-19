@@ -52,7 +52,7 @@ const GOOD = { "/sentiment": { text: "Great service" }, "/safety": { text: "Hell
 
 // ---- free routes ----
 let r = await W.fetch(new Request(base + "/"), env); let j = await r.json();
-ok(r.status === 200 && j.service === "NoJunk Moderate" && j.facilitator === "payai" && j.configured === true && Object.keys(j.endpoints).join() === ROUTES.join() && j.endpoints["/pii"].price.startsWith("$0.003") && j.endpoints["/sentiment"].price.startsWith("$0.001") && j.endpoints["/safety"].price.startsWith("$0.002") && j.endpoints["/rerank"].price.startsWith("$0.002") && j.endpoints["/language"].price.startsWith("$0.001") && j.description.startsWith("Content moderation and text analysis"), "info page lists 5 routes with prices + description");
+ok(r.status === 200 && j.service === "Text Moderation" && j.facilitator === "payai" && j.configured === true && Object.keys(j.endpoints).join() === ROUTES.join() && j.endpoints["/pii"].price.startsWith("$0.003") && j.endpoints["/sentiment"].price.startsWith("$0.001") && j.endpoints["/safety"].price.startsWith("$0.002") && j.endpoints["/rerank"].price.startsWith("$0.002") && j.endpoints["/language"].price.startsWith("$0.001") && j.description.startsWith("Content moderation and text analysis"), "info page lists 5 routes with prices + description");
 ok(j.endpoints["/sentiment"].methods.join() === "GET,POST" && j.safety_categories.S14 === "Code Interpreter Abuse" && j.pii_types.regex.includes("credit_card") && j.pii_types.llm.includes("name") && j.limits.max_text_chars === 20000 && j.limits.max_request_bytes === 131072, "info page: methods, categories, pii types, limits");
 r = await W.fetch(new Request(base + "/"), { PAY_TO: PAY }); ok(r.status === 200 && (await r.json()).configured === false && ai.calls.length === 0, "info page without AI -> configured false");
 reset(); r = await W.fetch(new Request(base + "/health"), env); j = await r.json(); ok(r.status === 200 && j.status === "ok" && j.ai_binding === true && ai.calls.length === 0 && calls.length === 0, "health: ai_binding true, no model call, no facilitator");
@@ -324,7 +324,7 @@ reset(); r = await paidGet("/language", "text=" + encodeURIComponent("Hola amigo
 
 // ---- openapi ----
 reset(); r = await W.fetch(new Request(base + "/openapi.json"), env); const o = await r.json();
-ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "NoJunk Moderate" && o.info.description.startsWith("Content moderation") && typeof o.info["x-guidance"] === "string" && o.info["x-guidance"].includes("$0.001") && o.info["x-guidance"].includes("$0.002") && o.info["x-guidance"].includes("$0.003") && o.info["x-guidance"].includes("llm_error") && o.info["x-guidance"].includes('"script"') && o.servers[0].url === base, "openapi header + x-guidance");
+ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "Text Moderation" && o.info.description.startsWith("Content moderation") && typeof o.info["x-guidance"] === "string" && o.info["x-guidance"].includes("$0.001") && o.info["x-guidance"].includes("$0.002") && o.info["x-guidance"].includes("$0.003") && o.info["x-guidance"].includes("llm_error") && o.info["x-guidance"].includes('"script"') && o.servers[0].url === base, "openapi header + x-guidance");
 ok(Object.keys(o.paths).join() === ROUTES.join() && ROUTES.every((p) => Object.keys(o.paths[p]).join() === "get,post"), "openapi paths: 5 routes, GET and POST each");
 for (const route of ROUTES) {
   for (const m of ["get", "post"]) {

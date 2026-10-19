@@ -1,4 +1,4 @@
-// NoJunk Moderate — paid (x402) content moderation and text analysis for AI agents.
+// Text Moderation — paid (x402) content moderation and text analysis for AI agents.
 // Runs on Cloudflare Workers AI (DistilBERT sentiment, Llama Guard 3, BGE reranker, Llama 3.3 70B).
 // No API keys, no rate limits: agents pay per call in USDC on Base and are only charged when a valid result is returned.
 // Settings (Cloudflare Worker > Settings > Variables and Secrets / Bindings):
@@ -13,7 +13,7 @@ const NETWORK = "eip155:8453"; // Base mainnet
 const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const CDP_URL = "https://api.cdp.coinbase.com/platform/v2/x402";
 const PAYAI_URL = "https://facilitator.payai.network";
-const SERVICE = "NoJunk Moderate";
+const SERVICE = "Text Moderation";
 const DESCRIPTION =
   "Content moderation and text analysis: sentiment, safety classification (14 harm categories), semantic reranking, PII detection and redaction, language detection. Pay per call with USDC on Base (x402). No API key.";
 
