@@ -1,4 +1,4 @@
-// NoJunk Geo — paid (x402) geocoding, reverse geocoding and weather for AI agents.
+// Geocoding & Weather — paid (x402) geocoding, reverse geocoding and weather for AI agents.
 // Three routes, each $0.002 USDC on Base per successful call: /geocode (place text -> coordinates + address),
 // /reverse (coordinates -> address) and /weather (current conditions + 7-day forecast for coordinates or a place name).
 // Data: OpenStreetMap Nominatim (geocoding) and Open-Meteo (weather). No API keys, no rate limits for callers.
@@ -15,7 +15,7 @@ const NETWORK = "eip155:8453"; // Base mainnet
 const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const CDP_URL = "https://api.cdp.coinbase.com/platform/v2/x402";
 const PAYAI_URL = "https://facilitator.payai.network";
-const SERVICE = "NoJunk Geo";
+const SERVICE = "Geocoding & Weather";
 const DESCRIPTION =
   "Cheap geocoding, reverse geocoding and weather for AI agents, paid per call in USDC on Base via x402: /geocode turns a place name or address into coordinates and a structured address, /reverse turns coordinates into an address, /weather returns current conditions and a 7-day forecast for coordinates or a place name. Data from OpenStreetMap Nominatim (ODbL, attribution required) and Open-Meteo (CC BY 4.0). You are only charged when a result is returned.";
 

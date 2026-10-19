@@ -103,7 +103,7 @@ const reset = () => { calls = []; upstream = []; };
 
 // ---- unpaid / info ----
 let r = await W.fetch(new Request(base + "/"), env, ctx); let j = await r.json();
-ok(r.status === 200 && j.service === "NoJunk Geo" && j.facilitator === "payai" && j.price.includes("$0.002") && Object.keys(j.endpoints).join() === "/geocode,/reverse,/weather" && j.health.endsWith("/health/data") && j.sources.geocoding.attribution.includes("OpenStreetMap") && j.sources.weather.attribution.includes("Open-Meteo"), "info page lists 3 routes, price, health, attributions");
+ok(r.status === 200 && j.service === "Geocoding & Weather" && j.facilitator === "payai" && j.price.includes("$0.002") && Object.keys(j.endpoints).join() === "/geocode,/reverse,/weather" && j.health.endsWith("/health/data") && j.sources.geocoding.attribution.includes("OpenStreetMap") && j.sources.weather.attribution.includes("Open-Meteo"), "info page lists 3 routes, price, health, attributions");
 r = await W.fetch(new Request(base + "/geocode?q=test"), {}, ctx); ok(r.status === 402 && dec(r.headers.get("PAYMENT-REQUIRED")).accepts[0].payTo === "0x6f762720b8515b7091e6aa69e8361f7b9909233f", "default wallet used");
 r = await W.fetch(new Request(base + "/nope"), env, ctx); ok(r.status === 404, "unknown path -> 404");
 r = await W.fetch(new Request(base + "/geocode", { method: "PUT" }), env, ctx); ok(r.status === 405, "PUT -> 405");
@@ -410,7 +410,7 @@ r = await W.fetch(new Request(base + "/health/data", { method: "POST" }), env, c
 
 // ---- openapi ----
 r = await W.fetch(new Request(base + "/openapi.json"), env, ctx); const o = await r.json();
-ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "NoJunk Geo" && o.servers[0].url === base && Object.keys(o.paths).join() === "/geocode,/reverse,/weather" && Object.keys(o.paths["/geocode"]).join() === "get,post", "openapi 3.1.0, 3 paths with get+post");
+ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "Geocoding & Weather" && o.servers[0].url === base && Object.keys(o.paths).join() === "/geocode,/reverse,/weather" && Object.keys(o.paths["/geocode"]).join() === "get,post", "openapi 3.1.0, 3 paths with get+post");
 ok(/cheap geocoding/i.test(o.info["x-guidance"]) && /reverse/i.test(o.info["x-guidance"]) && /weather/i.test(o.info["x-guidance"]) && /OpenStreetMap contributors/.test(o.info["x-guidance"]) && /Open-Meteo\.com/.test(o.info["x-guidance"]) && o.info["x-guidance"].includes("$0.002"), "x-guidance: cheap geocoding/reverse/weather for agents + attribution requirements + price");
 for (const route of ["/geocode", "/reverse", "/weather"]) {
   const g = o.paths[route].get, p = o.paths[route].post;
