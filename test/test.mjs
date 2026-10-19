@@ -140,9 +140,9 @@ const upstreamMethods = () => upstream.flatMap((x) => x.methods || [x.path]);
 
 // ---- info / discovery ----
 let r = await get("/"); let j = await r.json();
-ok(r.status === 200 && j.service === "NoJunk Chain" && j.description.startsWith("Multi-chain wallet balances") && j.facilitator === "payai" && j.configured === true && j.health === base + "/health/data" && j.openapi === base + "/openapi.json", "info page");
+ok(r.status === 200 && j.service === "Blockchain Data" && j.description.startsWith("Multi-chain wallet balances") && j.facilitator === "payai" && j.configured === true && j.health === base + "/health/data" && j.openapi === base + "/openapi.json", "info page");
 ok(Object.keys(j.endpoints).join() === "/balance,/gas,/tx,/block" && j.endpoints["/balance"].price.startsWith("$0.002 ") && j.endpoints["/gas"].price.startsWith("$0.001 ") && j.endpoints["/tx"].price.startsWith("$0.002 ") && j.endpoints["/block"].price.startsWith("$0.001 ") && j.chains.evm.length === 7 && j.chains.other.join() === "solana,bitcoin", "info lists 4 routes with prices and 9 chains");
-r = await get("/health"); ok(r.status === 200 && (await r.json()).service === "NoJunk Chain", "/health alias = info");
+r = await get("/health"); ok(r.status === 200 && (await r.json()).service === "Blockchain Data", "/health alias = info");
 r = await W.fetch(new Request(base + "/balance?address=" + ADDR), {}); ok(r.status === 402 && dec(r.headers.get("PAYMENT-REQUIRED")).accepts[0].payTo === "0x6f762720b8515b7091e6aa69e8361f7b9909233f", "default wallet used");
 for (const [p, label] of [["/balance", "missing address"], ["/balance?address=nope", "bad address"], ["/gas?chain=mars", "bad chain"], ["/tx", "missing hash"], ["/tx?hash=zzz", "bad hash"], ["/block", "missing chain"], ["/block?chain=base&number=-1", "bad number"]]) {
   upstream = []; r = await get(p); ok(r.status === 402 && r.headers.get("PAYMENT-REQUIRED") && upstream.length === 0, `${label} unpaid -> 402 first, no upstream call`);
@@ -173,7 +173,7 @@ for (const route of Object.keys(PRICES)) {
   const pr = dec(r.headers.get("PAYMENT-REQUIRED")); prs[route] = pr;
   const a0 = pr.accepts[0];
   ok(r.status === 402 && pr.x402Version === 2 && pr.accepts.length === 1 && a0.scheme === "exact" && a0.amount === PRICES[route] && a0.payTo === PAY && a0.network === "eip155:8453" && a0.asset === "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" && a0.extra.name === "USD Coin" && a0.extra.version === "2" && a0.maxTimeoutSeconds === 300, `${route} 402 requirements (amount ${PRICES[route]})`);
-  ok(pr.resource.url === base + route && pr.resource.mimeType === "application/json" && pr.resource.description.startsWith("NoJunk Chain ") && pr.error === "PAYMENT-SIGNATURE header is required", `${route} resource url + description`);
+  ok(pr.resource.url === base + route && pr.resource.mimeType === "application/json" && pr.resource.description.startsWith("Blockchain Data ") && pr.error === "PAYMENT-SIGNATURE header is required", `${route} resource url + description`);
   const bz = pr.extensions.bazaar;
   ok(bz.info.input.type === "http" && bz.info.input.method === "GET" && typeof bz.info.input.queryParams === "object" && bz.info.output.type === "json" && bz.schema.properties.input.required.includes("method") && bz.schema.$schema.includes("2020-12"), `${route} bazaar ext with GET queryParams`);
   ok(JSON.parse(await r.text()).x402Version === 2, `${route} 402 body is the same JSON`);
@@ -373,7 +373,7 @@ reset(); mode = "badverify"; r = await paid("/block", "chain=base"); ok(r.status
 
 // ---- openapi ----
 reset(); r = await get("/openapi.json"); const o = await r.json();
-ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "NoJunk Chain" && o.info.description.startsWith("Multi-chain wallet balances") && o.info["x-guidance"].includes("$0.002") && o.info["x-guidance"].includes("$0.001") && o.servers[0].url === base && Object.keys(o.paths).join() === "/balance,/gas,/tx,/block", "openapi.json: 3.1.0, x-guidance, 4 paths");
+ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "Blockchain Data" && o.info.description.startsWith("Multi-chain wallet balances") && o.info["x-guidance"].includes("$0.002") && o.info["x-guidance"].includes("$0.001") && o.servers[0].url === base && Object.keys(o.paths).join() === "/balance,/gas,/tx,/block", "openapi.json: 3.1.0, x-guidance, 4 paths");
 const USD = { "/balance": "0.002000", "/gas": "0.001000", "/tx": "0.002000", "/block": "0.001000" };
 for (const route of Object.keys(USD)) {
   const gg = o.paths[route].get, pp = o.paths[route].post;

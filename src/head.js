@@ -1,4 +1,4 @@
-// NoJunk Chain — paid (x402) multi-chain blockchain lookups for AI agents.
+// Blockchain Data — paid (x402) multi-chain blockchain lookups for AI agents.
 // Four routes (GET query or POST JSON), each paid per successful call in USDC on Base:
 //   /balance $0.002  native + USDC balance and tx count for a wallet on 7 EVM chains, Solana or Bitcoin
 //   /gas     $0.001  gas price, base fee and priority-fee percentiles (gwei) per EVM chain; Bitcoin sat/vB fees
@@ -16,7 +16,7 @@ const NETWORK = "eip155:8453"; // Base mainnet
 const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const CDP_URL = "https://api.cdp.coinbase.com/platform/v2/x402";
 const PAYAI_URL = "https://facilitator.payai.network";
-const SERVICE = "NoJunk Chain";
+const SERVICE = "Blockchain Data";
 const DESCRIPTION =
   "Multi-chain wallet balances, gas prices, transaction and block lookups across 7 EVM chains, Solana and Bitcoin. Pay per call with USDC on Base (x402). No API key.";
 const UPSTREAM_UA = "NoJunk Chain/1.0 (+https://nojunkcrypto.com)";
