@@ -1,4 +1,4 @@
-// NoJunk LLM — paid (x402) OpenAI-compatible chat completions and embeddings for AI agents.
+// AI Chat (LLM) — paid (x402) OpenAI-compatible chat completions and embeddings for AI agents.
 // Runs on Cloudflare Workers AI (Llama 3.3 70B, Qwen 2.5 Coder 32B, BGE-M3). No API keys, no rate limits:
 // agents pay per call in USDC on Base and are only charged when a valid result is returned.
 // Settings (Cloudflare Worker > Settings > Variables and Secrets / Bindings):
@@ -13,7 +13,7 @@ const NETWORK = "eip155:8453"; // Base mainnet
 const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const CDP_URL = "https://api.cdp.coinbase.com/platform/v2/x402";
 const PAYAI_URL = "https://facilitator.payai.network";
-const SERVICE = "NoJunk LLM";
+const SERVICE = "AI Chat (LLM)";
 const DESCRIPTION =
   "Pay-per-call, OpenAI-compatible LLM API for agents: POST /v1/chat/completions (Llama 3.3 70B or Qwen 2.5 Coder 32B, up to 32,000 characters of messages, up to 1,024 output tokens, optional JSON mode) and POST /v1/embeddings (BGE-M3, 1,024 dimensions, up to 32 inputs per call). Point any OpenAI client at this base URL and pay per request in USDC on Base via x402: no API key, no account, no rate limits. You are only charged when a valid result is returned.";
 

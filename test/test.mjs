@@ -46,7 +46,7 @@ const post = (path, body, extra = {}) => W.fetch(new Request(base + path, { meth
 
 // ---- info / discovery ----
 let r = await W.fetch(new Request(base + "/"), env); let j = await r.json();
-ok(r.status === 200 && j.service === "NoJunk LLM" && j.facilitator === "payai" && j.configured === true && Object.keys(j.endpoints).join() === `${CHAT},${EMB}` && j.endpoints[CHAT].price.startsWith("$0.005") && j.endpoints[EMB].price.startsWith("$0.001"), "info page lists 2 routes with prices");
+ok(r.status === 200 && j.service === "AI Chat (LLM)" && j.facilitator === "payai" && j.configured === true && Object.keys(j.endpoints).join() === `${CHAT},${EMB}` && j.endpoints[CHAT].price.startsWith("$0.005") && j.endpoints[EMB].price.startsWith("$0.001"), "info page lists 2 routes with prices");
 ok(j.openai_compatible.base_url === base + "/v1" && /PAYMENT-SIGNATURE/.test(j.openai_compatible.how) && /base_url/.test(j.openai_compatible.how) && j.models.chat["llama-3.3-70b"] === LLAMA && j.models.chat["qwen2.5-coder-32b"] === QWEN && j.models.embeddings["bge-m3"] === BGE, "info explains OpenAI-compatible base_url + x402 header, lists models");
 r = await W.fetch(new Request(base + CHAT, { method: "POST" }), { AI }); ok(r.status === 402 && dec(r.headers.get("PAYMENT-REQUIRED")).accepts[0].payTo === "0x6f762720b8515b7091e6aa69e8361f7b9909233f", "default wallet used");
 r = await W.fetch(new Request(base + CHAT, { method: "POST", body: "not json" }), env); ok(r.status === 402, "bad input unpaid -> 402 first");
@@ -76,7 +76,7 @@ for (const route of Object.keys(PRICES)) {
   const pr = dec(r.headers.get("PAYMENT-REQUIRED")); prs[route] = pr;
   const a0 = pr.accepts[0];
   ok(r.status === 402 && pr.x402Version === 2 && pr.accepts.length === 1 && a0.scheme === "exact" && a0.amount === PRICES[route] && a0.payTo === PAY && a0.network === "eip155:8453" && a0.asset === "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" && a0.extra.name === "USD Coin" && a0.extra.version === "2" && a0.maxTimeoutSeconds === 300, `${route} 402 requirements (amount ${PRICES[route]})`);
-  ok(pr.resource.url === base + route && pr.resource.mimeType === "application/json" && pr.resource.description.startsWith("NoJunk LLM"), `${route} resource url`);
+  ok(pr.resource.url === base + route && pr.resource.mimeType === "application/json" && pr.resource.description.startsWith("AI Chat (LLM)"), `${route} resource url`);
   const bz = pr.extensions.bazaar;
   ok(bz.info.input.type === "http" && bz.info.input.method === "POST" && bz.info.input.bodyType === "json" && bz.info.output.type === "json" && bz.schema.properties.input.required.includes("body") && bz.schema.$schema.includes("2020-12"), `${route} bazaar ext with POST json body`);
   payloads[route] = { x402Version: 2, resource: pr.resource, accepted: pr.accepts[0], payload: { signature: "0x00", authorization: {} }, extensions: pr.extensions };
@@ -226,7 +226,7 @@ reset(); mode = "badsettle"; r = await paid(EMB, { input: "a" }); t = await r.te
 
 // ---- openapi ----
 reset(); r = await W.fetch(new Request(base + "/openapi.json"), env); const o = await r.json();
-ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "NoJunk LLM" && typeof o.info["x-guidance"] === "string" && o.info["x-guidance"].includes("$0.005") && o.info["x-guidance"].includes("$0.001") && o.info["x-guidance"].includes(base + "/v1") && /PAYMENT-SIGNATURE/.test(o.info["x-guidance"]) && o.servers[0].url === base, "openapi header + x-guidance (base_url, header, prices)");
+ok(r.status === 200 && o.openapi === "3.1.0" && o.info.title === "AI Chat (LLM)" && typeof o.info["x-guidance"] === "string" && o.info["x-guidance"].includes("$0.005") && o.info["x-guidance"].includes("$0.001") && o.info["x-guidance"].includes(base + "/v1") && /PAYMENT-SIGNATURE/.test(o.info["x-guidance"]) && o.servers[0].url === base, "openapi header + x-guidance (base_url, header, prices)");
 ok(Object.keys(o.paths).join() === `${CHAT},${EMB},/v1/models` && Object.keys(o.paths[CHAT]).join() === "post" && Object.keys(o.paths["/v1/models"]).join() === "get" && !o.paths["/v1/models"].get["x-payment-info"], "openapi paths: 2 paid POST routes + free GET /v1/models");
 for (const [route, amt] of [[CHAT, "0.005000"], [EMB, "0.001000"]]) {
   const p = o.paths[route].post;
