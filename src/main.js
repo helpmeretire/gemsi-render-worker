@@ -500,7 +500,7 @@ Request: POST ${origin}/check {"tokenAddress":"${SAMPLE_TOKEN.tokenAddress}","ch
 Response (abridged): ${JSON.stringify({ grade: EXAMPLE_OUT.grade, risk_score: EXAMPLE_OUT.risk_score, one_liner: EXAMPLE_OUT.one_liner, red_flags: EXAMPLE_OUT.red_flags, green_flags: EXAMPLE_OUT.green_flags })}
 
 ## Related
-- NoJunk Address Check (wallet/contract safety before you send or approve): https://nojunk-address-check.mick8511.workers.dev/llms.txt
+- Address Check (wallet/contract safety before you send or approve): https://nojunk-address-check.mick8511.workers.dev/llms.txt
 - All services: ${NOJUNK_INDEX}
 `;
 }
